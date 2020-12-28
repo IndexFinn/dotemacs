@@ -1711,10 +1711,6 @@ wish to undo that particular deletion process.
 :CUSTOM_ID: h:6877d266-5821-4d09-baa1-734e1393b68b
 :END:
 
-:PROPERTIES:
-:CUSTOM_ID: h:9dfc6bfd-7eea-44f9-b598-34277ce91d46
-:END:
-
 Eshell gives you everything from a traditional shell. It integrates with
 elisp very nicely.  You can do something like =echo (propertize "Hello,
 EShell" 'face 'success)=.  Of course there is way more powerful ways you
@@ -1825,7 +1821,70 @@ thus you can define custom made functions easily.
 (leaf eshell
   :config
   (defun eshell/f (file)
-    (find-file file)))
+    (find-file file))
+
+  (defun eshell/ll (&optional file)
+    (eshell/ls "-Al" file))
+
+  (defun eshell/cd (&rest args)         ; all but first ignored
+    "Alias to extend the behavior of `cd'."
+    ;; below is from its original function
+    (setq args (flatten-tree args))
+    (let ((path (car args))
+	      (subpath (car (cdr args)))
+	      (case-fold-search (eshell-under-windows-p))
+	      handled)
+      (if (numberp path)
+	      (setq path (number-to-string path)))
+      (if (numberp subpath)
+	      (setq subpath (number-to-string subpath)))
+      (cond
+       (subpath
+        (let ((curdir (eshell/pwd)))
+	      (if (string-match path curdir)
+	          (setq path (replace-match subpath nil nil curdir))
+	        (error "Path substring `%s' not found" path))))
+       ((and path (string-match "^-\\([0-9]*\\)$" path))
+        (let ((index (match-string 1 path)))
+	      (setq path
+	            (ring-remove eshell-last-dir-ring
+			                 (if index
+			                     (string-to-number index)
+			                   0)))))
+       ((and path (string-match "^=\\(.*\\)$" path))
+        (let ((oldpath (eshell-find-previous-directory
+		                (match-string 1 path))))
+	      (if oldpath
+	          (setq path oldpath)
+	        (let ((len (ring-length eshell-last-dir-ring))
+		          (index 0))
+	          (if (= len 0)
+		          (error "Directory ring empty"))
+	          (eshell-init-print-buffer)
+	          (while (< index len)
+	            (eshell-buffered-print
+	             (concat (number-to-string index) ": "
+		                 (ring-ref eshell-last-dir-ring index) "\n"))
+	            (setq index (1+ index)))
+	          (eshell-flush)
+	          (setq handled t)))))
+       (path
+        (setq path (eshell-expand-multiple-dots path))))
+      (unless handled
+        (let ((curdir (eshell/pwd))
+	          (newdir (or path "~")))
+	      (unless (equal curdir newdir)
+	        (eshell-add-to-dir-ring curdir))
+	      (let ((result (cd newdir)))
+	        (and eshell-cd-shows-directory
+	             (eshell-printn result)))
+	      (run-hooks 'eshell-directory-change-hook)
+	      (if eshell-list-files-after-cd
+	          ;; Let-bind eshell-last-command around this?
+	          (eshell-plain-command "ls" (cdr args)))
+	      nil)))
+    ;; above is from its original function
+    (eshell/ls "-A")))
 #+end_src
 
 * Ibuffer
