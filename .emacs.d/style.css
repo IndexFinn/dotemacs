@@ -1,0 +1,46 @@
+body {
+    margin: 40px auto;
+    max-width: 40rem;
+    line-height: 1.44em;
+    font-size: 20px;
+    color: #454545;
+    padding: 0 10px;
+    background-color: #f8f8f8;
+    text-align: justify;
+}
+h1 {
+    line-height: 1.2;
+    font-family: "UnifrakturMaguntia";
+    font-weight: normal;
+    font-size: 3rem;
+}
+a {
+    color: #7b14d1;
+    text-decoration: underline;
+    text-decoration-color: #9f9f9f;
+}
+a:hover {
+    color: #333;
+    text-decoration: underline;
+    text-decoration-color: black;
+}
+a:active {
+    color: black;
+}
+pre {
+    background: #f0f0f0;
+    border-top: 5px solid #e8e8e8;
+    border-bottom: 5px solid #e8e8e8;
+    font-size: 12px;
+    line-height: 1.2;
+    padding: 1rem;
+}
+.abstract {
+    margin: auto;
+    width: 80%;
+    font-style: italic;
+    text-indent: 1em;
+}
+span[class*="section-number"] {
+    /* color: #7b14d1; */
+}

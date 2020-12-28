@@ -1,0 +1,3607 @@
+#+TITLE: Extensive GNU Emacs Configuration File
+#+AUTHOR: Finn Sauer
+#+EMAIL: <finn@finnsauer.xyz>
+#+OPTIONS: toc:nil
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="/home/finn/.emacs.d/style.css" />
+#+HTML: <hr style="border-top: 1px #545454 dashed" />
+
+#+begin_verse
+Updated:       *src_elisp{(format-time-string "%F %R %z")}*.
+Emacs Version: *src_elisp{emacs-version}*.
+Org Version:   *src_elisp{org-version}*
+File Size:     *src_elisp{(file-size-human-readable
+                           (file-attribute-size
+                            (file-attributes
+                             (file-truename
+                              (expand-file-name
+                               "config.org"
+                               user-emacs-directory)))))}*.
+#+end_verse
+
+# TODO : REVIEW
+#+begin_abstract
+This is my config.org document for configuring the “GNU project['s]
+Emacs editor”.  This document is written in the so called [[https://en.wikipedia.org/wiki/Literate_programming][Literate
+Programming]] paradigm; you express yourself-- be it the idea of the
+snippet-- alongside writing the source code of said idea.  It's made
+possible by Emacs' [[https://orgmode.org/][Org Mode]].
+#+end_abstract
+
+Refer to the section [[#h:e5803f69-1ef3-4d25-a619-2ef6b2f44756][This Document]] to get more information about this
+file and its conventions.
+
+#+TOC: headlines 8 insert TOC here, with eight headline levels
+
+* Essentials
+:PROPERTIES:
+:CUSTOM_ID: h:1c8c97ea-f5a1-4e3c-b574-e4d2cb934421
+:END:
+** Internalization of Emacs
+:PROPERTIES:
+:CUSTOM_ID: h:4f188f72-2abe-47f7-b303-cfe12d7e7e3e
+:END:
+
+Since newer versions of Emacs (Emacs 27 and newer) now support an
+/early-init.el/ file, we use that to increase the startup time and for
+package initialization.
+
+Emacs uses the =init.el= file to source custom Emacs configuration.  Since
+we do everything in =org-mode= we only need the essential initialization.
+
+I use =package.el= to keep track of my extensions.  At the end of the file,
+we source the =config.org= file and evaluate it in elisp.
+
+Whenever I quit Emacs, I want to load my new configurations from this
+file.  Therefore this function will recompile the preexisting Emacs-lisp
+file to a newer version every time Emacs closes.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :config
+  (defun index/rebuild-emacs-init ()
+    "Compile the .org configuration file to .el"
+    (let ((f (expand-file-name "config.org" user-emacs-directory))
+          (e (expand-file-name "config.el" user-emacs-directory)))
+      (when (file-readable-p e)
+        (delete-file e))
+      (org-babel-tangle-file f)))
+  :hook ((kill-emacs-hook . index/rebuild-emacs-init)
+         (kill-emacs-hook . package-quickstart-refresh)))
+#+end_src
+
+After this I want Emacs to report the time it took for Emacs to launch
+and how many Garbage Collections took place.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :config
+  (defun index/startup-report ()
+    "Startup report message."
+    (message
+     "Emacs ready in %s with %d garbage collections."
+     (format
+      "%.3f seconds"
+      (float-time
+       (time-subtract after-init-time before-init-time)))
+     gcs-done))
+  :hook ((emacs-startup-hook . index/startup-report)))
+#+end_src
+** Startup Files
+:PROPERTIES:
+:CUSTOM_ID: h:6d58c23d-c387-4714-9600-aade75a620ae
+:END:
+
+*** The /init.el/ file
+:PROPERTIES:
+:CUSTOM_ID: h:6e1a02b2-b6b7-4015-99c5-d3ae45832ce9
+:END:
+
+#+begin_src emacs-lisp
+;; init.el --- initialization file
+
+;; Copyright (C) 2020 Finn Sauer <finn@finnsauer.xyz>
+;;
+;; This file is part of my `config.org' ecosystem.
+;;
+;; This program is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or (at
+;; your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;; General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Code :
+
+(eval-and-compile
+  (require 'package)
+
+  ;; Specify the package archives-- where to download from.
+  (setq package-archives '(("MELPA" . "https://melpa.org/packages/")
+                           ("GNU"   . "https://elpa.gnu.org/packages/")
+                           ("ORG" . "https://orgmode.org/elpa/")))
+
+  ;; Initialize the packages, avoiding a re-initialization.
+  (unless (bound-and-true-p package--initialized)
+    (package-initialize))
+
+  (unless (package-installed-p 'leaf)
+    (package-install 'leaf)))
+
+;; Uses a different file for `custom' in order to not clutter the
+;; `init.el' file with automatic settings made by custom.
+(setq custom-file
+      (expand-file-name
+       (concat user-emacs-directory "custom.el")))
+(load custom-file t t)
+
+;; This is the actual configuration file.  This will load `config.el'
+;; when it is available (I rebuild this file each time I quit Emacs).
+;; If it is not available, then use `org-babel-tangle-file'
+(let ((f (expand-file-name "config.el" user-emacs-directory))
+      (o (expand-file-name "config.org" user-emacs-directory)))
+  (require 'leaf)
+  (if (file-readable-p f)
+      (load-file f)
+    (org-babel-load-file o f)))
+
+;;; init.el ends here
+#+end_src
+
+*** The /early-init.el/ file
+:PROPERTIES:
+:CUSTOM_ID: h:1dda032f-3bc7-4c67-a57b-263c130c5ee5
+:END:
+
+#+begin_src emacs-lisp
+;; early-init.el --- init.el just earlier
+
+;; Copyright (C) 2020 Finn Sauer <finn@finnsauer.xyz>
+;;
+;; This file is part of my `config.org' ecosystem.
+;;
+;; This program is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or (at
+;; your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;; General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Code:
+
+;; Slow down the Garbage Collection, effectively stopping it.  This
+;; setting will be overwritten by the function `index/gc-reset' inside
+;; the `config.org' file.
+(setq gc-cons-threshold most-positive-fixnum)
+
+(setq package-enable-at-startup t)
+(setq frame-inhibit-implied-resize t)
+
+;;; early-init.el ends here
+#+end_src
+
+** Enforce Keybindings
+:PROPERTIES:
+:CUSTOM_ID: h:380fecc6-541b-4aa0-b477-ca80bd9798f6
+:END:
+
+I have some keybindings that interfere with other keybindings.  For
+example I have bound =C-M-q= to a custom function.  But this usually is
+mapped by another mode.  Therefore I have this minor-mode defined that
+overwrites those keybindings.
+
+It is important that this minor-mode is first or nearly fist in the
+=minor-mode-map-alist=.  Putting this near the end of your configuration
+file ought to be enough.  More to that later on.
+
+In order to now force a keybinding you have to add the keybindings to
+the =index/keys-minor-mode-map=.  This can be achieved easily with
+leaf/use-package.
+
+#+begin_example emacs-lisp
+(leaf emacs
+  :bind ((index/keys-minor-mode-map
+          ("C-M-q" . some-function))))
+#+end_example
+
+Or if you don't use something like leaf/use-package then you could
+define the keybindings like this:
+
+#+begin_example emacs-lisp
+(define-key index/keys-minor-mode-map (kbd "C-M-q") some-function)
+#+end_example
+
+This method is neat, because when you want to disable the now enforced
+keybindings you can simply type =M-x index/keys-minor-mode= and get back
+the default keybindings.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :init
+  (defvar index/keys-minor-mode-map (make-sparse-keymap)
+    "index/keys-minor-mode keymap.")
+
+  (define-minor-mode index/keys-minor-mode
+    "A minor mode for overwriting keybindings."
+    :init-value t
+    :keymap index/keys-minor-mode-map
+    :global t
+    :lighter "")
+
+  ;; https://github.com/jwiegley/use-package/blob/master/bind-key.el
+  ;; The keymaps in `emulation-mode-map-alists' take precedence over
+  ;; `minor-mode-map-alist'
+  (add-to-list 'emulation-mode-map-alists
+               `((index/keys-minor-mode . ,index/keys-minor-mode-map)))
+
+  :hook ((emacs-startup-hook . index/keys-minor-mode)))
+#+end_src
+
+The following code snippet will ensure that when a new minor mode will
+add new keybindings, this function will then remove all keybindings
+associated with =index/keys-minor-mode=.  After that it will re enable
+the keys.  This hook will only get fired when =index/keys-minor-mode= is
+not at the top of the =minor-mode-map-alist=.
+
+# DEPRECATED : Is not required anymore with the
+# `emulation-mode-map-alist'.
+#+begin_src emacs-lisp
+(leaf emacs
+  :config
+  (defun index/keys-have-priority (&rest _)
+    "Ensure that `index/keys-minor-mode' keybindings retain
+priority over other minor modes.  Called via the
+`after-load-functions' hook."
+    (unless (eq (caar minor-mode-map-alist) 'index/keys-minor-mode)
+      (let ((keys (assq 'index/keys-minor-mode minor-mode-map-alist)))
+        (assq-delete-all 'index/keys-minor-mode minor-mode-map-alist)
+        (add-to-list 'minor-mode-map-alist keys))))
+
+  :hook ((after-load-functions . index/keys-have-priority)))
+#+end_src
+
+** Authinfo
+:PROPERTIES:
+:CUSTOM_ID: h:e12f564e-36f9-40eb-8795-088cc90d9d33
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf auth-info
+  :config
+  (setq auth-sources '("~/.authinfo.gpg"))
+
+  (defun index/common-auth-get-field (host prop)
+    "Find PROP in `auth-sources' for HOST entry."
+    (let* ((source (auth-source-search :host host))
+           (field (plist-get (flatten-list source) prop)))
+      (if source
+          field
+        (user-error "No entry in auth sources")))))
+#+end_src
+
+* Common Stuff
+:PROPERTIES:
+:CUSTOM_ID: h:39e38a6a-07dc-4c05-9db9-574396b93730
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(defmacro ->> (&rest body)
+  "Clojure threading macro.
+The thread-last macro:
+
+  (->> 2
+      (< 3))
+
+Will expand to this:
+
+  (< 3 2) ;; => nil"
+  (let ((result (pop body)))
+    (dolist (form body result)
+      (setq result (append form (list result))))))
+
+(defmacro -> (&rest body)
+  "Clojure threading macro.
+The thread-first macro:
+
+  (-> 2
+      (< 3))
+
+Will expand to this:
+
+  (< 2 3) ;; => t"
+  (let ((result (pop body)))
+    (dolist (form body result)
+      (setq result (append (list (car form) result)
+                           (cdr form))))))
+
+(-> 2
+    (< 3))
+#+end_src
+
+* Garbage Collection
+:PROPERTIES:
+:CUSTOM_ID: h:bad4e190-e76c-434a-bda1-b1317695fbc1
+:END:
+
+# TODO : Rewrite this parahraph with the macros.
+
+#+MACRO: most-positive-fixnum (eval most-positive-fixnum)
+#+MARCO: most-positive-fixnum-in-bit (eval (truncate (log most-positive-fixnum 2)))
+
+I tweaked with the garbage collection system, so emacs starts up faster.
+I set the `threshold' variable to a high value.  Effectively shut down
+Emacs' garbage collection system.
+
+#+begin_example emacs-lisp
+(setq gc-cons-threshold most-positive-fixnum)
+#+end_example
+
+Since it is stopped now, it accumulates a lot of memory over time.  That
+wouldn't seem like a problem on newer hardware with more memory
+accessible, but every MiB counts on my limited hardware.  With this hook
+and function we set the garbage collection to a reasonable value.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf gc
+  :config
+  (defun index/gc-reset ()
+    "Set `gc-cons-threshold' to another value."
+    (setq gc-cons-threshold (expt 1024 3)))
+  :hook ((emacs-startup-hook . index/gc-reset)))
+#+end_src
+
+** Garbage Collector Magic Hack - GCMH
+:PROPERTIES:
+:CUSTOM_ID: h:aebccef5-342d-49b6-b71e-ac59e79c8247
+:END:
+
+Once Emacs is fully loaded we want to activate the Garbage Collector
+Magic Hack.  This will, during normal Emacs usage, be a higher value
+than usual, but not infinite as shown above.  When idling it turns
+Emacs' Garbage Collection back on.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf gcmh
+  :ensure t
+  :hook ((after-init-hook . gcmh-mode)))
+#+end_src
+
+* Server: Client calls upon the Daemon
+:PROPERTIES:
+:CUSTOM_ID: h:f9e8ea2c-3e75-452b-8631-5b6323ce99da
+:END:
+
+I use =emacs --daemon= with =emacsclient -nw=.  The reason is that emacs
+becomes very startup heavy, meaning it will take longer time to
+initialize emacs.  With the =emacs --daemon= starting up a new window is
+very responsive.  One other useful functionality is to add new buffers
+from the terminal with =emacsclient -n <file>=.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf server
+  :hook ((after-init-hook . server-start)))
+#+end_src
+
+If I close Emacs and open it up later, I want it to be exactly in the
+state I left it in.  The reason is, when you leave your workspace, or
+test something out, or completely shutdown your system, you won't be
+left in the blue.  You can immediately work on what you left.
+
+The “Desktop” package will keep my registers and buffers available.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf desktop
+  :config
+  (setq desktop-auto-save-timeout 300)
+  (setq desktop-dirname user-emacs-directory)
+  (setq desktop-base-file-name "desktop")
+  (setq desktop-files-not-to-save nil)
+  (setq desktop-globals-to-clear nil)
+  (setq desktop-load-locked-desktop t)
+  (setq desktop-missing-file-warning nil)
+  (setq desktop-restore-eager 0)
+  (setq desktop-restore-frames nil)
+  (setq desktop-save 'ask-if-new)
+  (desktop-save-mode 1))
+#+end_src
+
+Make sure to always go to the /scratch/ buffer upon spawning a new Emacs
+frame.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :config
+  (setq initial-buffer-choice (lambda ()
+                                (get-buffer "*scratch*"))))
+#+end_src
+
+* Prettify Emacs
+:PROPERTIES:
+:CUSTOM_ID: h:e0b595f3-92b9-49cd-a412-31ca3f96da9f
+:END:
+
+We all been there-- opening Emacs for the first time and then were hit
+with Emacs' raw untouched gaze.
+
+I've come across various blog posts / threads saying that Emacs looks
+like a old peace of software-- which is true, but these people still
+haven't seen Emacs' true aesthetics: Emacs is a blank canvas.
+
+Emacs can and should be whatever you want it to be: you are the artist
+staring at your blank canvas and you should be the one drawing.
+
+If you dislike Emacs, because of its looks, then it is not Emacs fault,
+but yours.  Thus you have to start drawing!
+
+You dislike the tool-bar and scroll-bar, but you quite fond of the
+menu-bar, then so be it.  Nobody is going to criticize you for liking it
+that way-- only the people I addressed earlier would.
+
+** Dim Down Unfocused Buffers
+:PROPERTIES:
+:CUSTOM_ID: h:6db19638-b481-41af-b006-c89c540d3b2e
+:END:
+
+This package will, as the name implies, automatically dim down other
+buffers.  This means that when you're in a buffer and other buffers are
+displayed in a window it will lower the background color of said
+buffers.  This even works when accessing the minibuffer-- this option
+can of course be turned off.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf auto-dim-other-buffers
+  :ensure t
+  :commands auto-dim-other-buffers-mode
+  :config
+  (setq auto-dim-other-buffers-dim-on-switch-to-minibuffer t)
+  (setq auto-dim-other-buffers-dim-on-focus-out t)
+  :hook ((emacs-startup-hook . auto-dim-other-buffers-mode)))
+#+end_src
+
+With this, I can always tell in what window I'm currently in-- without
+seeing the cursor.
+
+** Pulse
+:PROPERTIES:
+:CUSTOM_ID: h:2a5f089e-dcd1-4f20-a880-ace76a1110c8
+:END:
+
+This package will enable us to highlight a line with a pulse signal.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf pulse
+  :config
+  (defface pulse-line-modus-theme
+    '((t :inherit modus-theme-subtle-magenta :extend t))
+    "Ad-hoc face for `pulse-line'.
+  This is done because it is not possible to highlight empty lines
+  without the `:extend' property.")
+
+  (defun pulse-line (&optional face)
+    "Temporarily highlight the current line."
+    (interactive)
+    (let ((start (if (eobp)
+                     (line-beginning-position 0)
+                   (line-beginning-position)))
+          (end (line-beginning-position 2))
+          (pulse-delay .04)
+          (face
+           (if face
+               face
+             'pulse-line-modus-theme)))
+      (pulse-momentary-highlight-region start end face)))
+  :bind (("<H-return>" . pulse-line)))
+#+end_src
+
+** Beacon
+:PROPERTIES:
+:CUSTOM_ID: h:4c482fa9-35b7-4dda-9fdf-90c6a3b06020
+:END:
+
+Whenever the window scrolls a light will shine on top of your cursor so
+you know where it is.  This includes changing the window.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf beacon
+  :ensure t
+  :config
+  (setq beacon-size 33)
+  (setq beacon-color 0.44)
+  (setq beacon-blink-duration 0.5)
+  (beacon-mode 1))
+#+end_src
+
+** Mode-Line
+:PROPERTIES:
+:CUSTOM_ID: h:19aca65c-acf0-4812-862b-b1962f573172
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf doom-modeline
+  :ensure t
+  :hook ((after-init-hook . doom-modeline-mode))
+  :config
+  (setq doom-modeline-height 36)
+  (setq doom-modeline-icon t)
+  (setq doom-modeline-minor-modes nil)
+  (setq doom-modeline-buffer-eppncoding nil))
+#+end_src
+
+# #+begin_src emacs-lisp :tangle yes
+#   (leaf emacs
+#     :config
+#     (defconst index/mode-line-format
+#       (list
+#        "--"
+#        mode-line-modified
+#        mode-line-remote
+#        '(:eval (if (string= "%n" " Narrow")))
+#        "-"
+#        '(:eval (propertize "%m" 'face 'font-lock-string-face))
+#        " "
+#        '(:eval (propertize "%b" 'face 'bold))
+#        " "
+#        "%p %l"
+#        ":%c"
+#        '(:eval (propertize "%n" 'face 'font-lock-warning-face))
+#        "%-"))
+#
+#     (setq-default mode-line-format index/mode-line-format)
+#     (setq mode-line-format index/mode-line-format))
+# #+end_src
+
+*** line and column number
+:PROPERTIES:
+:CUSTOM_ID: h:1c69692e-d7a8-44f9-986f-9aa3ab8b8e34
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(line-number-mode 1)
+(column-number-mode 1)
+#+end_src
+
+** No GUI Elements
+:PROPERTIES:
+:CUSTOM_ID: h:d4ace9a3-763b-4a68-9194-09fe6c8dd0fa
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(menu-bar-mode -1)
+(tool-bar-mode -1)
+(scroll-bar-mode -1)
+
+(setq use-file-dialog nil
+      use-dialog-box t
+      inhibit-splash-screen t)
+#+end_src
+
+** Theme
+:PROPERTIES:
+:CUSTOM_ID: h:58c1cf8d-4a0f-4127-965b-177b1f66923b
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf modus-operandi-theme :ensure t)
+
+(leaf modus-vivendi-theme :ensure t)
+
+;; (leaf solar
+;;   :config
+;;   (setq calendar-latitude (getenv "LATITUDE")
+;;         calendar-longitude (getenv "LONGITUDE")))
+
+;; Light theme at sunrise
+(load-theme 'modus-operandi t t)
+(enable-theme 'modus-operandi)
+;; (run-at-time (nth 1 (split-string (sunrise-sunset)))
+;;              (* 60 60 24)
+;;              (lambda () (enable-theme 'modus-operandi)))
+
+;; Dark theme at sunset
+(load-theme 'modus-vivendi t t)
+;; (run-at-time (nth 4 (split-string (sunrise-sunset)))
+;;              (* 60 60 24)
+;;              (lambda () (enable-theme 'modus-vivendi)))
+
+(leaf doom-themes :ensure t)
+
+;; (load-theme 'doom-dracula)
+;; (enable-theme 'doom-dracula)
+
+;; (load-theme 'doom-nord)
+;; (enable-theme 'doom-nord)
+
+;; (load-theme 'doom-nord-light)
+;; (enable-theme 'doom-nord-light)
+#+end_src
+
+*** Org Modifications
+:PROPERTIES:
+:CUSTOM_ID: h:3f32e500-b52c-457a-9152-68718de8d383
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf org
+  :config
+  (set-face-attribute 'org-link nil
+                      :weight 'normal
+                      :background nil)
+  (set-face-attribute 'org-level-1 nil
+                      :height 1.2
+                      :weight 'normal)
+  (set-face-attribute 'org-level-2 nil
+                      :height 1.0
+                      :weight 'normal)
+  (set-face-attribute 'org-level-3 nil
+                      :height 1.0
+                      :weight 'normal)
+  (set-face-attribute 'org-level-4 nil
+                      :height 1.0
+                      :weight 'normal)
+  (set-face-attribute 'org-level-5 nil
+                      :weight 'normal)
+  (set-face-attribute 'org-level-6 nil
+                      :weight 'normal)
+  (set-face-attribute 'org-document-title nil
+                      :family "UnifrakturCook"
+                      :height 2.5
+                      :weight 'bold))
+#+end_src
+
+** Font
+:PROPERTIES:
+:CUSTOM_ID: h:8ab00c0a-0aef-4367-bb11-2b82773048f5
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :config
+  (set-face-attribute 'default nil
+                      :font "Roboto Mono"
+                      :height 120)
+  (set-face-attribute 'fixed-pitch nil
+                      :font "Roboto Mono"
+                      :height 120)
+  (set-face-attribute 'variable-pitch nil
+                      :font "Noto Serif"
+                      :height 120))
+#+end_src
+
+** Blinking Cursor
+:PROPERTIES:
+:CUSTOM_ID: h:b5439b93-d1c9-44a4-a0ba-8af9d3209ef0
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :config
+  (setq blink-cursor-interval 0.75)
+  (setq blink-cursor-delay 1)
+  (setq blink-cursor-blinks 0)
+  :hook ((after-init-hook . blink-cursor-mode)))
+#+end_src
+
+** Line Highlight
+:PROPERTIES:
+:CUSTOM_ID: h:7fda8611-073e-48b5-95e4-471772653fa7
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(global-hl-line-mode t)
+#+end_src
+
+** Diminish
+:PROPERTIES:
+:CUSTOM_ID: h:da52ed87-9aae-4b86-bc90-3410041c7eed
+:END:
+
+This package is used to erase the lighter of a minor mode.  This can be
+called with leaf/use-package.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf diminish :ensure t)
+#+end_src
+
+** Pretty symbols
+:PROPERTIES:
+:CUSTOM_ID: h:24cd8c81-308c-41c0-ba27-d0599fd3972d
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(global-prettify-symbols-mode 1)
+#+end_src
+
+** Bell
+:PROPERTIES:
+:CUSTOM_ID: h:459c46a1-fb4e-4191-9b9c-f6b6691d4798
+:END:
+
+I don't really like the bell.  Since it, by default makes sounds.  I
+find this more irretating than useful.  Though the idea of the bell is,
+that you get notified when you try something that doesn't work.  I
+support this idea, since when I define a kmacro I sometimes accidentally
+ring the bell and cancel the kmacro with it.  In that situation it would
+be nice to see it...  That's where a visual bell comes into place:
+=mode-line-bell=.  This package will invert the background coloring of
+the modeline and blink for a predefined amount.  This does not annoy you
+but tells you when the bell rang.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf mode-line-bell
+  :ensure t
+  :config
+  (setq mode-line-bell-flash-time 0.1)
+  (mode-line-bell-mode 1))
+#+end_src
+
+* Generic Settings
+:PROPERTIES:
+:CUSTOM_ID: h:832f56b8-3a3a-4b2d-8b3e-f5e917aafdb2
+:END:
+** No backup files
+:PROPERTIES:
+:CUSTOM_ID: h:a968f986-8941-41d8-bde9-fcd2fb040354
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :config
+  (setq backup-by-copying t)
+  (setq backup-directory-alist '(("." . "~/.emacs.d/backup")))
+  (setq auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
+  (setq delete-old-versions t)
+  (setq kept-new-versions 5)
+  (setq kept-old-versions 0)
+  (setq version-control t))
+#+end_src
+
+** yes or no
+:PROPERTIES:
+:CUSTOM_ID: h:035a8b90-67b5-4928-93d1-77d051ef42c4
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(defalias 'yes-or-no-p 'y-or-n-p)
+#+end_src
+
+** highlight linked parentheses
+:PROPERTIES:
+:CUSTOM_ID: h:54ef46ab-46b2-427e-a741-93cedfadf21f
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(show-paren-mode)
+#+end_src
+
+** tab width
+:PROPERTIES:
+:CUSTOM_ID: h:dfe60159-d514-4390-b9e5-0da6198d96f3
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :config
+  (setq-default tab-always-indent 'complete)
+  (setq-default tab-width 4)
+  (setq-default indent-tabs-mode nil))
+#+end_src
+
+** Undo Tree
+:PROPERTIES:
+:CUSTOM_ID: h:d538cf0d-96a4-4ccd-afa0-98ce7e884349
+:END:
+
+Best way of saving your Ass; trust me, you'll need it!
+
+#+begin_src emacs-lisp :tangle yes
+(leaf undo-tree
+  :ensure t
+  :config
+  (global-undo-tree-mode 1)
+  :bind (("C-c u" . undo-tree-visualize)))
+#+end_src
+
+** smart parens
+:PROPERTIES:
+:CUSTOM_ID: h:d9b2825b-2e8c-40cf-b887-a92bcb8c50e4
+:END:
+
+ #+begin_src emacs-lisp :tangle yes
+(leaf smartparens
+  :ensure t
+  :config (smartparens-global-mode))
+#+end_src
+
+** mouse
+:PROPERTIES:
+:CUSTOM_ID: h:66882eea-9955-45e9-b6e3-698459e92d66
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :config
+  (setq scroll-conservatively 1)
+  (setq mouse-wheel-scroll-amount '(5))
+  (setq mouse-wheel-progressive-speed nil))
+#+end_src
+
+** goto-last-change
+:PROPERTIES:
+:CUSTOM_ID: h:36c6e555-9e63-40f8-a759-909e383c60bd
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf goto-last-change
+  :ensure t
+  :config
+  (defun index/goto-last-change ()
+    "Modification of the `goto-last-change' function.
+This will call `beacon-blink' after `goto-last-change'."
+    (interactive)
+    (goto-last-change)
+    (beacon-blink))
+  :bind (("C-z" . index/goto-last-change)))
+#+end_src
+
+** delete trailing white spaces
+:PROPERTIES:
+:CUSTOM_ID: h:cf4afc30-821a-43b1-aa88-15ee1e6f173b
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(add-hook 'before-save-hook #'delete-trailing-whitespace)
+#+end_src
+
+** put
+:PROPERTIES:
+:CUSTOM_ID: h:2893e941-8ed7-44f8-9d78-cadede740009
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :config
+  (put 'narrow-to-region 'disabled nil)
+  (put 'upcase-region 'disabled nil)
+  (put 'downcase-region 'disabled nil)
+  (put 'dired-find-alternate-file 'disabled nil)
+  (put 'overwrite-mode 'disabled nil))
+#+end_src
+
+** save history
+:PROPERTIES:
+:CUSTOM_ID: h:79f96698-096a-49d5-abd4-b0880b9eb159
+:END:
+
+This will allow the storage of the minibuffer history.  This
+functionality will be enhanced by any powerful completion framework.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf savehist
+  :config
+  (setq savehist-file (expand-file-name "savehist" user-emacs-directory))
+  (setq history-length 1000)
+  (setq history-delete-duplicates t)
+  (setq savehist-save-minibuffer-history t)
+  :hook ((after-init-hook . savehist-mode)))
+#+end_src
+
+** save cursor
+:PROPERTIES:
+:CUSTOM_ID: h:c1a1f58d-e303-45c4-9f5f-1b068d8914c6
+:END:
+
+It is nice to have your cursor be exactly where it was when you opened a
+file.  This is good for picking up work you used to do.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf saveplace
+  :config
+  (setq save-place-file (expand-file-name "savecursor" user-emacs-directory))
+  (setq save-place-forget-unreadable-files t)
+  (save-place-mode 1))
+#+end_src
+
+** overwrite region
+:PROPERTIES:
+:CUSTOM_ID: h:a6fdbeaa-a4cb-430b-8a4d-9b435ad25295
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(delete-selection-mode 1)
+#+end_src
+
+** This file's accessibility
+:PROPERTIES:
+:CUSTOM_ID: h:627a92f0-1c0f-4a0d-9133-6d524adc3b27
+:END:
+
+Quick and easy editing and reloading of my emacs config file.
+
+*** Edit
+:PROPERTIES:
+:CUSTOM_ID: h:163c1f78-3b2d-439e-971b-ed0dd0ebcc2c
+:END:
+
+Easy opening.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :config
+  (defun index/find-config-file ()
+    "Goto `config.org' inside emacs' user directory."
+    (interactive)
+    (find-file
+     (expand-file-name
+      "config.org"
+      user-emacs-directory)))
+  :bind (("C-c e" . index/find-config-file)))
+#+end_src
+
+*** Relaod
+:PROPERTIES:
+:CUSTOM_ID: h:55b02659-18b8-410d-b0ba-96fe9fc8f106
+:END:
+
+Easy reloading of emacs.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :config
+  (defun index/reload-config-file ()
+    "Reloads `config.org' inside emacs' user directory."
+    (interactive)
+    (org-babel-load-file
+     (expand-file-name
+      "config.org"
+      user-emacs-directory)))
+
+  :bind (("C-c r" . index/reload-config-file)))
+#+end_src emacs-lisp
+
+** Edebug
+:PROPERTIES:
+:CUSTOM_ID: h:89848a75-f3e8-4b3d-ab9d-cbf0ca6eab13
+:END:
+
+#+begin_src emacs-lisp
+(defun list-symbols (regexp)
+  (let ((lst))
+    (mapatoms
+     (lambda (a)
+       (when (string-match-p regexp (symbol-name a))
+         (push a lst))))
+    lst))
+
+(list-symbols "^string-match")
+;; C-u C-M-x => (eval-defun 'edebug-it)
+;; This will enter `edebug-mode'.
+;; SPC - Step through sexpr
+;; q   - Quit
+;; g   - Go => Continue Evaluation as normal until Breakpoint
+;; h   - Here => Will jump to sexpr and debug that
+;; b   - Set a Breakpoint on point
+;; G   - Same as g but ignores Breakpoints
+;; i   - Jumps into the definition of a function
+;;       => To stop this just re-evaluate the lisp form
+#+end_src
+
+** Macroexpand
+:PROPERTIES:
+:CUSTOM_ID: h:fe2f6bf6-148b-4109-a3e8-e441104f88eb
+:END:
+
+When calling =macrostep-expand= on a macro it will expand the macro
+exactly where the macro is.  This looks like what the lisp interpreter
+sees.  To futher expand any other macros type =e=, to undo it type =c=,
+or to cancel it type =q=.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf sly-macrostep
+  :ensure t
+  :commands (macrostep-expand))
+#+end_src
+
+** View Mode
+:PROPERTIES:
+:CUSTOM_ID: h:17561d81-8a49-4510-b2d0-a715055eb628
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :config
+  (setq view-read-only t))
+#+end_src
+
+* Writing
+:PROPERTIES:
+:CUSTOM_ID: h:10bd21be-8499-45e7-be2c-8fdea817684a
+:END:
+
+TODO : Structure these sub headers more nicely.
+
+** Org Mode - Your Life in Plain Text
+:PROPERTIES:
+:CUSTOM_ID: h:62eed3c2-f634-4317-917b-7b52b53f91c2
+:END:
+*** Basic Configuration
+:PROPERTIES:
+:CUSTOM_ID: h:e5f8a1c5-faef-4bf5-85a9-8a815764381a
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf org
+  :ensure t
+  :config
+  (setq org-directory (expand-file-name "~/wtn/org"))
+  (setq org-todo-keywords
+        '((sequence "TODO(t)" "|" "DONE(D)" "CANCEL(C)")
+          (sequence "MEET(m)" "|" "MET(M)")
+          (sequence "STUDY(s)" "|" "STUDIED(S)")
+          (sequence "WRITE(w)" "|" "WROTE(W)")))
+  (setq org-special-ctrl-a/e nil)
+  (setq org-confirm-babel-evaluate nil)
+  :hook ((org-mode-hook . org-indent-mode)))
+#+end_src
+
+*** COMMENT Org Bullets
+:PROPERTIES:
+:CUSTOM_ID: h:f09f6fbc-6ec3-49a8-aad7-329e8944b7c1
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf org-bullets
+  :ensure t
+  :hook ((org-mode-hook . org-bullets-mode)))
+#+end_src
+
+*** Theme
+:PROPERTIES:
+:CUSTOM_ID: h:95541ad9-40c2-4706-8d6e-6927b2d0c02e
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf org
+  :config
+  (setq org-ellipsis " ▾ "
+        org-bullets-bullet-list '("§")
+        org-hide-emphasis-markers nil
+        org-fontify-whole-heading-line t
+        org-fontify-done-headline t
+        org-fontify-quote-and-verse-blocks t))
+
+  ;;; https://zzamboni.org/post/beautifying-org-mode-in-emacs/
+;; (add-hook 'text-mode-hook 'variable-pitch-mode)
+#+end_src
+
+*** COMMENT Org links
+:PROPERTIES:
+:CUSTOM_ID: h:28cb0aef-0d22-4a8c-8964-e9ca3c8a0981
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf ol
+  :config
+  (setq org-link-keep-stored-after-insertion t)
+  :bind (("C-c l" . org-store-link)
+         (org-mode-map
+          ("C-c H-l" . org-toggle-link-display)
+          ("C-c C-H-l" . org-insert-last-stored-link))))
+#+end_src
+
+*** TODO Org Capture Template
+:PROPERTIES:
+:CUSTOM_ID: h:b2bbebda-00d2-49f6-9d4e-069091039687
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf org-capture
+  :after org
+  :config
+  (setq org-capture-templates
+        '(("a" "Article for my website" entry
+           (file+headline "tasks.org" "Writing list")
+           "* WRITE %^{Title} %^g\nSCHEDULED: %^t\n:PROPERTIES:\n:CAPTURED: %U\n:END:\n\n%i%?")
+          ("t" "Task with a due date" entry
+           (file+headline "tasks.org" "Task list with a date")
+           "* TODO [#B] %^{Title} %^g\nSCHEDULED: %^t\n:PROPERTIES:\n:CAPTURED: %U\n:END:\n\n%i%?")
+          ("r" "Reply to an email" entry
+           (file+headline "tasks.org" "Mail")
+           "* TODO [#B] %:subject :mail:\nSCHEDULED: %t\n:PROPERTIES:\n:CONTEXT: %a\n:END:\n\n%i%?")))
+
+  (setq org-capture-templates-contexts
+        '(("r" ((in-mode . "gnus-article-mode")
+                (in-mode . "gnus-summary-mode")))))
+
+  :bind (("C-c c" . org-capture)))
+#+end_src
+
+*** SRC-Blocks
+:PROPERTIES:
+:CUSTOM_ID: h:56b7968d-45bd-4738-abc8-ee7f90aafc74
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf org-src
+  :after org
+  :config
+  (setq org-src-window-setup 'current-window)
+  (setq org-edit-src-persistent-message nil)
+  (setq org-src-fontify-natively t)
+  (setq org-src-preserve-indentation t)
+  (setq org-src-tab-acts-natively t)
+  (setq org-edit-src-content-indentation 0)
+  :bind ((org-src-mode-map
+          ("C-c C-c" . org-edit-src-exit))))
+#+end_src
+
+*** Custom Id
+:PROPERTIES:
+:ID:       ff6c2090-c85f-4729-9101-36fda495d755
+:CUSTOM_ID: h:add88826-1fc5-42dc-8957-3514ad87fd7c
+:END:
+
+This will prevent the situation described at this [[https://writequit.org/articles/emacs-org-mode-generate-ids.html][blog posts]].  Also the
+entire code is stolen from there.
+
+You can use, by default, =C-c C-l= for inserting a link.  The command is
+very intuitive: once hitting the keybinding it will ask for a link.
+There you can insert an external link or choose from a list an already
+stored link.  To store a link one must type =M-x org-store-link=.  I of
+course have a keybinding for that.  Now with this you can refer to
+different section.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf org
+  :config
+  (setq org-id-link-to-org-use-id 'create-if-interactive-and-no-custom-id)
+  (setq org-link-keep-stored-after-insertion t)
+
+  (defun tributi/org-custom-id-get (&optional pom create prefix)
+    "Get the CUSTOM_ID property of the entry at point-or-marker POM.
+   If POM is nil, refer to the entry at point. If the entry does
+   not have an CUSTOM_ID, the function returns nil. However, when
+   CREATE is non nil, create a CUSTOM_ID if none is present
+   already. PREFIX will be passed through to `org-id-new'. In any
+   case, the CUSTOM_ID of the entry is returned."
+    (interactive)
+    (org-with-point-at pom
+      (let ((id (org-entry-get nil "CUSTOM_ID")))
+        (cond
+         ((and id (stringp id) (string-match "\\S-" id))
+          id)
+         (create
+          (setq id (org-id-new (concat prefix "h")))
+          (org-entry-put pom "CUSTOM_ID" id)
+          (org-id-add-location id (buffer-file-name (buffer-base-buffer)))
+          id)))))
+
+  (defun tributi/org-add-ids-to-headlines-in-file ()
+    "Add CUSTOM_ID properties to all headlines in the
+   current file which do not already have one."
+    (interactive)
+    (org-map-entries (lambda () (tributi/org-custom-id-get (point) 'create))))
+
+  (defvar index/org-save-buffer-hook nil
+    "Hook for `index/org-save-buffer'.")
+
+  (defun index/org-save-buffer (&optional arg)
+    "Saves buffer and invokes
+    `tributi/org-add-ids-to-headlines-in-file'."
+    (interactive "p")
+    (tributi/org-add-ids-to-headlines-in-file)
+    (save-buffer arg)
+    (run-hooks 'index/org-save-buffer-hook))
+
+  (org-defkey org-mode-map (kbd "C-x C-s") #'index/org-save-buffer)
+
+  :bind ((org-mode-map
+          ("C-c C-M-l" . org-store-link))))
+
+#+end_src
+
+*** Inline Images
+:PROPERTIES:
+:CUSTOM_ID: h:60a03e14-3e82-4010-845e-35bd2939335d
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf org
+  :config
+
+  (defun index/org-display-inline-images ()
+    "Wrapper around `org-display-inline-images'.
+This is added to the hook `index/org-save-buffer-hook'.  The hook
+will be run each time after saving the buffer, so C-x C-s."
+    (interactive)
+    ;; The inline image width; times 5 here means 50% whereas times 10
+    ;; would mean 100%.
+    (setq org-image-actual-width
+          (* 5 (frame-parameter (selected-frame) 'width)))
+    (org-redisplay-inline-images)
+    (org-display-inline-images t t (point-min) (point-max)))
+  :hook ((index/org-save-buffer-hook . index/org-display-inline-images)))
+#+end_src
+
+** COMMENT LaTeX
+:PROPERTIES:
+:CUSTOM_ID: h:736694ba-d59f-4a44-8b68-32ba7a7ef1cd
+:END:
+
+Why I use LaTeX?
+
+#+begin_src emacs-lisp :tangle yes
+(leaf auctex
+  :ensure t
+  ;; (leaf auctex-latexmk
+  ;;   :ensure t)
+  :config
+  (defun index/latex-RET ()
+    "Will add two backslashes at the end."
+    (interactive)
+    (move-end-of-line 1)
+    (unless (equal (char-before) (string-to-char " "))
+      (insert " "))
+    (insert "\\\\")
+    (newline-and-indent))
+  :bind ((LaTeX-mode-map
+          ("<C-return>" . index/latex-RET))))
+#+end_src
+
+** Focused Writing
+:PROPERTIES:
+:CUSTOM_ID: h:757f111d-7f1b-4f4f-b847-00f6348a2692
+:END:
+*** Olivetti
+:PROPERTIES:
+:CUSTOM_ID: h:3ea17da4-4b50-4972-ab22-e2f4c37fdd3b
+:END:
+
+This package is used to center the entire frame.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf olivetti
+  :ensure t
+  :config
+  (setq olivetti-body-width 0.61803)
+  (setq olivetti-minimum-body-width 72)
+  (setq olivetti-recall-visual-line-mode-entry-state t))
+#+end_src
+
+*** Focus
+:PROPERTIES:
+:CUSTOM_ID: h:60b9e86a-81f3-4539-a200-eb0cf69029d1
+:END:
+
+This package will dim down other sentences, paragraphs, and code-blocks.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf focus
+  :ensure t
+  :config
+  (setq focus-mode-to-thing '((prog-mode . defun)
+                              (text-mode . paragraph))))
+#+end_src
+
+** Auto Fill Mode
+:PROPERTIES:
+:CUSTOM_ID: h:fffae484-26c2-4b51-ba72-bb7912592caa
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+;; Move to section Keybindings?
+(leaf emacs
+  :config
+  (setq-default fill-column 72)
+  :hook ((text-mode . auto-fill-mode)))
+#+end_src
+
+** Treating Sentences
+:PROPERTIES:
+:CUSTOM_ID: h:92e33bfb-aa56-4539-886b-9a23b9658a43
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :config
+  (setq sentence-end-double-space t)
+  (setq colon-double-space nil)
+  (setq use-hard-newlines nil)
+  (setq sentence-end-without-period nil))
+#+end_src
+
+** Flyspell
+:PROPERTIES:
+:CUSTOM_ID: h:58d548b6-eb51-4628-9e6f-9174c7892f14
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf flyspell
+  :ensure t
+  :hook ((text-mode-hook . flyspell-mode)
+         (prog-mode-hook . flyspell-prog-mode))
+  :config
+  (defun index/flyspell-switch-dictionary ()
+    (interactive)
+    (let* ((dic ispell-current-dictionary)
+    	   (change (if (string= dic "deutsch8")
+                       "english"
+                     "deutsch8")))
+      (ispell-change-dictionary change)
+      (flyspell-buffer)
+      (message "Flyspell: changed dictionary from %s to %s." dic change)))
+
+  :bind (("C-c t d" . index/flyspell-switch-dictionary)))
+#+end_src
+
+* Minibuffer
+:PROPERTIES:
+:CUSTOM_ID: h:09fdb3c0-ada9-404e-af78-87b516490557
+:END:
+** COMMENT Ido
+:PROPERTIES:
+:CUSTOM_ID: h:a9100b0b-22df-41d1-9e7a-27596bc616d3
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf ido
+  :config
+  (setq ido-everywhere t)
+  (setq ido-max-window-height 1)
+  (ido-mode 1))
+#+end_src
+
+#+begin_src emacs-lisp :tangle yes
+(leaf flx-ido
+  :ensure t
+  :config (flx-ido-mode))
+#+end_src
+
+** Keybindings
+:PROPERTIES:
+:CUSTOM_ID: h:2bf0554c-6f68-487a-bbca-ee21a7e11161
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :config
+  ;; (defun tributi/describe-symbol-at-point (&optional arg)
+  ;;     "Get help (documentation) for the symbol at point.
+  ;;
+  ;; With a prefix argument (\\[universal-argument]), switch to the
+  ;; *Help* window.  If that is already focused, switch to the most
+  ;; recently used window instead."
+  ;;     (interactive "P")
+  ;;     (let ((symbol (symbol-at-point)))
+  ;;       (when symbol
+  ;;         (describe-symbol symbol)))
+  ;;     (when arg
+  ;;       (let ((help (get-buffer-window "*Help*")))
+  ;;         (when help
+  ;;           (if (not (eq (selected-window) help))
+  ;;               (select-window help)
+  ;;             (select-window (get-mru-window)))))))
+
+  (defun index/describe-symbol-dwim ()
+    "TODO Documentation"
+    (interactive)
+    (let* ((char (save-excursion
+                   (backward-char 1)
+                   (thing-at-point 'char t)))
+           (sym (if (string= char ")")
+                    (save-excursion
+                      (backward-list 1)
+                      (forward-symbol 1)
+                      (thing-at-point 'symbol t))
+                  (save-excursion
+                    (while (not (thing-at-point 'symbol t))
+                      (backward-up-list 1)
+                      (forward-symbol 1))
+                    (thing-at-point 'symbol t)))))
+      (describe-symbol (intern sym))))
+
+  :bind (("H-h" . index/describe-symbol-dwim)))
+#+end_src
+
+** COMMENT Icomplete
+:PROPERTIES:
+:CUSTOM_ID: h:23767eb0-4799-4f9d-bdcc-a54c23d15b3f
+:END:
+
+Still feels slow when compiling a large list.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf minibuffer
+  :config
+  (leaf orderless
+    ;; Orderless slows down completion dramatically.
+    ;; Go through M-x customize-group orderless ???
+    :ensure t
+    :config
+    (setq completion-styles '(orderless partial-completion))
+    (setq orderless-matching-styles
+          '(orderless-flex
+            orderless-strict-leading-initialism
+            orderless-regexp
+            orderless-prefixes
+            orderless-literal))
+
+    (defun tributi/orderless-literal-dispatcher (pattern _index _total)
+      (when (string-suffix-p "=" pattern)
+        `(orderless-literal . ,(substring pattern 0 -1))))
+
+    (defun tributi/orderless-initialism-dispatcher (pattern _index _total)
+      (when (string-suffix-p "," pattern)
+        `(orderless-strict-leading-initialism . ,(substring pattern 0 -1))))
+
+    (setq orderless-style-dispatchers
+          '(tributi/orderless-literal-dispatcher
+            tributi/orderless-initialism-dispatcher))
+
+    (setq completion-category-defaults nil)
+    (setq completion-cycle-threshold 3)
+    (setq completion-flex-nospace nil)
+    (setq completion-pcm-complete-word-inserts-delimiters t)
+    (setq completion-pcm-word-delimiters "-_./:| ")
+    (setq completion-show-help nil)
+    (setq completion-ignore-case t)
+    (setq read-buffer-completion-ignore-case t)
+    (setq read-file-name-completion-ignore-case t)
+    (setq completions-format 'vertical)
+    (setq read-answer-short t)
+    (setq resize-mini-windows t)
+    (setq minibuffer-eldef-shorten-default t)
+
+    (file-name-shadow-mode 1)
+    (minibuffer-electric-default-mode 1)))
+
+(leaf icomplete
+  :after minibuffer
+  :config
+  (setq icomplete-delay-completions-threshold 100)
+  (setq icomplete-max-delay-chars 2)
+  (setq icomplete-compute-delay 0.1)
+  (setq icomplete-show-matches-on-no-input t)
+  (setq icomplete-hide-common-prefix nil)
+  (setq icomplete-prospects-height 1)
+  (setq icomplete-separator (propertize " • " 'face 'shadow))
+  (setq icomplete-with-completion-tables t)
+  (setq icomplete-tidy-shadowed-file-names t)
+
+  :bind ((icomplete-minibuffer-map
+         ("<tab>" . icomplete-force-complete)
+         ("<return>" . icomplete-force-complete-and-exit) ; exit with completion
+         ("C-j" . exit-minibuffer) ; force input unconditionally
+         ("C-n" . icomplete-forward-completions)
+         ("<right>" . icomplete-forward-completions)
+         ("<down>" . icomplete-forward-completions)
+         ("C-p" . icomplete-backward-completions)
+         ;; The following command is from Emacs 27.1
+         ("<C-backspace>" . icomplete-fido-backward-updir))))
+#+end_src
+
+** Ivy
+:PROPERTIES:
+:CUSTOM_ID: h:341b2d29-d4da-4399-9c39-907793945884
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf ivy
+  :ensure t
+  :config
+
+  (leaf ivy-posframe
+    :ensure t
+    :config
+    (ivy-posframe-mode 1))
+
+  (leaf ivy-prescient
+    :ensure t
+    :config
+    (setq prescient-save-file
+          (expand-file-name "prescienthist" user-emacs-directory))
+    (prescient-persist-mode 1)
+    (ivy-prescient-mode 1))
+
+  (leaf ivy-rich
+    :ensure t
+    :config
+    (ivy-rich-mode 1))
+
+  (setq ivy-height 10)
+  (setq ivy-initial-inputs-alist nil)
+
+  (ivy-mode 1)
+  (counsel-mode 1))
+#+end_src
+
+** COMMENT Selectrum
+:PROPERTIES:
+:CUSTOM_ID: h:ccb3fb58-029a-44bc-8214-493644159cd5
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf selectrum
+  :ensure t
+  :config
+  (setq selectrum-num-candidates-displayed 5)
+  (setq selectrum-fix-minibuffer-height 5)
+  (selectrum-mode 1))
+
+(leaf selectrum-prescient
+  :ensure t
+  :config
+  (setq prescient-save-file
+        (expand-file-name "prescienthist" user-emacs-directory))
+  (selectrum-prescient-mode 1)
+  (prescient-persist-mode 1))
+
+;; BUG|TODO : this needs development
+;; (leaf mini-frame
+;;   :ensure t
+;;   :config
+;;   (mini-frame-mode 1))
+#+end_src
+
+* Auto Complete
+:PROPERTIES:
+:CUSTOM_ID: h:cd17803a-17ca-4ad6-b695-68310d8f81f3
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf company
+  :ensure t
+  :hook ((after-init-hook . global-company-mode))
+  :config
+  (leaf company-prescient
+    :ensure t
+    :config
+    (company-prescient-mode 1)))
+#+end_src
+
+* Window
+:PROPERTIES:
+:CUSTOM_ID: h:094d890c-8ef3-4eef-87d6-8e644e7c5935
+:END:
+** Rules
+:PROPERTIES:
+:CUSTOM_ID: h:66a3a052-9d23-415b-ad4b-936614906851
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :config
+  (setq display-buffer-alist
+        '(("\\*Help.*"
+           (display-buffer-in-side-window)
+           (window-height . 0.20)
+           (side . left)
+           (slot . -1))
+          ("\\*Messages.*"
+           (display-buffer-in-side-window)
+           (window-height . 0.16)
+           (side . bottom)
+           (slot . 1)
+           (window-parameters . ((no-other-window . t))))
+          ("\\*\\(Backtrace\\|Warnings\\|Compile-Log\\)\\*"
+           (display-buffer-in-side-window)
+           (window-height . 0.16)
+           (side . bottom)
+           (slot . 2))
+          (".*\\*\\(Completions\\|Ido Completions\\)\\*.*"
+           (display-buffer-in-side-window)
+           (window-height . 0.16)
+           (side . bottom)
+           (slot . 0))
+          ;; ("^\\(\\*e?shell\\|vterm\\).*"
+          ;;  (display-buffer-in-side-window)
+          ;;  (window-height . 0.16)
+          ;;  (side . bottom)
+          ;;  (slot . -1))
+          ))
+  :hook ((help-mode-hook . visual-line-mode)
+         (custom-mode-hook . visual-line-mode)))
+#+end_src
+
+** Functions
+:PROPERTIES:
+:CUSTOM_ID: h:7ccb5bef-d925-4ba7-b690-440dabd542c6
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :config
+  (defun tributi/window-dired-vc-root-left ()
+    "Open project or dir `dired' in a side window."
+    (interactive)
+    (let ((dir (if (eq (vc-root-dir) nil)
+                   (dired-noselect default-directory)
+                 (dired-noselect (vc-root-dir)))))
+      (display-buffer-in-side-window
+       dir `((side . left)
+             (slot . -1)
+             (window-width . 0.16)
+             (window-parameters
+              . ((no-other-window . t)
+                 (no-delete-other-windows . t)
+                 (mode-line-format
+                  . (" "
+                     mode-line-buffer-identification))))))
+      (with-current-buffer dir
+        (rename-buffer "*Dired-Side*")
+        (setq-local window-size-fixed 'width)))
+    (with-eval-after-load 'ace-window
+      (when (boundp 'aw-ignored-buffers)
+        (add-to-list 'aw-ignored-buffers "*Dired-Side*")))))
+#+end_src
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :config
+  (defvar tributi/window-configuration nil
+    "Current window configuration.
+Intended for use by `tributi/window-monocle'.")
+
+  (define-minor-mode tributi/window-single-toggle
+    "Toggle between multiple windows and single window.
+This is the equivalent of maximising a window.  Tiling window
+managers such as DWM, BSPWM refer to this state as 'monocle'."
+    :lighter " [M]"
+    :global nil
+    (if (one-window-p)
+        (when tributi/window-configuration
+          (set-window-configuration tributi/window-configuration))
+      (setq tributi/window-configuration (current-window-configuration))
+      (delete-other-windows)))
+
+  (defun tributi/kill-buffer-current (&optional arg)
+    "Kill current buffer or abort recursion when in minibuffer."
+    (interactive "P")
+    (if (minibufferp)
+        (abort-recursive-edit)
+      (kill-buffer (current-buffer)))
+    (when (and arg (not (one-window-p)))
+      (delete-window)))
+  :bind (("H-m" . tributi/window-single-toggle)
+         ("H-k" . tributi/kill-buffer-current)))
+#+end_src
+
+** TODO Keybindings
+:PROPERTIES:
+:CUSTOM_ID: h:e830c1c2-d8d5-4ba4-86ae-e86ff3161661
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :bind (("H-o" . other-window)
+         ("H-0" . delete-window)
+         ("H-1" . delete-other-windows)
+         ("H-2" . split-window-below)
+         ("H-3" . split-window-right)))
+#+end_src
+
+** Window History
+:PROPERTIES:
+:CUSTOM_ID: h:e1ed5de4-f816-4f91-a667-09d8f772ddd9
+:END:
+
+This little build-in package keeps track of windows that have been
+closed.  This is useful when you accidentally delete a window and you
+wish to undo that particular deletion process.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf winner
+  :hook ((after-init-hook . winner-mode))
+  :bind (("<H-backspace>" . winner-undo)
+         ("<C-H-backspace>" . winner-redo)))
+#+end_src
+
+* Eshell
+:PROPERTIES:
+:CUSTOM_ID: h:6877d266-5821-4d09-baa1-734e1393b68b
+:END:
+
+:PROPERTIES:
+:CUSTOM_ID: h:9dfc6bfd-7eea-44f9-b598-34277ce91d46
+:END:
+
+Eshell gives you everything from a traditional shell. It integrates with
+elisp very nicely.  You can do something like =echo (propertize "Hello,
+EShell" 'face 'success)=.  Of course there is way more powerful ways you
+can utilize this functionality. One thing that's different is how you
+write =do= blocks in eshell: =for i in one two three { echo $i }=.  And
+=$(...)= is not like in bash as a subshell execution, but it is an elisp
+evaluation.  If you want this functionality you can use =${...}= as
+shell evaluation.  There is a great manual for eshell in the info
+buffer.  Just go there by typing =C-h i C-s eshell RET= or =M-x
+info-display-manual eshell RET=.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf eshell
+  :ensure t
+  :config
+  (defun tributi/call-process (command &rest args)
+    "Execute COMMAND with ARGS synchronously.
+Returns (STATUS . OUTPUT) when it is done, where STATUS is the returned error
+code of the process and OUTPUT is its stdout output."
+    (with-temp-buffer
+      (cons (or (apply #'call-process command nil t nil (remq nil args))
+                -1)
+            (string-trim (buffer-string)))))
+
+  (defun tributi/eshell--current-git-branch ()
+    (cl-destructuring-bind (status . output)
+        (tributi/call-process "git" "symbolic-ref" "-q" "--short" "HEAD")
+      (if (equal status 0)
+          (format " [%s]" output)
+        (cl-destructuring-bind (status . output)
+            (tributi/call-process "git" "describe" "--all" "--always" "HEAD")
+          (if (equal status 0)
+              (format " [%s]" output)
+            "")))))
+
+  (setq eshell-prompt-function
+        (lambda ()
+          (concat
+           (let ((pwd (eshell/pwd)))
+             (if (equal pwd "~")
+                 pwd
+               (abbreviate-file-name pwd)))
+           (propertize
+            (tributi/eshell--current-git-branch)
+            'face
+            'shadow)
+           (propertize
+            " λ"
+            'face
+            (if (zerop eshell-last-command-status)
+                'success
+              'error))
+           " ")))
+  (setq eshell-prompt-regexp "^[^λ]*λ ")
+
+  (setenv "PAGER" "cat")
+
+  (defun index/eshell-smartparens-mode ()
+    "Calls `smartparens-mode' in eshell.
+  Intended as a hook call, since eshell doesn't seem to respect
+  `smartparens-global-mode'."
+    (smartparens-mode))
+
+  (defun index/eshell-dwim ()
+    "Do what I mean function for `eshell'.
+When in a buffer with a valid filename, change to that
+directory (plus list directly) and run `eshell'.  Otherwise just
+run `eshell'."
+    (interactive)
+    (unless (get-buffer "*eshell*")
+      (with-current-buffer (get-buffer-create eshell-buffer-name)
+        (eshell-mode)))
+
+    (let ((buf (buffer-file-name (current-buffer))))
+          (if buf
+              (with-current-buffer eshell-buffer-name
+                (end-of-buffer)
+                (eshell-kill-input)
+                (insert
+                 (concat
+                  "cd \""
+                  (file-name-directory buf)
+                  "\"; ls"))
+                (eshell-send-input)
+                (eshell))
+            (eshell))))
+
+  :hook ((eshell-mode-hook . index/eshell-smartparens-mode))
+  :bind (("C-c s" . index/eshell-dwim)))
+#+end_src
+
+** Aliases
+:PROPERTIES:
+:CUSTOM_ID: h:84cf7e34-3da6-49c0-92eb-d8be1faafa20
+:END:
+
+Aliases in Eshell are a bit different in comparison to bash.  Yes, you
+can still define aliases in the prompt the same way: =alias name
+'function $n'=.  This will store and enable the alias.  Where it will be
+stored will be printed in the minibuffer.
+
+But I like to keep my configuration in one place; here.  Eshell has a
+great feature: if you define a function with the namespace =eshell/= it
+will be autoloaded as a command in eshell with the name after the =/=,
+thus you can define custom made functions easily.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf eshell
+  :config
+  (defun eshell/f (file)
+    (find-file file)))
+#+end_src
+
+* Ibuffer
+:PROPERTIES:
+:CUSTOM_ID: h:ff8d2bf4-b1c5-479c-bebb-6aff585f039e
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf ibuffer
+  :bind (("C-x C-b" . ibuffer)))
+#+end_src
+
+* Git - The Stupid Content Tracker
+:PROPERTIES:
+:CUSTOM_ID: h:0a94883e-e2e1-4853-bbbb-d30e6f7ceaa0
+:END:
+
+** Magit
+:PROPERTIES:
+:CUSTOM_ID: h:a2917dbe-5084-4833-9628-da9eed65a77d
+:END:
+
+World's most powerful git interface.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf magit
+  :ensure t
+  :config
+  (defun index/magit-status-emacs ()
+    "Finds the Emacs repository."
+    (interactive)
+    (magit-status "~/dot/emacs/"))
+  :bind (("C-c g" . magit-status)
+         ("H-g" . index/magit-status-emacs)))
+#+end_src
+
+** Diff-hl - A Git Diff Gutter
+:PROPERTIES:
+:CUSTOM_ID: h:0a563f0c-a5a0-43a6-8a6d-fbe63a37b564
+:END:
+
+Simple way of displaying the changes in a git directory.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf diff-hl
+  :ensure t
+  :config
+  (global-diff-hl-mode 1)
+  :hook ((magit-pre-refresh-hook . diff-hl-magit-pre-refresh)
+         (magit-post-refresh-hook . diff-hl-magit-post-refresh)))
+#+end_src
+
+* Yasnippet
+:PROPERTIES:
+:CUSTOM_ID: h:83016a2f-fe28-4c37-b472-86c45603196e
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf yasnippet
+  :ensure t
+  :hook ((after-init-hook . yas-global-mode)))
+#+end_src
+
+#+begin_src emacs-lisp :tangle yes
+(leaf yasnippet-snippets :ensure t :after yasnippet)
+#+end_src
+
+* TODO Lispy - Tree-like Lisp
+:PROPERTIES:
+:CUSTOM_ID: h:60cb0dca-5506-4f84-a01f-75f6a04c4f57
+:END:
+
+http://danmidwood.com/content/2014/11/21/animated-paredit.html
+
+#+begin_src emacs-lisp :tangle yes
+(leaf lispy
+  :ensure t
+  :hook ((lisp-interaction-mode-hook . lispy-mode)
+         (emacs-lisp-mode-hook . lispy-mode)
+         (common-lisp-mode-hook . lispy-mode)
+         (scheme-mode-hook . lispy-mode)))
+#+end_src
+
+#+begin_src emacs-lisp :tangle yes
+;; (leaf paredit
+;;   :ensure t
+;;   :hook ((lisp-interaction-mode-hook . paredit-mode)
+;;          (emacs-lisp-mode-hook . paredit-mode)
+;;          (common-lisp-mode-hook . paredit-mode)
+;;          (scheme-mode-hook . paredit-mode)
+;;          (clojure-mode-hook . paredit-mode)))
+#+end_src
+
+* Miscellaneous
+:PROPERTIES:
+:CUSTOM_ID: h:bd0507c8-82c4-48d3-af74-b8f629303685
+:END:
+** Scratch Buffer for Current Major Mode
+:PROPERTIES:
+:CUSTOM_ID: h:eff9abd1-c9ad-40ba-b8c5-78ca494cbd04
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf scratch
+  :ensure t
+  :config
+  (defun tributi/scratch-buffer-setup ()
+    "Add contents to `scratch' buffer and name it accordingly."
+    (let* ((mode (format "%s" major-mode))
+           (string (concat "Scratch buffer for: " mode "\n\n")))
+      (when scratch-buffer
+        (save-excursion
+          (insert string)
+          (goto-char (point-min))
+          (comment-region (point-at-bol) (point-at-eol)))
+        (forward-line 2))
+      (rename-buffer (concat "*Scratch for " mode "*") t))) ; Derived from
+  :hook ((scratch-create-buffer-hook . tributi/scratch-buffer-setup))
+  :bind (("C-c b" . scratch)))
+#+end_src
+
+** Fish shell
+:PROPERTIES:
+:CUSTOM_ID: h:a6bc12f3-bdbb-4198-a864-7676ca6ea3e5
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf fish-mode
+  :ensure t
+  :config
+  (defun index/fish-exit-editor ()
+    "Exits the command line edit buffer."
+    (interactive)
+    (if (string-match "^tmp\..\\{10\\}\.fish$" (buffer-name))
+        (progn
+          (with-editor-finish 'force))
+      (message "This is not a Command Line Buffer")))
+  :bind ((fish-mode-map
+          ("C-c C-c" . index/fish-exit-editor))))
+#+end_src
+
+** Code Keywords Highlight
+:PROPERTIES:
+:CUSTOM_ID: h:e853d0a6-11aa-485f-bd4d-36195609ca2b
+:END:
+
+This package will highlight code keywords such as TODO.  This is one
+thing I missed from (n)vim OOTB-Experience.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf hl-todo
+  :ensure t
+  :config
+  (add-to-list 'hl-todo-keyword-faces
+               (cons "DEPRECATED" "#FF79C6"))
+  :hook ((prog-mode-hook . hl-todo-mode)
+         (text-mode-hook . hl-todo-mode))
+  :bind (hl-todo-mode-map
+         ("C-c h p" . hl-todo-previous)
+         ("C-c h n" . hl-todo-next)
+         ("C-c h o" . hl-todo-occur)
+         ("C-c h i" . hl-todo-insert)))
+#+end_src
+
+** Flymake
+:PROPERTIES:
+:CUSTOM_ID: h:3a44521a-f545-4101-ab1d-bb9a4cd7b11d
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf flymake
+  :hook ((prog-mode-hook . flymake-mode)))
+#+end_src
+
+** COMMENT Open All Root Files with Super User
+:PROPERTIES:
+:CUSTOM_ID: h:71540004-f7d7-4349-829a-c699b83963dc
+:END:
+
+Usually when I already navigate to some non-user's directory-- outside
+the home directory-- I want to edit the file as root.  It's kinda
+impossible to mistakenly edit some file under =/etc/= for example.
+
+This minor mode will reopen every file outside the home directory as
+sudo with tramp.
+
+#+begin_src emacs-lisp :tangle yes
+;; These functions where found in the package `crux.el'.  I just renamed
+;; them for clarity / naming space purpose.
+(leaf tramp
+  :config
+  (defun tributi/file-owner-uid (filename)
+    "Return the UID of the FILENAME as an integer.
+See `file-attributes' for more info."
+    (nth 2 (file-attributes filename 'integer)))
+
+  (defun tributi/file-owned-by-user-p (filename)
+    "Return t if file FILENAME is owned by the currently logged in user."
+    (equal (tributi/file-owner-uid filename)
+           (user-uid)))
+
+  (defun tributi/already-root-p ()
+    (let ((remote-method (file-remote-p default-directory 'method))
+          (remote-user (file-remote-p default-directory 'user)))
+      (and remote-method
+           (or (member remote-method '("sudo" "su" "ksu" "doas"))
+               (string= remote-user "root")))))
+
+  (defun tributi/find-alternate-file-as-root (filename)
+    "Wraps `find-alternate-file' with opening FILENAME as root."
+    (let ((remote-method (file-remote-p default-directory 'method))
+          (remote-host (file-remote-p default-directory 'host))
+          (remote-localname (file-remote-p filename 'localname)))
+      (find-alternate-file (format "/%s:root@%s:%s"
+                                   (or remote-method "sudo")
+                                   (or remote-host "localhost")
+                                   (or remote-localname filename)))))
+
+  (defun tributi/sudo-edit (&optional arg)
+    "Edit currently visited file as root.
+With a prefix ARG prompt for a file to visit.
+Will also prompt for a file to visit if current
+buffer is not visiting a file."
+    (interactive "P")
+    (if (or arg (not buffer-file-name))
+        (let ((remote-method (file-remote-p default-directory 'method))
+              (remote-host (file-remote-p default-directory 'host))
+              (remote-localname (file-remote-p default-directory 'localname)))
+          (find-file (format "/%s:root@%s:%s"
+                             (or remote-method "sudo")
+                             (or remote-host "localhost")
+                             (or remote-localname
+                                 (read-file-name "Find file (as root): ")))))
+
+      (if (tributi/already-root-p)
+          (message "Already editing this file as root.")
+        (let ((place (point)))
+          (tributi/find-alternate-file-as-root buffer-file-name)
+          (goto-char place)))))
+
+  (defun tributi/reopen-as-root ()
+    "Find file as root if necessary.
+Meant to be used as `find-file-hook'.
+See also `tributi/reopen-as-root-mode'."
+    (unless (or (tramp-tramp-file-p buffer-file-name)
+                (equal major-mode 'dired-mode)
+                (not (file-exists-p (file-name-directory buffer-file-name)))
+                (file-writable-p buffer-file-name)
+                (tributi/file-owned-by-user-p buffer-file-name))
+      (tributi/find-alternate-file-as-root buffer-file-name)))
+
+  (define-minor-mode tributi/reopen-as-root-mode
+    "Automatically reopen files as root if we can't write to them
+as the current user."
+    :global t
+    :group 'tributi
+    (if tributi/reopen-as-root-mode
+        (add-hook 'find-file-hook #'tributi/reopen-as-root)
+      (remove-hook 'find-file-hook #'tributi/reopen-as-root)))
+
+  (tributi/reopen-as-root-mode 1))
+#+end_src
+
+** Keyboard Macro
+:PROPERTIES:
+:CUSTOM_ID: h:7df1e363-b25b-4cc8-8ab5-d41037c64bbf
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf kmacro
+  :config
+  (defvar index/kmacro-file (expand-file-name "kmacro.el" user-emacs-directory)
+    "File used to store/load keyboard macros (`kmacro').")
+
+  (defun index/save-last-kmacro ()
+    "Inserts the last recorded kmacro into `index/kmacro-file'.
+It will prompt for a name.  This will store the name in said file
+with the namespace of `kmacro/'; every named kmacro begins as
+such.
+
+Example:
+
+name: 'my-super-macro'
+kmacro name: 'kmacro/my-super-macro'"
+    (interactive)
+    (let ((name (intern
+                 (concat
+                  "kmacro/"
+                  (read-string "Keyboard Macro Name: ")))))
+      (kmacro-name-last-macro name)
+      (with-temp-file index/kmacro-file
+        (insert-file-contents index/kmacro-file)
+        (end-of-buffer)
+        (insert-kbd-macro name)
+        (insert (concat
+                 "(put '"
+                 (symbol-name name)
+                 " 'kmacro t)"))
+        (newline 2))))
+
+  (load-file index/kmacro-file)
+
+  (defvar index/execute-named-kmacro-last nil
+    "Last called `kmacro' from `index/execute-named-kmacro'.")
+
+  (defun index/execute-named-kmacro (&optional arg)
+    "Execute a named keyboard macro.
+With a prefix argument call the last executed keyboard macro.  If
+there is no last keyboard macro in`index/execute-named-kmacro-last'
+ just call this function normally."
+    (interactive "P")
+    (if arg
+        (if index/execute-named-kmacro-last
+            (funcall (symbol-function index/execute-named-kmacro-last))
+          (index/execute-named-kmacro))
+      (let ((kmacro (intern
+                     (completing-read
+                      "Execute Named Keyboard Macro: "
+                      obarray
+                      #'kmacro-keyboard-macro-p
+                      t))))
+        (setq index/execute-named-kmacro-last kmacro)
+        (funcall (symbol-function kmacro)))))
+
+  :bind (("C-x M-k" . index/save-last-kmacro)
+         ("C-x C-M-k" . index/execute-named-kmacro)))
+#+end_src
+
+** Jump to definition
+:PROPERTIES:
+:CUSTOM_ID: h:5807431f-d1fd-45f9-9f76-5d8ca84f7b12
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf dumb-jump
+  :ensure t
+  :commands dumb-jump-go
+  :hook ((xref-backend-functions . dumb-jump-xref-activate))
+  :bind (("C-x g" . dumb-jump-go)))
+#+end_src
+
+** Upcase / Downcase / Capitalize
+:PROPERTIES:
+:CUSTOM_ID: h:2e67abb4-4f1b-4d5b-96c1-0e8c0d504a22
+:END:
+
+These build-in functions are a blessing.  I use them all the time even
+though they seem kinda specific.  But multiple occasions I want to
+convert a word to upper case.  For example in the docstring, where the
+convention is, that you put the function's argument name in upper case.
+
+The keybinding for these are the following:
+
+| Keybinding | Name            | Description                                                          |
+|------------+-----------------+----------------------------------------------------------------------|
+| C-x C-l    | downcase-region | Convert the region to lower case.  In programs, wants two arguments. |
+| C-x C-u    | upcase-region   | Convert the region to upper case.  In programs, wants two arguments. |
+| M-l        | downcase-word   | Convert to lower case from point to end of word, moving over.        |
+| M-u        | upcase-word     | Convert to upper case from point to end of word, moving over.        |
+| M-c        | capitalize-word | Capitalize from point to the end of word, moving over.               |
+#+TBLFM: $2='(key-binding (kbd $1))::$3='(car (s-split "\n" (documentation (key-binding (kbd $1)))))
+
+(I generated the Name and Description automatically; see [[#h:80d39c8d-709d-4a27-9008-89cfed7d87e7][how]].)
+
+But why are there no DO WHAT I MEAN versions?  It seems to be a perfect
+fit.  When I have a region active operate on that else operate on word.
+This will save up the first two keybindings.
+
+Since to my luck someone already thought  about this already and defined
+these functions, we just need to bind them.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :bind (("M-u" . upcase-dwim)
+         ("M-l" . downcase-dwim)
+         ("M-c" . capitalize-dwim)
+         ("C-x C-u" . nil)
+         ("C-x C-l" . nil)))
+#+end_src
+
+* Workspaces (Emacs 27 Tabs)
+:PROPERTIES:
+:CUSTOM_ID: h:c7ad9c08-7f81-4c99-bcd7-75bfe4f9ccbc
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf tab-bar
+  :config
+  (setq tab-bar-close-button-show nil)
+  (setq tab-bar-close-last-tab-choice 'tab-bar-mode-disable)
+  (setq tab-bar-close-tab-select 'recent)
+  (setq tab-bar-new-tab-choice t)
+  (setq tab-bar-new-tab-to 'right)
+  (setq tab-bar-position nil)
+  (setq tab-bar-show nil)
+  (setq tab-bar-tab-hints nil)
+  (setq tab-bar-tab-name-function 'tab-bar-tab-name-all)
+
+  (tab-bar-mode -1)
+  (tab-bar-history-mode -1)
+
+  (defun tributi/tab-bar-select-tab-dwim ()
+    "Do-What-I-Mean function for getting to a `tab-bar-mode' tab.
+If no other tab exists, create one and switch to it.  If there is
+one other tab (so two in total) switch to it without further
+questions.  Else use completion to select the tab to switch to."
+    (interactive)
+    (let ((tabs (mapcar (lambda (tab)
+                          (alist-get 'name tab))
+                        (tab-bar--tabs-recent))))
+      (cond ((eq tabs nil)
+             (tab-new))
+            ((eq (length tabs) 1)
+             (tab-next))
+            (t
+             (tab-bar-switch-to-tab
+              (completing-read "Select tab: " tabs nil t))))))
+
+  :bind (("H-t" . tributi/tab-bar-select-tab-dwim)
+         ("C-x t s" . tab-switcher)))
+#+end_src
+
+* Comments
+:PROPERTIES:
+:CUSTOM_ID: h:14a8773c-5ed3-4627-af45-396db35c8166
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf newcomment
+  :config
+  (setq comment-empty-lines t)
+  (setq comment-fill-column nil)
+  (setq comment-multi-line t)
+  (setq comment-style 'multi-line)
+
+  (defun index/comment-line ()
+    "A modified version of `comment-line'."
+    (if (region-active-p)
+        (comment-or-uncomment-region
+         (save-excursion
+           (goto-char (region-beginning))
+           (line-beginning-position))
+         (save-excursion
+           (goto-char (region-end))
+           (line-end-position)))
+      (save-excursion
+        (comment-line 1))))
+
+  :bind ((index/keys-minor-mode-map
+          ("C-;" . index/comment-line)
+          ("C-M-;" . comment-kill))))
+#+end_src
+
+* Helpful - Better Help
+:PROPERTIES:
+:CUSTOM_ID: h:de3fed65-3342-4e6d-ab50-1b6ed592053b
+:END:
+
+Why Helpful?
+
+#+begin_src emacs-lisp :tangle yes
+(leaf helpful
+  :ensure t
+  :config
+  (defun index/describe-last-used-function ()
+    "Describes last used function."
+    (interactive)
+    (helpful-function last-command))
+  :hook ((helpful-mode-hook . visual-line-mode))
+  :bind (("C-h f" . helpful-function)
+         ("C-h k" . helpful-key)
+         ("C-h o" . helpful-callable)
+         ("C-h v" . helpful-variable)
+         ("H-h" . helpful-at-point)
+         (index/keys-minor-mode-map
+          ("C-h u" . index/describe-last-used-function))))
+#+end_src
+
+* Dired - Directory Editor
+:PROPERTIES:
+:CUSTOM_ID: h:80c2fb0a-f1d4-4219-a390-1308483fd28a
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf dired
+  :config
+  (setq dired-recursive-copies 'always)
+  (setq dired-recursive-deletes 'always)
+  (setq delete-by-moving-to-trash t)
+  (setq dired-listing-switches
+        "-AGFhlv --group-directories-first --time-style=long-iso")
+  (setq dired-dwim-target t)
+  (setq trash-directory (expand-file-name "~/.trash"))
+  :hook ((dired-mode-hook . dired-hide-details-mode))
+
+  :bind ((dired-mode-map
+          ("<return>" . dired-find-alternate-file))))
+
+(leaf dired-async
+  :after (dired async)
+  :hook ((dired-mode-hook . dired-async-mode)))
+
+(leaf wdired
+  :after dired
+  :commands wdired-change-to-wdired-mode
+  :config
+  (setq wdired-allow-to-change-permissions t)
+  (setq wdired-create-parent-directories t))
+
+(leaf dired-subtree
+  :ensure t
+  :config
+  (setq dired-subtree-use-backgrounds nil)
+  :bind ((dired-mode-map
+          ("<tab>" . dired-subtree-toggle)
+          ("<C-tab>" . dired-subtree-cycle))))
+
+(leaf dired-x
+  :after dired
+  :bind (("C-x C-j" . dired-jump)
+         ("H-j" . dired-jump)))
+#+end_src
+
+* Web Development
+:PROPERTIES:
+:CUSTOM_ID: h:b2ee76c8-8799-4e5c-9f7f-15b0c7a2b94e
+:END:
+
+I do minor web-development that just includes HTML/CSS and no other
+resources such as JAVASCRIPT.  As I only use those two, the packages are
+rather simple.
+
+** COMMENT Emmet
+:PROPERTIES:
+:CUSTOM_ID: h:1e06fb01-0495-408e-b39f-87b5f2cd169e
+:END:
+
+HTML is a pain to write by hand; and I used LaTeX for a long time.
+Since writing HTML is so cumbersome, let's fix it.  Emmet is popular for
+editing HTML files: you just write the HTML-Tags in a rather intuitive
+way, like =ol>li.class$$*4 C-j=, and it expands to this:
+
+#+begin_example html
+<ol>
+  <li class="class01"></li>
+  <li class="class02"></li>
+  <li class="class03"></li>
+  <li class="class04"></li>
+</ol>
+#+end_example
+
+This is a very quick and less annoying way to write HTML.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emmet-mode
+  :ensure t
+  :hook ((html-mode-hook . emmet-mode)))
+#+end_src
+
+** Rainbow
+:PROPERTIES:
+:CUSTOM_ID: h:cb5fc3c4-f1ae-4312-ab7b-61e5a6441478
+:END:
+
+This package shows coloring definition as actual color. So something
+like =#454545= will be shown with its corresponding background.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf rainbow-mode
+  :ensure t
+  :hook (((html-mode-hook css-mode-hook) . rainbow-mode)))
+#+end_src
+
+** Sass
+:PROPERTIES:
+:CUSTOM_ID: h:7733d933-2125-4315-9f9f-8fa820a49204
+:END:
+
+Since HTML was annoying to write they decided that CSS must be
+cumbersome too. Well with SASS writing CSS becomes a blast. You can do
+something like this:
+# TODO: Simpler example
+
+#+begin_src scss
+$background-color: #333;
+$background-color-alt: #111;
+$foreground-color: #fff;
+
+.navigation {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: $background-color;
+    position: relative;
+    animation: navigation-animation;
+    animation-duration: 2s;
+    animation-fill-mode: forwards;
+    li {
+        float: left;
+        a {
+            display: block;
+            color: $foreground-color;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+            &:hover {
+                background-color: $background-color;
+            }
+        }
+    }
+}
+#+end_src
+
+Which expands to the following CSS file when compiled with the SASS
+command line utility:
+
+#+begin_src css
+.navigation {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333;
+    position: relative;
+    animation: navigation-animation;
+    animation-duration: 2s;
+    animation-fill-mode: forwards;
+}
+.navigation li {
+    float: left;
+}
+.navigation li a {
+    display: block;
+    color: #fff;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+.navigation li a:hover {
+    background-color: #333;
+}
+#+end_src
+
+This is in my opinion a way better and more fun way to write CSS. It
+becomes natural very quickly to have nested expressions or reference the
+current addressed element with =&= or have variables for your coloring to
+make it more modular and easy changeable.
+
+I use this directory structure:
+
+#+begin_example
+website
+├── css
+│   ├── master.css
+│   └── master.css.map
+├── index.html
+└── sass
+    ├── master.scss
+    └── slave
+        ├── _background.scss
+        └── _*.scss
+#+end_example
+
+The =master.scss= file-- as the name implies-- loads all the specified
+modules (starting with =_=) in the slave directory. They are all
+specified in one line each inside the =master.scss= file. You use the =@use=
+rule for this kind of task.
+Compile SASS to CSS with =sass --watch --style compressed sass:css=.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf scss-mode
+  :ensure t
+  :config
+  (setq scss-compile-at-save nil)
+
+  (defun index/sass-compile-watch ()
+    "Executes sass command utility.
+  Runs `sass --watch --style compressed sass:css' in a seperate
+  buffer with start-process"
+    (interactive)
+    (start-process
+     "sass"
+     "sass-compile"
+     "sass"
+     "--watch --style compressed sass:css"))
+  :bind ((scss-mode-hook
+          ("C-c c" . index/sass-compile-watch))))
+#+end_src
+
+** Website
+:PROPERTIES:
+:CUSTOM_ID: h:94e138ec-eed4-42b3-a810-580aa7c6ac7e
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf org-capture
+  :after org
+  :config
+  (defun index/org-hugo-new-subtree-post-capture-template ()
+    "Returns `org-capture' template string for new Hugo post.
+  See `org-capture-templates' for more information."
+    (let* ((title (read-from-minibuffer "Title: "))
+           (fname (org-hugo-slug title)))
+      (mapconcat #'identity
+                 `(,(concat "* TODO " title)
+                   ":PROPERTIES:"
+                   ,(concat ":EXPORT_FILE_NAME: " fname)
+                   ":END:\n"
+                   "#+begin_abstract"
+                   "%?"
+                   "#+end_abstract\n"
+                   "%i")
+                 "\n")))
+
+  (setq org-capture-templates
+        '(("b"
+           "Blog Post"
+           entry
+           (file+olp "~/wtn/website.org" "Posts")
+           (function index/org-hugo-new-subtree-post-capture-template)))))
+#+end_src
+
+* Lisp without the E
+:PROPERTIES:
+:CUSTOM_ID: h:be2802e1-fd14-4bc0-b50c-62f3e7d58479
+:END:
+
+Working with LISP inside Emacs is not hard at all.  It only requires
+=slime= for Common Lisp and =geiser= for Scheme.  Now we can use =C-x C-e= and
+have it be evaluated in its dedicated compiler/interpreter.  This makes
+for a smooth REPL-- read-eval-print loop-- experience, which supersedes
+LISP above other programming languages: easily act on the code.
+
+** Common Lisp
+:PROPERTIES:
+:CUSTOM_ID: h:7c6b3758-9583-42ee-a49b-03f96d49a27b
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+;; (leaf slime
+;;   :ensure t
+;;   :config
+;;   (load (expand-file-name "~/.local/lib/quicklisp/slime-helper.el")) ; requires quicklisp
+;;   (setq inferior-lisp-program "sbcl")                                ; requires sbcl
+;;   (slime-setup))
+#+end_src
+
+#+begin_src emacs-lisp :tangle yes
+(leaf sly
+  :config
+  (load (expand-file-name "~/.local/lib/quicklisp/slime-helper.el")) ; requires quicklisp
+  (setq inferior-lisp-program "sbcl")                                ; requires sbcl
+  (slime-setup)
+  :ensure t)
+#+end_src
+
+** Scheme
+:PROPERTIES:
+:CUSTOM_ID: h:0b0e4e18-7923-4655-876d-b7e98265af12
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf geiser
+  :ensure t
+  :config
+  (setq geiser-active-implementations '(guile)))
+#+end_src
+
+** Closure
+:PROPERTIES:
+:CUSTOM_ID: h:5fefc3b5-d879-4f56-9ea3-6d226bb1bd6b
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf cider
+  :ensure t)
+
+(leaf clj-refactor
+  :ensure t
+  :hook ((clojure-mode-hook . clj-refactor-mode)))
+#+end_src
+
+* TODO Bongo
+:PROPERTIES:
+:CUSTOM_ID: h:3842c6df-a0a7-4498-807b-9d882568576f
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf bongo
+  :ensure t
+  :config
+  (setq bongo-insert-whole-directory-trees t)
+  (setq bongo-default-directory (expand-file-name "~/etc/music"))
+  (setq bongo-enabled-backends '(mpv))
+  (setq bongo-mpv-extra-arguments '("--no-config" "--vo=null"))
+
+  (leaf bongo
+    :config
+    (defun index/bongo-add-dired-files ()
+      "Add marked files to Bongo library."
+      (interactive)
+      (let (file-point file (files nil))
+        (dired-map-over-marks
+         (setq file-point (dired-move-to-filename)
+               file (dired-get-filename)
+               files (append files (list file)))
+         nil t)
+        (save-excursion
+          ;; Is this always safe or can there be more than
+          ;; one Bongo buffer?
+          (set-buffer bongo-default-library-buffer-name)
+          (mapc 'bongo-insert-file files))
+        (if file
+            (message "File added: %s" file)
+          (message "Files added: %s" files))))
+    :bind (("<f8>" . index/bongo-add-dired-files)))
+
+
+  )
+#+end_src
+
+* (News)Feeds
+:PROPERTIES:
+:CUSTOM_ID: h:1475cbfc-56dc-4039-a88a-539b5e7672cb
+:END:
+** Gnus
+:PROPERTIES:
+:CUSTOM_ID: h:45b54719-5b5f-44f0-8fc1-88af5f1c25a2
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf gnus
+  :config
+  (setq user-mail-address "public@finnsauer.xyz")
+  (setq user-full-name "Finn Sauer"))
+#+end_src
+
+** Elfeed
+:PROPERTIES:
+:CUSTOM_ID: h:ff4d5141-64fa-4edb-be39-7b1e3af87d50
+:END:
+*** Config
+:PROPERTIES:
+:CUSTOM_ID: h:b3c80b42-07a9-4732-ad53-f321fbeda72f
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf elfeed
+  :ensure t
+  :config
+
+  (setq elfeed-use-curl t)
+  (setq elfeed-curl-max-connections 16)
+  (setq elfeed-db-directory (concat user-emacs-directory "elfeed"))
+  (setq elfeed-enclosure-default-dir "~/www/")
+  (setq elfeed-search-filter "@6-months-ago -torrent")
+  (setq elfeed-sort-order 'descending)
+  (setq elfeed-search-clipboard-type 'CLIPBOARD)
+  (setq elfeed-search-title-max-width 72)
+  (setq elfeed-search-title-min-width 40)
+  (setq elfeed-search-trailing-width 25)
+  (setq elfeed-show-truncate-long-urls t)
+  (setq elfeed-show-unique-buffers t)
+
+  (defun index/elfeed-load-feeds ()
+    "Loads the encryped `feed.el.gpg' file.
+Used in combination with `elfeed-search-mode-hook', because it
+only gets loaded when it is needed and not on startup."
+    (let ((f (expand-file-name "gpg/feeds.el.gpg" user-emacs-directory)))
+      (when (file-readable-p f)
+        (load-file f))))
+
+  (defun index/elfeed-mpv-open-link ()
+    "Play entry link with external `mpv' program.
+This will launch `mpv' without any buffer."
+    (interactive)
+    (let* ((entry (if (eq major-mode 'elfeed-show-mode)
+                      elfeed-show-entry
+                    (elfeed-search-selected :ignore-region)))
+           (link (elfeed-entry-link entry)))
+      (start-process "mpv" nil "mpv_open" link)
+      (save-excursion
+        (elfeed-search-untag-all-unread))
+      (message
+       (concat "Launching MPV for " (propertize link 'face 'success)))))
+
+  (defun index/elfeed-toggle-read-unread ()
+    "Used to toggle between read and unread."
+    (interactive)
+    (let* ((entry (elfeed-search-selected :ignore-region))
+           (tags (elfeed-entry-tags entry)))
+      (if (member 'unread tags)
+          (elfeed-search-untag-all-unread)
+        (elfeed-search-tag-all-unread))))
+
+  (defun index/elfeed-toggle-read-unread-all ()
+    "Used to toggle all entrys between read and unread."
+    (interactive)
+    (let* ((entry (elfeed-search-selected :ignore-region))
+           (tags (elfeed-entry-tags entry)))
+      (if (member 'unread tags)
+          (progn
+            (save-excursion
+              (mark-whole-buffer)
+              (elfeed-search-untag-all-unread)))
+        (save-excursion
+          (mark-whole-buffer)
+          (elfeed-search-tag-all-unread)))))
+
+  (defun index/elfeed-new-entry-notification (entry)
+    "Spawns a notify-send shell process after `elfeed-new-entry'
+Meant to be used in combination with `add-hook' and
+`elfeed-new-entry-hook'"
+    (let* ((title (elfeed-entry-title entry))
+           (name (elfeed-feed-title (elfeed-entry-feed entry)))
+           (link (elfeed-entry-link entry)))
+      (unless (or (string-match "^magnet:" link)
+                  (string-match "\.torrent$" link))
+        (start-process "notify" nil "notify-send" "RSS"
+                       (concat "Title: " title "\nAuthor: " name "\nLink: " link)))))
+
+  (defvar index/elfeed-toggle-between-predef-tags 0
+    "Counter for the corresponding function.")
+
+  (defvar index/elfeed-toggle-between-predef-tags-default-filter-value elfeed-search-filter
+    "The default value of the `elfeed-search-filter' variable.")
+
+  (advice-add
+   'elfeed-search-clear-filter
+   :after (lambda ()
+            (setq index/elfeed-toggle-between-predef-tags
+                  0)))
+
+  (defun index/elfeed-toggle-between-predef-tags ()
+    "Toggle between predefined tags.
+This cycles through the following iterations:
+
+0. \"\"
+1. \"+unread\"
+2. \"+video\"
+3. \"-video\"
+
+After hitting the last iteration, it will wrap around to the
+first."
+    (interactive)
+    (if (eq 3 index/elfeed-toggle-between-predef-tags)
+        (setq index/elfeed-toggle-between-predef-tags 0)
+      (setq index/elfeed-toggle-between-predef-tags
+            (1+ index/elfeed-toggle-between-predef-tags)))
+    (cond
+     ((eq 0 index/elfeed-toggle-between-predef-tags)
+      (elfeed-search-set-filter nil))
+     ((eq 1 index/elfeed-toggle-between-predef-tags)
+      (setq elfeed-search-filter
+            (concat
+             index/elfeed-toggle-between-predef-tags-default-filter-value
+             " +unread"))
+      (elfeed-search-update :force))
+     ((eq 2 index/elfeed-toggle-between-predef-tags)
+      (setq elfeed-search-filter
+            (concat
+             index/elfeed-toggle-between-predef-tags-default-filter-value
+             " +video"))
+      (elfeed-search-update :force))
+     ((eq 3 index/elfeed-toggle-between-predef-tags)
+      (setq elfeed-search-filter
+            (concat
+             index/elfeed-toggle-between-predef-tags-default-filter-value
+             " -video"))
+      (elfeed-search-update :force))))
+
+  (defun index/elfeed-format-content (entry)
+    (let* ((original (elfeed-deref (elfeed-entry-content entry)))
+           (replace (with-temp-buffer
+                      (insert original)
+                      (mark-whole-buffer)
+                      (fill-paragraph)
+                      (buffer-string))))
+      (setf (elfeed-entry-content entry) (elfeed-ref replace))))
+
+  (defun index/elfeed-toggle-star ()
+    "Toggle between '*' on entry.
+This will add a '*' tag on the current entry."
+    (interactive)
+    (save-excursion
+      (apply 'elfeed-search-toggle-all '(*))))
+
+  :hook ((elfeed-search-mode-hook . index/elfeed-load-feeds)
+         (elfeed-new-entry-hook . index/elfeed-new-entry-notification)
+         (elfeed-show-mode-hook . olivetti-mode)
+         (elfeed-new-entry-hook . index/elfeed-format-content))
+
+  :bind (("C-c f" . elfeed)
+         (elfeed-show-mode-map
+          ("o" . index/elfeed-mpv-open-link)
+          ("TAB" . forward-button))
+         (elfeed-search-mode-map
+          ("o" . index/elfeed-mpv-open-link)
+          ("a" . index/elfeed-toggle-read-unread)
+          ("A" . index/elfeed-toggle-read-unread-all)
+          ("t" . index/elfeed-toggle-between-predef-tags)
+          ("m" . index/elfeed-toggle-star))))
+#+end_src
+
+*** Update
+:PROPERTIES:
+:CUSTOM_ID: h:57023cef-8d6b-4f48-bda9-e2be881b379b
+:END:
+
+Since elfeed updates are rather slow by default, I tweaked with them
+more or less.  Well actually I stole some code from Reddit User
+/github-alphapapa/: https://github.com/skeeto/elfeed/issues/293.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf elfeed
+  :config
+  (defvar tributi/elfeed-update-complete-hook nil
+    "Functions called with no arguments when `elfeed-update' is
+    finished.")
+
+  (defvar tributi/elfeed-updates-in-progress 0
+    "Number of feed updates in-progress.")
+
+  (defvar tributi/elfeed-search-update-filter nil
+    "The filter when `elfeed-update' is called.")
+
+  (defun tributi/elfeed-update-complete-hook (&rest _)
+    "When update queue is empty, run
+`tributi/elfeed-update-complete-hook' functions."
+    (when (= 0 tributi/elfeed-updates-in-progress)
+      (run-hooks 'tributi/elfeed-update-complete-hook)))
+
+  (add-hook 'elfeed-update-hooks
+            #'tributi/elfeed-update-complete-hook)
+
+  (defun tributi/elfeed-search-update-restore-filter (&rest _)
+    "Restore filter after feeds update."
+    (when tributi/elfeed-search-update-filter
+      (elfeed-search-set-filter tributi/elfeed-search-update-filter)
+      (setq tributi/elfeed-search-update-filter nil)))
+
+  (add-hook 'tributi/elfeed-update-complete-hook
+            #'tributi/elfeed-search-update-restore-filter)
+
+  (defun tributi/elfeed-search-update-save-filter (&rest _)
+    "Save and change the filter while updating."
+    (setq tributi/elfeed-search-update-filter elfeed-search-filter)
+    (setq elfeed-search-filter "#0"))
+
+  ;; NOTE: It would be better if this hook were run before starting the
+  ;; feed updates, but in `elfeed-update', it happens afterward.
+  (add-hook 'elfeed-update-init-hooks
+            #'tributi/elfeed-search-update-save-filter)
+
+  (defun tributi/elfeed-update-counter-inc (&rest _)
+    (cl-incf tributi/elfeed-updates-in-progress))
+
+  (advice-add
+   #'elfeed-update-feed
+   :before
+   #'tributi/elfeed-update-counter-inc)
+
+  (defun tributi/elfeed-update-counter-dec (&rest _)
+    (cl-decf tributi/elfeed-updates-in-progress)
+    (when (< tributi/elfeed-updates-in-progress 0)
+      ;; Just in case
+      (setq tributi/elfeed-updates-in-progress 0)))
+
+  (add-hook 'elfeed-update-hooks
+            #'tributi/elfeed-update-counter-dec)
+
+  ;; (run-at-time nil (* 10 60) #'elfeed-update)
+  )
+#+end_src
+
+** ERC
+:PROPERTIES:
+:CUSTOM_ID: h:d00581fc-84db-483a-9f05-14a9fd074077
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf erc
+  :config
+  (setq erc-echo-notices-in-minibuffer-flag t)
+  (setq erc-rename-buffers t)
+  (setq erc-interpret-mirc-color t)
+  (setq erc-server-auto-reconnect t)
+  (setq erc-server-reconnect-timeout 15)
+  (setq erc-prompt-for-nickserv-password nil)
+  (setq erc-fill-function 'erc-fill-static)
+  (setq erc-fill-static-center 12)
+  (setq erc-track-switch-direction 'newest)
+
+  (defun index/erc-dwim ()
+    "Switch to `erc-mode' buffer(s) or log into IRC."
+    (interactive)
+    (let ((irc "irc.freenode.net")
+          (nick "xinjyz")
+          (pass (shell-command-to-string "pass irc.freenode.net/xinjyz"))
+          (buffers (erc-buffer-list)))
+      (cond ((eq 1 (length buffers))    ; switch to the only buffer
+             (switch-to-buffer
+              (nth
+               (cl-position
+                'erc-mode
+                (mapcar (lambda (buf)
+                          (with-current-buffer buf
+                            major-mode))
+                        (buffer-list)))
+               (buffer-list))))
+            (buffers
+             (erc-switch-to-buffer))
+            (t
+             (erc :server irc
+                  :nick nick
+                  :password pass
+                  :full-name nick)))))
+  :hook ((erc-mode-hook . erc-fill-enable)
+         (erc-mode-hook . erc-track-mode))
+  :bind (("C-c i" . index/erc-dwim)))
+#+end_src
+
+** Mu4e
+:PROPERTIES:
+:CUSTOM_ID: h:579700dd-5a9b-4197-b629-7225b39606d8
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf mu4e
+  ;; This depends on the Arch package `mu'.
+  :load-path "/usr/share/emacs/site-lisp/mu4e/"
+  :require t
+  :config
+  (setq mu4e-maildir "~/.mail")
+  (setq mu4e-sent-folder "/Sent")
+  (setq mu4e-drafts-folder "/Drafts")
+  (setq mu4e-trash-folder "/Trash")
+  (setq mu4e-refile-folder "/Archive")
+  (setq mu4e-attachment-dir (expand-file-name "~/www"))
+
+  (setq mu4e-headers-advance-after-mark t)
+  (setq mu4e-headers-auto-update t)
+  (setq mu4e-headers-date-format "%F")
+  (setq mu4e-headers-time-format "%R")
+  (setq mu4e-headers-long-date-format "%F, %R")
+
+  (setq mu4e-headers-fields
+        '((:human-date . 12)
+          (:flags . 6)
+          (:mailing-list . 10)
+          (:from . 22)
+          (:subject)))
+
+  (setq mu4e-completing-read-function #'completing-read)
+  (setq mu4e-get-mail-command "mbsync -a")
+  (setq mu4e-update-interval nil ;; '(* 60 5)
+        )
+
+  (setq mu4e-compose-signature "Finn Sauer\n")
+  (setq mu4e-display-update-status-in-modeline t)
+
+  :bind (("C-c m" . mu4e)))
+#+end_src
+
+* Keyboard Enhancements / Movement
+:PROPERTIES:
+:CUSTOM_ID: h:c0065ba1-7f8b-4ef4-8f9a-446f48553e88
+:END:
+** Extend the Basic Functionality
+:PROPERTIES:
+:CUSTOM_ID: h:97221f11-d19e-4351-a136-a9c1aa4dc15e
+:END:
+*** Move to the Beginning of the Line
+:PROPERTIES:
+:CUSTOM_ID: h:1412f13c-10fa-4102-92af-ce0aef30c18e
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :config
+  (defun index/move-beginning-of-line ()
+    "Modification of `move-beginning-of-line'.
+If the cursor is at the beginning of the line-- column 0-- then
+goto the first char in the line, otherwise jump to the next
+non-whitespace character.
+
+\\{move-beginning-of-line}"
+    (interactive)
+    (if (bolp)
+        (back-to-indentation)
+      (move-beginning-of-line 1)))
+
+  :bind ((index/keys-minor-mode-map
+          ("C-a" . index/move-beginning-of-line))))
+#+end_src
+
+*** Move to the End of the Line
+:PROPERTIES:
+:CUSTOM_ID: h:152467d6-8f56-49ca-854a-d0dd5bc1aedd
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :config
+  (defun index/move-end-of-line ()
+    "Modification of `move-end-of-line'.
+Will move to the end of the line.  When invoked at the end of the
+line move to the front of a comment.  Otherwise do nothing."
+    (interactive)
+    (let ((cp (save-excursion
+                (beginning-of-line)
+                (comment-search-forward (line-end-position) t))))
+
+      (if (eolp)
+          (when cp
+            (goto-char cp)
+            (skip-syntax-backward " "))
+        (move-end-of-line 1))))
+  :bind ((index/keys-minor-mode-map
+          ("C-e" . index/move-end-of-line))))
+#+end_src
+
+*** Aligning Multiple Lines
+:PROPERTIES:
+:CUSTOM_ID: h:69a755de-a0dd-424a-8211-7653e5f9a2f7
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :config
+  (defvar index/align-column-dwim "\\(\\s-*\\) "
+    "Stores the last used Regular Expression inside the
+    `index/align-column-dwim' function.")
+
+  (defun index/align-column-dwim (&optional arg)
+    "Aligns the column in a do-what-i-mean fashion.
+When called with an active region, then act on it.  With no
+region selected, then act on the paragraph.  Called with a
+prefix, then prompt for a regexp, otherwise assume space.  If C-u
+C-u is the prefix, repeat the last called Regular Expression.
+This does not store the space regex.  This only makes sense with
+the prefix option.
+
+\\{align-regexp}"
+    (interactive "P")
+    (let ((regexp (cond
+                   ((equal arg '(16))
+                    (index/align-column-dwim))
+                   ((equal arg '(4))
+                    (concat
+                     "\\(\\s-*\\)"
+                     (read-string "Align regexp: ")))
+                   (t
+                    "\\(\\s-*\\) "))))
+      (unless (string= "\\(\\s-*\\) " regexp)
+        (setq index/align-column-dwim regexp))
+      (save-excursion
+        (unless (use-region-p)
+          (mark-paragraph))
+        (if (equal arg '(64))
+            (align-regexp (region-beginning) (region-end) regexp 1 1 nil)
+          (align-regexp (region-beginning) (region-end) regexp 1 1 t)))))
+  :bind (("C-M-h" . index/align-column-dwim)))
+#+end_src
+
+*** Join Line
+:PROPERTIES:
+:CUSTOM_ID: h:736de394-8eda-4716-959c-85a2de92abe4
+:END:
+
+I missed the vim =J= since it was a super easy way to join lines as I used
+it all the time.  Well, this implements that feature.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :config
+  (defun index/join-line (&optional arg)
+    "Concatenate the next line with the previous one.
+This emulates vim behavior."
+    (interactive "p")
+    (dotimes (i arg)
+      (join-line -1)))
+  :bind (index/keys-minor-mode-map
+         ("M-j" . index/join-line)))
+#+end_src
+
+*** Common Shortcuts
+:PROPERTIES:
+:CUSTOM_ID: h:e64c476e-9610-4efb-891f-6c4c65e3355a
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :bind (("H-f" . find-file)
+         ("H-F" . find-file-other-window)
+         ("H-d" . dired)
+         ("H-D" . dired-other-window)))
+#+end_src
+
+*** Transpose
+:PROPERTIES:
+:CUSTOM_ID: h:63f6d730-44fd-45f7-8c2f-b3ead470587a
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :config
+  (defmacro index/transpose (name textobj)
+    "This macro will generate new functions with transpose and
+TEXTOBJ.  With these new function you can use the region to
+transpose TEXTOBJ at `region-beginning' and `region-end'."
+    (declare (indent 2) (doc-string 3))
+    `(defun ,name (&optional arg)
+       ,(concat "Transpose "
+                textobj
+                " or swap over active region.")
+       (interactive "p")
+       (let ((func (intern (format "%s-%s" "transpose" ,textobj))))
+         (if (use-region-p)
+             (funcall func 0)
+           (funcall func arg)))))
+
+  (index/transpose index/transpose-words "words")
+  (index/transpose index/transpose-lines "lines")
+  (index/transpose index/transpose-sentences "sentences")
+  (index/transpose index/transpose-paragraphs "paragraphs")
+  (index/transpose index/transpose-sexps "sexps")
+
+  (defun tributi/transpose-chars ()
+    "Always transposes the two characters before point.
+There is no 'dragging' the character forward.  This is the
+behaviour of `transpose-chars' when point is at the end of the
+line."
+    (interactive)
+    (transpose-chars -1)
+    (forward-char 1))
+
+  :bind (("C-t" . tributi/transpose-chars)
+         ("M-t" . index/transpose-words)
+         ("C-M-t" . index/transpose-sexps)
+         ("C-x C-t" . index/transpose-lines)
+         ("C-x M-t" . index/transpose-sentences)
+         ("C-x C-M-t" . index/transpose-paragraphs)))
+#+end_src
+
+** Avy - Jumping Around Never Was Easier
+:PROPERTIES:
+:CUSTOM_ID: h:80023739-89ec-4a14-9e9c-d85fd5061c86
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf avy
+  :ensure t
+  :bind (("M-s" . avy-goto-char-timer)))
+#+end_src
+
+** Expand Region
+:PROPERTIES:
+:CUSTOM_ID: h:7613db1b-0c77-4f1f-8ea3-5da099646c08
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf expand-region
+  :ensure t
+  :bind (("M-C-SPC" . er/expand-region)))
+#+end_src
+
+** Multiple Cursors
+:PROPERTIES:
+:CUSTOM_ID: h:559da13d-3b61-47e0-a637-6cbde8a27610
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf multiple-cursors
+  :ensure t
+  :config
+  (eval-and-compile                     ; TODO : Not evaluating this
+    (setq mc/always-run-for-all t)
+    (setq mc/cmds-to-run-once '(describe-bindings))
+    (define-key mc/keymap (kbd "<return>") nil))
+  :bind (("H-M-SPC" . mc/mark-all-dwim)
+         ("H-SPC" . mc/mark-next-like-this)
+         ("C-<" . mc/mark-previous-like-this)
+         ("C->" . mc/mark-next-like-this)
+         ("H-<mouse-1>" . mc/add-cursor-on-click)))
+#+end_src
+
+** Insert an Empty Line
+:PROPERTIES:
+:CUSTOM_ID: h:cea67f7c-cc71-4cab-8a0b-3a5d0cb3fc13
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :config
+  (defun index/insert-line-below (&optional arg)
+    "Insert an empty line below the current line.
+If called with a prefix don't indent, otherwise indent."
+    (interactive "P")
+    (end-of-line)
+    (open-line 1)
+    (next-line)
+    (unless arg
+      (indent-for-tab-command)))
+
+  (defun index/insert-line-above (&optional arg)
+    "Insert an empty line above the current line.
+If called with a prefix don't indent, otherwise indent."
+    (interactive "P")
+    (end-of-line 0)
+    (open-line 1)
+    (next-line)
+    (unless arg
+      (indent-for-tab-command)))
+
+  :bind ((index/keys-minor-mode-map
+          ("C-M-m" . index/insert-line-below)
+          ("C-M-o" . index/insert-line-above))))
+#+end_src
+
+** Writing Mode
+:PROPERTIES:
+:CUSTOM_ID: h:701e567a-13d9-47ec-a0c4-194721157652
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :config
+  (define-minor-mode index/focused-writing-mode
+    "Toggle between Focused Writing."
+    :init-value nil
+    :global t
+    (if index/focused-writing-mode
+        (progn
+          (setq-local mode-line-format nil)
+          (setq cursor-type 'bar))
+      (kill-local-variable 'mode-line-format)
+      (force-mode-line-update)
+      (setq cursor-type 'box))
+    (olivetti-mode 'toggle)
+    (focus-mode 'toggle)
+    (variable-pitch-mode 'toggle))
+
+  ;; TODO: Move back to auto-fill-mode section?
+  (defun index/auto-fill-mode (&optional arg)
+    "Wrapper around `auto-fill-mode'.
+When executing, firstly call `fill-paragraph', and then enable
+`auto-fill-mode'.  If `auto-fill-mode' is disabled, then do not
+call `fill-paragraph', since paragraph should already be
+indented.
+
+Calls `index/focused-writing' when called with an argument.
+\\{index/focused-writing}"
+    (interactive "P")
+    (when arg
+      (index/focused-writing-mode 'toggle))
+    (unless (bound-and-true-p auto-fill-function)
+      (if (region-active-p)
+          (fill-paragraph nil (region-bounds))
+        (fill-paragraph)))
+    (auto-fill-mode 'toggle))
+
+  :bind ((index/keys-minor-mode-map
+          ("C-M-q" . index/auto-fill-mode))
+         ("C-c w" . index/focused-writing-mode)))
+#+end_src
+
+** Dummy Text
+:PROPERTIES:
+:CUSTOM_ID: h:bc3e27bd-15cd-440d-b6d8-31e9d58d1bc0
+:END:
+
+It is always nice to insert some dummy text into the current buffer.  As
+I want to have some text to play on-- be it a keyboard macro I'm
+currently writing or something else.
+
+There is a function in =emmet-mode= called =emmet-lorem-generate= and it
+works perfectly fine.  I had some problems requiring it, so in the end I
+wrote my own function as a little exercise.
+
++ Why Lorem Ipsum?
+
+Lorem Ipsum is simply dummy text of the printing and typesetting
+industry. Lorem Ipsum has been the industry's standard dummy text ever
+since the 1500s, when an unknown printer took a galley of type and
+scrambled it to make a type specimen book. It has survived not only five
+centuries, but also the leap into electronic typesetting, remaining
+essentially unchanged. It was popularised in the 1960s with the release
+of Letraset sheets containing Lorem Ipsum passages, and more recently
+with desktop publishing software like Aldus PageMaker including versions
+of Lorem Ipsum.
+
+More reading up can be found on [[https://lipsum.com/][here]].
+
+# TODO : DEPRECATED
+# It is always nice to have a way to insert dummy text into the buffer.
+# This will use the a function from =emmet-mode= since it is kinda useless
+# to redefine a preexisting function.  Some Linux enthusiasts will call
+# this Bloat Prevention-- but I call it recycling and laziness.
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :config
+
+  (defvar index/lorem-words
+    '("Sed" "ut" "perspiciatis" "unde" "omnis"
+      "iste" "natus" "error" "sit" "voluptatem"
+      "accusantium" "doloremque" "laudantium" "totam" "rem"
+      "aperiam" "eaque" "ipsa" "quae" "ab"
+      "illo" "inventore" "veritatis" "et" "quasi"
+      "architecto" "beatae" "vitae" "dicta" "sunt"
+      "explicabo" "Nemo" "enim" "ipsam" "voluptatem"
+      "quia" "voluptas" "sit" "aspernatur" "aut"
+      "odit" "aut" "fugit" "sed" "quia"
+      "consequuntur" "magni" "dolores" "eos" "qui"
+      "ratione" "voluptatem" "sequi" "nesciunt" "Neque"
+      "porro" "quisquam" "est" "qui" "dolorem"
+      "ipsum" "quia" "dolor" "sit" "amet"
+      "consectetur" "adipisci" "velit" "sed" "quia"
+      "non" "numquam" "eius" "modi" "tempora"
+      "incidunt" "ut" "labore" "et" "dolore"
+      "magnam" "aliquam" "quaerat" "voluptatem" "Ut"
+      "enim" "ad" "minima" "veniam" "quis"
+      "nostrum" "exercitationem" "ullam" "corporis" "suscipit"
+      "laboriosam" "nisi" "ut" "aliquid" "ex"
+      "ea" "commodi" "consequatur" "Quis" "autem"
+      "vel" "eum" "iure" "reprehenderit" "qui"
+      "in" "ea" "voluptate" "velit" "esse"
+      "quam" "nihil" "molestiae" "consequatur" "vel"
+      "illum" "qui" "dolorem" "eum" "fugiat"
+      "quo" "voluptas" "nulla" "pariatur"
+      "At" "vero" "eos" "et" "accusamus"
+      "et" "iusto" "odio" "dignissimos" "ducimus"
+      "qui" "blanditiis" "praesentium" "voluptatum" "deleniti"
+      "atque" "corrupti" "quos" "dolores" "et"
+      "quas" "molestias" "excepturi" "sint" "occaecati"
+      "cupiditate" "non" "provident" "similique" "sunt"
+      "in" "culpa" "qui" "officia" "deserunt"
+      "mollitia" "animi" "id" "est" "laborum"
+      "et" "dolorum" "fuga" "Et" "harum"
+      "quidem" "rerum" "facilis" "est" "et"
+      "expedita" "distinctio" "Nam" "libero" "tempore"
+      "cum" "soluta" "nobis" "est" "eligendi"
+      "optio" "cumque" "nihil" "impedit" "quo"
+      "minus" "id" "quod" "maxime" "placeat"
+      "facere" "possimus" "omnis" "voluptas" "assumenda"
+      "est" "omnis" "dolor" "repellendus" "Temporibus"
+      "autem" "quibusdam" "et" "aut" "officiis"
+      "debitis" "aut" "rerum" "necessitatibus" "saepe"
+      "eveniet" "ut" "et" "voluptates" "repudiandae"
+      "sint" "et" "molestiae" "non" "recusandae"
+      "Itaque" "earum" "rerum" "hic" "tenetur"
+      "a" "sapiente" "delectus" "ut" "aut"
+      "reiciendis" "voluptatibus" "maiores" "alias" "consequatur"
+      "aut" "perferendis" "doloribus" "asperiores" "repellat"))
+
+  (defvar index/lorem-punctuation
+    '("." "." "?" "!"))
+
+  (defun tributi/lorem--choice-words (count &optional s)
+    (let* ((l (length index/lorem-words))
+           (s (random l))
+           (f (+ s count))
+           (e (if (< l f) l f)))
+      (append
+       (subseq index/lorem-words s e)
+       (if (= e l) (tributi/lorem--choice-words (- f l) 0)))))
+
+  (defun index/lorem--generator (count)
+    (let* ((lst (tributi/lorem--choice-words count))
+           (last (car (last lst)))
+           (rand (random (length index/lorem-punctuation)))
+           (dot (car (subseq index/lorem-punctuation rand (1+ rand))))
+           (str))
+      (setcar lst (capitalize (car lst)))
+      (s-append dot (mapconcat 'identity lst " "))))
+
+  (defun index/lorem-generate (&optional arg)
+    "Lorem Lipsum Generator.
+If call this function without any universal argument it will
+insert 10 words.  When an argument is provided use this word
+count instead.  When called repetitively-- so multiple
+invocations-- it will insert a double space ' ' before each dummy
+text after the second one.  This effectively creates sentences."
+    (interactive "P")
+    (when (eq last-command 'index/lorem-generate)
+      (insert "  "))
+    (if (listp arg)
+        (insert (index/lorem--generator 10))
+      (insert (index/lorem--generator arg))))
+  :bind ((index/keys-minor-mode-map
+          ("M-i" . index/lorem-generate))))
+#+end_src
+
+** Insert the GPLv3
+:PROPERTIES:
+:CUSTOM_ID: h:e3110cc0-b78b-4b08-b94d-034be60deb68
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :config
+  (defmacro index/insert-GPLv3--variable (var)
+    `(if (eq (getenv ,(upcase (symbol-name var))) nil)
+         (read-string
+          ,(concat
+            (capitalize (symbol-name var))
+            "? "))
+       (getenv ,(upcase (symbol-name var)))))
+
+  (index/insert-GPLv3--variable home)
+
+  (defun index/insert-GPLv3 (&optional arg)
+    "Insert the GPLv3 as a comment.
+This requires the NAME, SURNAME, and MAIL environmental variable
+to be set.  If they don't exist, it will prompt for it.  When
+called without a prefix, add newlines around the text block.  If
+a prefix is provided omit the newlines."
+    (interactive "P")
+    (let* ((GPLv3
+            (concat
+             "Copyright (C) "
+             (format-time-string "%Y ")
+             (index/insert-GPLv3--variable name)
+             " "
+             (index/insert-GPLv3--variable surname)
+             " <"
+             (index/insert-GPLv3--variable mail)
+             ">
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at
+your option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>."))
+           (old-point (point)))
+      (unless arg
+        (newline))
+      (insert GPLv3)
+      (comment-region old-point (point))
+      (unless arg
+        (newline))))
+  :bind ((index/keys-minor-mode-map
+          ("C-M-i" . index/insert-GPLv3))))
+#+end_src
+
+** Big Font
+:PROPERTIES:
+:CUSTOM_ID: h:dd54a3c2-9df7-4367-94f7-897bd9628702
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :config
+  (defvar index/big-font-value 4
+    "The amount to raise the font size by. In `pt'.")
+
+  (define-minor-mode index/big-font-mode
+    "Enlarges the global font by `index/big-font-value'."
+    :init-value nil
+    :global t
+    :lighter " BigFont"
+    (cond
+     ;; ignore when `index/small-font-mode' is enabled
+     (index/small-font-mode
+      (ignore))
+     (index/big-font-mode
+      (->> (* 10 index/big-font-value)
+           (+ (face-attribute 'default :height))
+           (set-face-attribute 'default nil :height))
+      (->> (* 10 index/big-font-value)
+           (+ (face-attribute 'variable-pitch :height))
+           (set-face-attribute 'variable-pitch nil :height)))
+     (t
+      (->> (* 10 index/big-font-value)
+           (- (face-attribute 'default :height))
+           (set-face-attribute 'default nil :height))
+      (->> (* 10 index/big-font-value)
+           (- (face-attribute 'variable-pitch :height))
+           (set-face-attribute 'variable-pitch nil :height)))))
+
+  :bind (("C-c C-=" . index/big-font-mode)))
+#+end_src
+
+** Small Font
+:PROPERTIES:
+:CUSTOM_ID: h:e3856980-ba71-4ec2-96dc-3d667afc06b4
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :config
+  (defvar index/small-font-value 4
+    "The amount to raise the font size by. In `pt'.")
+
+  (define-minor-mode index/small-font-mode
+    "Enlarges the global font by `index/small-font-value'."
+    :init-value nil
+    :global t
+    :lighter " SmallFont"
+    (cond
+     ;; ignore when `index/big-font-mode' is enabled
+     (index/big-font-mode
+      (ignore))
+     (index/small-font-mode
+      (->> (* 10 index/small-font-value)
+           (- (face-attribute 'default :height))
+           (set-face-attribute 'default nil :height))
+      (->> (* 10 index/small-font-value)
+           (- (face-attribute 'variable-pitch :height))
+           (set-face-attribute 'variable-pitch nil :height)))
+     (t
+      (->> (* 10 index/small-font-value)
+           (+ (face-attribute 'default :height))
+           (set-face-attribute 'default nil :height))
+      (->> (* 10 index/small-font-value)
+           (+ (face-attribute 'variable-pitch :height))
+           (set-face-attribute 'variable-pitch nil :height)))))
+
+  :bind ((index/keys-minor-mode-map
+          ("C-c =" . index/small-font-mode))))
+#+end_src
+
+** Buffer
+:PROPERTIES:
+:CUSTOM_ID: h:11d39ec3-ae3d-47ea-bdff-129a8b02df8e
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf buffer
+  :bind (("H-n" . next-buffer)
+         ("H-p" . previous-buffer)
+         ("H-b" . switch-to-buffer)
+         ("H-B" . switch-to-buffer-other-window)))
+#+end_src
+
+* This Document
+:PROPERTIES:
+:CUSTOM_ID: h:e5803f69-1ef3-4d25-a619-2ef6b2f44756
+:END:
+
+Here cometh additional information.
+
+** Keybindings Table
+:PROPERTIES:
+:CUSTOM_ID: h:80d39c8d-709d-4a27-9008-89cfed7d87e7
+:END:
+
+The way I represent some keybindings are in a table format.  In the
+table I only specify the keybinding and the name of the function and the
+description are auto filled with a table formula (TBLFM [point to future
+blog post]).
+
+In the source code of this document you can see the formula below the
+table.  But since this is meant to be read in a formatted way, I specify
+it here for completion sake:
+
+#+begin_example ascii
+$2='(key-binding (kbd $1))::$3='(car (s-split "\n" (documentation (key-binding (kbd $1)))))
+#+end_example
+
+You put this-- as I stated above-- under the table:
+
+#+begin_example ascii
+| Keybinding | Name | Description |
+|------------+------+-------------|
+|            |      |             |
+#+TBLFM: $2='(key-binding (kbd $1))::$3='(car (s-split "\n" (documentation (key-binding (kbd $1)))))
+#+end_example
+
+And then execute the formula via =C-c C-c= while the point is above the formula.
