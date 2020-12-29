@@ -1404,25 +1404,6 @@ Calls `index/focused-writing' when called with an argument.
 :PROPERTIES:
 :CUSTOM_ID: h:09fdb3c0-ada9-404e-af78-87b516490557
 :END:
-** COMMENT Ido
-:PROPERTIES:
-:CUSTOM_ID: h:a9100b0b-22df-41d1-9e7a-27596bc616d3
-:END:
-
-#+begin_src emacs-lisp :tangle yes
-(leaf ido
-  :config
-  (setq ido-everywhere t)
-  (setq ido-max-window-height 1)
-  (ido-mode 1))
-#+end_src
-
-#+begin_src emacs-lisp :tangle yes
-(leaf flx-ido
-  :ensure t
-  :config (flx-ido-mode))
-#+end_src
-
 ** Keybindings
 :PROPERTIES:
 :CUSTOM_ID: h:2bf0554c-6f68-487a-bbca-ee21a7e11161
@@ -1469,84 +1450,7 @@ Calls `index/focused-writing' when called with an argument.
   :bind (("H-h" . index/describe-symbol-dwim)))
 #+end_src
 
-** COMMENT Icomplete
-:PROPERTIES:
-:CUSTOM_ID: h:23767eb0-4799-4f9d-bdcc-a54c23d15b3f
-:END:
-
-Still feels slow when compiling a large list.
-
-#+begin_src emacs-lisp :tangle yes
-(leaf minibuffer
-  :config
-  (leaf orderless
-    ;; Orderless slows down completion dramatically.
-    ;; Go through M-x customize-group orderless ???
-    :ensure t
-    :config
-    (setq completion-styles '(orderless partial-completion))
-    (setq orderless-matching-styles
-          '(orderless-flex
-            orderless-strict-leading-initialism
-            orderless-regexp
-            orderless-prefixes
-            orderless-literal))
-
-    (defun tributi/orderless-literal-dispatcher (pattern _index _total)
-      (when (string-suffix-p "=" pattern)
-        `(orderless-literal . ,(substring pattern 0 -1))))
-
-    (defun tributi/orderless-initialism-dispatcher (pattern _index _total)
-      (when (string-suffix-p "," pattern)
-        `(orderless-strict-leading-initialism . ,(substring pattern 0 -1))))
-
-    (setq orderless-style-dispatchers
-          '(tributi/orderless-literal-dispatcher
-            tributi/orderless-initialism-dispatcher))
-
-    (setq completion-category-defaults nil)
-    (setq completion-cycle-threshold 3)
-    (setq completion-flex-nospace nil)
-    (setq completion-pcm-complete-word-inserts-delimiters t)
-    (setq completion-pcm-word-delimiters "-_./:| ")
-    (setq completion-show-help nil)
-    (setq completion-ignore-case t)
-    (setq read-buffer-completion-ignore-case t)
-    (setq read-file-name-completion-ignore-case t)
-    (setq completions-format 'vertical)
-    (setq read-answer-short t)
-    (setq resize-mini-windows t)
-    (setq minibuffer-eldef-shorten-default t)
-
-    (file-name-shadow-mode 1)
-    (minibuffer-electric-default-mode 1)))
-
-(leaf icomplete
-  :after minibuffer
-  :config
-  (setq icomplete-delay-completions-threshold 100)
-  (setq icomplete-max-delay-chars 2)
-  (setq icomplete-compute-delay 0.1)
-  (setq icomplete-show-matches-on-no-input t)
-  (setq icomplete-hide-common-prefix nil)
-  (setq icomplete-prospects-height 1)
-  (setq icomplete-separator (propertize " • " 'face 'shadow))
-  (setq icomplete-with-completion-tables t)
-  (setq icomplete-tidy-shadowed-file-names t)
-
-  :bind ((icomplete-minibuffer-map
-         ("<tab>" . icomplete-force-complete)
-         ("<return>" . icomplete-force-complete-and-exit) ; exit with completion
-         ("C-j" . exit-minibuffer) ; force input unconditionally
-         ("C-n" . icomplete-forward-completions)
-         ("<right>" . icomplete-forward-completions)
-         ("<down>" . icomplete-forward-completions)
-         ("C-p" . icomplete-backward-completions)
-         ;; The following command is from Emacs 27.1
-         ("<C-backspace>" . icomplete-fido-backward-updir))))
-#+end_src
-
-** Ivy
+** COMMENT Ivy
 :PROPERTIES:
 :CUSTOM_ID: h:341b2d29-d4da-4399-9c39-907793945884
 :END:
@@ -1581,7 +1485,7 @@ Still feels slow when compiling a large list.
   (counsel-mode 1))
 #+end_src
 
-** COMMENT Selectrum
+** Selectrum
 :PROPERTIES:
 :CUSTOM_ID: h:ccb3fb58-029a-44bc-8214-493644159cd5
 :END:
@@ -1590,23 +1494,37 @@ Still feels slow when compiling a large list.
 (leaf selectrum
   :ensure t
   :config
-  (setq selectrum-num-candidates-displayed 5)
-  (setq selectrum-fix-minibuffer-height 5)
+  (setq selectrum-num-candidates-displayed 7)
+  (setq selectrum-fix-minibuffer-height 7)
   (selectrum-mode 1))
 
 (leaf selectrum-prescient
   :ensure t
+  :after selectrum
   :config
   (setq prescient-save-file
         (expand-file-name "prescienthist" user-emacs-directory))
   (selectrum-prescient-mode 1)
   (prescient-persist-mode 1))
 
-;; BUG|TODO : this needs development
-;; (leaf mini-frame
-;;   :ensure t
-;;   :config
-;;   (mini-frame-mode 1))
+(leaf marginalia
+  :ensure t
+  :after selectrum
+  :config
+  (setq marginalia-annotators
+        '(marginalia-annotators-heavy nil))
+  (advice-add #'marginalia-cycle
+              :after
+              (lambda ()
+                (when (bound-and-true-p selectrum-mode)
+                  (selectrum-exhibit))))
+  :hook ((minibuffer-setup-hook . marginalia-mode))
+  :bind ((minibuffer-local-map
+          ("C-M-a" . marginalia-cycle))))
+
+(leaf embark
+  :ensure t
+  :bind (("H-e" . embark-act)))
 #+end_src
 
 * Buffer, Directory, and Window Management
