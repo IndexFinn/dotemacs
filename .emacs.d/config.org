@@ -36,20 +36,21 @@ file and its conventions.
 :PROPERTIES:
 :CUSTOM_ID: h:1c8c97ea-f5a1-4e3c-b574-e4d2cb934421
 :END:
-** Internalization of Emacs
+** Recompile this document
 :PROPERTIES:
 :CUSTOM_ID: h:4f188f72-2abe-47f7-b303-cfe12d7e7e3e
 :END:
 
-Since newer versions of Emacs (Emacs 27 and newer) now support an
-/early-init.el/ file, we use that to increase the startup time and for
-package initialization.
-
-Emacs uses the =init.el= file to source custom Emacs configuration.  Since
-we do everything in =org-mode= we only need the essential initialization.
-
-I use =package.el= to keep track of my extensions.  At the end of the file,
-we source the =config.org= file and evaluate it in elisp.
+# REVIEW : change this or update `early-init.el'
+# Since newer versions of Emacs (Emacs 27 and newer) now support an
+# /early-init.el/ file, we use that to increase the startup time and for
+# package initialization.
+#
+# Emacs uses the =init.el= file to source custom Emacs configuration.  Since
+# we do everything in =org-mode= we only need the essential initialization.
+#
+# I use =package.el= to keep track of my extensions.  At the end of the file,
+# we source the =config.org= file and evaluate it in elisp.
 
 Whenever I quit Emacs, I want to load my new configurations from this
 file.  Therefore this function will recompile the preexisting Emacs-lisp
@@ -76,16 +77,21 @@ and how many Garbage Collections took place.
 (leaf emacs
   :config
   (defun index/startup-report ()
-    "Startup report message."
-    (message
-     "Emacs ready in %s with %d garbage collections."
-     (format
-      "%.3f seconds"
-      (float-time
-       (time-subtract after-init-time before-init-time)))
-     gcs-done))
+    "Startup report message.
+As I am not seeing the output of message at startup, I simply
+insert it into the `*scratch*' buffer's header."
+    (with-current-buffer (get-buffer "*scratch*")
+      (save-excursion
+        (beginning-of-buffer)
+        (insert
+         (format
+          ";; EMACS started in %.3fs with %d garbage collections.\n"
+          (float-time
+           (time-subtract after-init-time before-init-time))
+          gcs-done)))))
   :hook ((emacs-startup-hook . index/startup-report)))
 #+end_src
+
 ** Startup Files
 :PROPERTIES:
 :CUSTOM_ID: h:6d58c23d-c387-4714-9600-aade75a620ae
@@ -749,7 +755,7 @@ but tells you when the bell rang.
 :PROPERTIES:
 :CUSTOM_ID: h:832f56b8-3a3a-4b2d-8b3e-f5e917aafdb2
 :END:
-** No backup files
+** No backup files cluttering
 :PROPERTIES:
 :CUSTOM_ID: h:a968f986-8941-41d8-bde9-fcd2fb040354
 :END:
@@ -763,7 +769,8 @@ but tells you when the bell rang.
   (setq delete-old-versions t)
   (setq kept-new-versions 5)
   (setq kept-old-versions 0)
-  (setq version-control t))
+  (setq version-control t)
+  (setq create-lockfiles nil))
 #+end_src
 
 ** yes or no
@@ -1044,13 +1051,14 @@ TODO : Structure these sub headers more nicely.
   :ensure t
   :config
   (setq org-directory (expand-file-name "~/wtn/org"))
-  (setq org-todo-keywords
-        '((sequence "TODO(t)" "|" "DONE(D)" "CANCEL(C)")
-          (sequence "MEET(m)" "|" "MET(M)")
-          (sequence "STUDY(s)" "|" "STUDIED(S)")
-          (sequence "WRITE(w)" "|" "WROTE(W)")))
+  ;; (setq org-todo-keywords
+  ;;       '((sequence "TODO(t)" "|" "DONE(D)" "CANCEL(C)")
+  ;;         (sequence "MEET(m)" "|" "MET(M)")
+  ;;         (sequence "STUDY(s)" "|" "STUDIED(S)")
+  ;;         (sequence "WRITE(w)" "|" "WROTE(W)")))
   (setq org-special-ctrl-a/e nil)
   (setq org-confirm-babel-evaluate nil)
+  (setq org-html-postamble nil)
   :hook ((org-mode-hook . org-indent-mode)))
 #+end_src
 
@@ -1099,7 +1107,7 @@ TODO : Structure these sub headers more nicely.
           ("C-c C-H-l" . org-insert-last-stored-link))))
 #+end_src
 
-*** TODO Org Capture Template
+*** TODO COMMENT Org Capture Template
 :PROPERTIES:
 :CUSTOM_ID: h:b2bbebda-00d2-49f6-9d4e-069091039687
 :END:
@@ -1299,11 +1307,30 @@ This package will dim down other sentences, paragraphs, and code-blocks.
 :END:
 
 #+begin_src emacs-lisp :tangle yes
-;; Move to section Keybindings?
 (leaf emacs
   :config
   (setq-default fill-column 72)
-  :hook ((text-mode . auto-fill-mode)))
+
+  (defun index/auto-fill-mode (&optional arg)
+    "Wrapper around `auto-fill-mode'.
+When executing, firstly call `fill-paragraph', and then enable
+`auto-fill-mode'.  If `auto-fill-mode' is disabled, then do not
+call `fill-paragraph', since paragraph should already be
+indented.
+
+Calls `index/focused-writing' when called with an argument.
+\\{index/focused-writing}"
+    (interactive "P")
+    (when arg
+      (index/focused-writing-mode 'toggle))
+    (unless (bound-and-true-p auto-fill-function)
+      (if (region-active-p)
+          (fill-paragraph nil (region-bounds))
+        (fill-paragraph)))
+    (auto-fill-mode 'toggle))
+  :hook ((text-mode . auto-fill-mode))
+  :bind ((index/keys-minor-mode-map
+          ("C-M-q" . index/auto-fill-mode))))
 #+end_src
 
 ** Treating Sentences
@@ -1342,6 +1369,35 @@ This package will dim down other sentences, paragraphs, and code-blocks.
       (message "Flyspell: changed dictionary from %s to %s." dic change)))
 
   :bind (("C-c t d" . index/flyspell-switch-dictionary)))
+#+end_src
+
+** Writing Mode
+:PROPERTIES:
+:CUSTOM_ID: h:701e567a-13d9-47ec-a0c4-194721157652
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf emacs
+  :config
+  (define-minor-mode index/focused-writing-mode
+    "Toggle between Focused Writing."
+    :init-value nil
+    :global t
+    (if index/focused-writing-mode
+        (progn
+          (setq-local mode-line-format nil)
+          (setq cursor-type 'bar)
+          (olivetti-mode 1)
+          (focus-mode 1)
+          (variable-pitch-mode 1))
+      (kill-local-variable 'mode-line-format)
+      (force-mode-line-update)
+      (setq cursor-type 'box)
+      (olivetti-mode -1)
+      (variable-pitch-mode -1)
+      (focus-mode -1)))
+
+  :bind (("C-c w" . index/focused-writing-mode)))
 #+end_src
 
 * Minibuffer
@@ -1553,7 +1609,15 @@ Still feels slow when compiling a large list.
 ;;   (mini-frame-mode 1))
 #+end_src
 
-* Auto Complete
+* Buffer, Directory, and Window Management
+:PROPERTIES:
+:CUSTOM_ID: h:9a8543e1-96d5-4d67-accd-4c00c9e51999
+:END:
+** Buffer
+:PROPERTIES:
+:CUSTOM_ID: h:fc33f0ba-4b32-4f90-84ea-2572d2806cc2
+:END:
+*** Auto Complete
 :PROPERTIES:
 :CUSTOM_ID: h:cd17803a-17ca-4ad6-b695-68310d8f81f3
 :END:
@@ -1569,11 +1633,138 @@ Still feels slow when compiling a large list.
     (company-prescient-mode 1)))
 #+end_src
 
-* Window
+*** Yasnippet
+:PROPERTIES:
+:CUSTOM_ID: h:83016a2f-fe28-4c37-b472-86c45603196e
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf yasnippet
+  :ensure t
+  :hook ((after-init-hook . yas-global-mode)))
+#+end_src
+
+#+begin_src emacs-lisp :tangle yes
+(leaf yasnippet-snippets :ensure t :after yasnippet)
+#+end_src
+
+*** Comments
+:PROPERTIES:
+:CUSTOM_ID: h:14a8773c-5ed3-4627-af45-396db35c8166
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf newcomment
+  :config
+  (setq comment-empty-lines t)
+  (setq comment-fill-column nil)
+  (setq comment-multi-line t)
+  (setq comment-style 'multi-line)
+
+  (defun index/comment-line ()
+    "A modified version of `comment-line'."
+    (if (region-active-p)
+        (comment-or-uncomment-region
+         (save-excursion
+           (goto-char (region-beginning))
+           (line-beginning-position))
+         (save-excursion
+           (goto-char (region-end))
+           (line-end-position)))
+      (save-excursion
+        (comment-line 1))))
+
+  :bind ((index/keys-minor-mode-map
+          ("C-;" . index/comment-line)
+          ("C-M-;" . comment-kill))))
+#+end_src
+
+** Directory
+:PROPERTIES:
+:CUSTOM_ID: h:245f0859-ee5e-4589-9827-a02b7e6c2144
+:END:
+*** Dired - Directory Editor
+:PROPERTIES:
+:CUSTOM_ID: h:80c2fb0a-f1d4-4219-a390-1308483fd28a
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf dired
+  :config
+  (setq dired-recursive-copies 'always)
+  (setq dired-recursive-deletes 'always)
+  (setq delete-by-moving-to-trash t)
+  (setq dired-listing-switches
+        "-AGFhlv --group-directories-first --time-style=long-iso")
+  (setq dired-dwim-target t)
+  (setq trash-directory (expand-file-name "~/.trash"))
+  :hook ((dired-mode-hook . dired-hide-details-mode))
+
+  :bind ((dired-mode-map
+          ("<return>" . dired-find-alternate-file))))
+
+(leaf dired-async
+  :after (dired async)
+  :hook ((dired-mode-hook . dired-async-mode)))
+
+(leaf wdired
+  :after dired
+  :commands wdired-change-to-wdired-mode
+  :config
+  (setq wdired-allow-to-change-permissions t)
+  (setq wdired-create-parent-directories t))
+
+(leaf dired-subtree
+  :ensure t
+  :config
+  (setq dired-subtree-use-backgrounds nil)
+  :bind ((dired-mode-map
+          ("<tab>" . dired-subtree-toggle)
+          ("<C-tab>" . dired-subtree-cycle))))
+
+(leaf dired-x
+  :after dired
+  :bind (("C-x C-j" . dired-jump)
+         ("H-j" . dired-jump)))
+
+(leaf peep-dired
+  :ensure t
+  :config
+  ;; https://emacs.stackexchange.com/q/46664
+  (defun tributi/toggle-window-split ()
+    (interactive)
+    (if (= (count-windows) 2)
+        (let* ((this-win-buffer (window-buffer))
+               (next-win-buffer (window-buffer (next-window)))
+               (this-win-edges (window-edges (selected-window)))
+               (next-win-edges (window-edges (next-window)))
+               (this-win-2nd (not (and (<= (car this-win-edges)
+                                           (car next-win-edges))
+                                       (<= (cadr this-win-edges)
+                                           (cadr next-win-edges)))))
+               (splitter
+                (if (= (car this-win-edges)
+                       (car (window-edges (next-window))))
+                    'split-window-horizontally
+                  'split-window-vertically)))
+          (delete-other-windows)
+          (let ((first-win (selected-window)))
+            (funcall splitter)
+            (if this-win-2nd (other-window 1))
+            (set-window-buffer (selected-window) this-win-buffer)
+            (set-window-buffer (next-window) next-win-buffer)
+            (select-window first-win)
+            (if this-win-2nd (other-window 1))))))
+  :bind ((dired-mode-map
+          ("P" . peep-dired)
+          ("T" . tributi/toggle-window-split))))
+#+end_src
+
+** Window
 :PROPERTIES:
 :CUSTOM_ID: h:094d890c-8ef3-4eef-87d6-8e644e7c5935
 :END:
-** Rules
+*** Rules
 :PROPERTIES:
 :CUSTOM_ID: h:66a3a052-9d23-415b-ad4b-936614906851
 :END:
@@ -1613,7 +1804,7 @@ Still feels slow when compiling a large list.
          (custom-mode-hook . visual-line-mode)))
 #+end_src
 
-** Functions
+*** Functions
 :PROPERTIES:
 :CUSTOM_ID: h:7ccb5bef-d925-4ba7-b690-440dabd542c6
 :END:
@@ -1676,7 +1867,7 @@ managers such as DWM, BSPWM refer to this state as 'monocle'."
          ("H-k" . tributi/kill-buffer-current)))
 #+end_src
 
-** TODO Keybindings
+*** TODO Keybindings
 :PROPERTIES:
 :CUSTOM_ID: h:e830c1c2-d8d5-4ba4-86ae-e86ff3161661
 :END:
@@ -1690,7 +1881,7 @@ managers such as DWM, BSPWM refer to this state as 'monocle'."
          ("H-3" . split-window-right)))
 #+end_src
 
-** Window History
+*** Window History
 :PROPERTIES:
 :CUSTOM_ID: h:e1ed5de4-f816-4f91-a667-09d8f772ddd9
 :END:
@@ -1887,16 +2078,6 @@ thus you can define custom made functions easily.
     (eshell/ls "-A")))
 #+end_src
 
-* Ibuffer
-:PROPERTIES:
-:CUSTOM_ID: h:ff8d2bf4-b1c5-479c-bebb-6aff585f039e
-:END:
-
-#+begin_src emacs-lisp :tangle yes
-(leaf ibuffer
-  :bind (("C-x C-b" . ibuffer)))
-#+end_src
-
 * Git - The Stupid Content Tracker
 :PROPERTIES:
 :CUSTOM_ID: h:0a94883e-e2e1-4853-bbbb-d30e6f7ceaa0
@@ -1962,47 +2143,6 @@ Simple way of displaying the changes in a git directory.
   (global-diff-hl-mode 1)
   :hook ((magit-pre-refresh-hook . diff-hl-magit-pre-refresh)
          (magit-post-refresh-hook . diff-hl-magit-post-refresh)))
-#+end_src
-
-* Yasnippet
-:PROPERTIES:
-:CUSTOM_ID: h:83016a2f-fe28-4c37-b472-86c45603196e
-:END:
-
-#+begin_src emacs-lisp :tangle yes
-(leaf yasnippet
-  :ensure t
-  :hook ((after-init-hook . yas-global-mode)))
-#+end_src
-
-#+begin_src emacs-lisp :tangle yes
-(leaf yasnippet-snippets :ensure t :after yasnippet)
-#+end_src
-
-* TODO Lispy - Tree-like Lisp
-:PROPERTIES:
-:CUSTOM_ID: h:60cb0dca-5506-4f84-a01f-75f6a04c4f57
-:END:
-
-http://danmidwood.com/content/2014/11/21/animated-paredit.html
-
-#+begin_src emacs-lisp :tangle yes
-(leaf lispy
-  :ensure t
-  :hook ((lisp-interaction-mode-hook . lispy-mode)
-         (emacs-lisp-mode-hook . lispy-mode)
-         (common-lisp-mode-hook . lispy-mode)
-         (scheme-mode-hook . lispy-mode)))
-#+end_src
-
-#+begin_src emacs-lisp :tangle yes
-;; (leaf paredit
-;;   :ensure t
-;;   :hook ((lisp-interaction-mode-hook . paredit-mode)
-;;          (emacs-lisp-mode-hook . paredit-mode)
-;;          (common-lisp-mode-hook . paredit-mode)
-;;          (scheme-mode-hook . paredit-mode)
-;;          (clojure-mode-hook . paredit-mode)))
 #+end_src
 
 * Miscellaneous
@@ -2086,7 +2226,7 @@ thing I missed from (n)vim OOTB-Experience.
   :hook ((prog-mode-hook . flymake-mode)))
 #+end_src
 
-** COMMENT Open All Root Files with Super User
+** Open All Root Files with Super User
 :PROPERTIES:
 :CUSTOM_ID: h:71540004-f7d7-4349-829a-c699b83963dc
 :END:
@@ -2098,10 +2238,10 @@ impossible to mistakenly edit some file under =/etc/= for example.
 This minor mode will reopen every file outside the home directory as
 sudo with tramp.
 
-#+begin_src emacs-lisp :tangle yes
-;; These functions where found in the package `crux.el'.  I just renamed
-;; them for clarity / naming space purpose.
+#+begin_src emacs-lisp
+;; These functions where found in the package `crux.el'.
 (leaf tramp
+  :require t
   :config
   (defun tributi/file-owner-uid (filename)
     "Return the UID of the FILENAME as an integer.
@@ -2109,7 +2249,8 @@ See `file-attributes' for more info."
     (nth 2 (file-attributes filename 'integer)))
 
   (defun tributi/file-owned-by-user-p (filename)
-    "Return t if file FILENAME is owned by the currently logged in user."
+    "Return t if file FILENAME is owned by the currently logged
+in user."
     (equal (tributi/file-owner-uid filename)
            (user-uid)))
 
@@ -2132,9 +2273,8 @@ See `file-attributes' for more info."
 
   (defun tributi/sudo-edit (&optional arg)
     "Edit currently visited file as root.
-With a prefix ARG prompt for a file to visit.
-Will also prompt for a file to visit if current
-buffer is not visiting a file."
+With a prefix ARG prompt for a file to visit.  Will also prompt
+for a file to visit if current buffer is not visiting a file."
     (interactive "P")
     (if (or arg (not buffer-file-name))
         (let ((remote-method (file-remote-p default-directory 'method))
@@ -2154,8 +2294,8 @@ buffer is not visiting a file."
 
   (defun tributi/reopen-as-root ()
     "Find file as root if necessary.
-Meant to be used as `find-file-hook'.
-See also `tributi/reopen-as-root-mode'."
+Meant to be used as `find-file-hook'.  See also
+`tributi/reopen-as-root-mode'."
     (unless (or (tramp-tramp-file-p buffer-file-name)
                 (equal major-mode 'dired-mode)
                 (not (file-exists-p (file-name-directory buffer-file-name)))
@@ -2167,7 +2307,6 @@ See also `tributi/reopen-as-root-mode'."
     "Automatically reopen files as root if we can't write to them
 as the current user."
     :global t
-    :group 'tributi
     (if tributi/reopen-as-root-mode
         (add-hook 'find-file-hook #'tributi/reopen-as-root)
       (remove-hook 'find-file-hook #'tributi/reopen-as-root)))
@@ -2332,107 +2471,6 @@ questions.  Else use completion to select the tab to switch to."
 
   :bind (("H-t" . tributi/tab-bar-select-tab-dwim)
          ("C-x t s" . tab-switcher)))
-#+end_src
-
-* Comments
-:PROPERTIES:
-:CUSTOM_ID: h:14a8773c-5ed3-4627-af45-396db35c8166
-:END:
-
-#+begin_src emacs-lisp :tangle yes
-(leaf newcomment
-  :config
-  (setq comment-empty-lines t)
-  (setq comment-fill-column nil)
-  (setq comment-multi-line t)
-  (setq comment-style 'multi-line)
-
-  (defun index/comment-line ()
-    "A modified version of `comment-line'."
-    (if (region-active-p)
-        (comment-or-uncomment-region
-         (save-excursion
-           (goto-char (region-beginning))
-           (line-beginning-position))
-         (save-excursion
-           (goto-char (region-end))
-           (line-end-position)))
-      (save-excursion
-        (comment-line 1))))
-
-  :bind ((index/keys-minor-mode-map
-          ("C-;" . index/comment-line)
-          ("C-M-;" . comment-kill))))
-#+end_src
-
-* Helpful - Better Help
-:PROPERTIES:
-:CUSTOM_ID: h:de3fed65-3342-4e6d-ab50-1b6ed592053b
-:END:
-
-Why Helpful?
-
-#+begin_src emacs-lisp :tangle yes
-(leaf helpful
-  :ensure t
-  :config
-  (defun index/describe-last-used-function ()
-    "Describes last used function."
-    (interactive)
-    (helpful-function last-command))
-  :hook ((helpful-mode-hook . visual-line-mode))
-  :bind (("C-h f" . helpful-function)
-         ("C-h k" . helpful-key)
-         ("C-h o" . helpful-callable)
-         ("C-h v" . helpful-variable)
-         ("H-h" . helpful-at-point)
-         (index/keys-minor-mode-map
-          ("C-h u" . index/describe-last-used-function))))
-#+end_src
-
-* Dired - Directory Editor
-:PROPERTIES:
-:CUSTOM_ID: h:80c2fb0a-f1d4-4219-a390-1308483fd28a
-:END:
-
-#+begin_src emacs-lisp :tangle yes
-(leaf dired
-  :config
-  (setq dired-recursive-copies 'always)
-  (setq dired-recursive-deletes 'always)
-  (setq delete-by-moving-to-trash t)
-  (setq dired-listing-switches
-        "-AGFhlv --group-directories-first --time-style=long-iso")
-  (setq dired-dwim-target t)
-  (setq trash-directory (expand-file-name "~/.trash"))
-  :hook ((dired-mode-hook . dired-hide-details-mode))
-
-  :bind ((dired-mode-map
-          ("<return>" . dired-find-alternate-file))))
-
-(leaf dired-async
-  :after (dired async)
-  :hook ((dired-mode-hook . dired-async-mode)))
-
-(leaf wdired
-  :after dired
-  :commands wdired-change-to-wdired-mode
-  :config
-  (setq wdired-allow-to-change-permissions t)
-  (setq wdired-create-parent-directories t))
-
-(leaf dired-subtree
-  :ensure t
-  :config
-  (setq dired-subtree-use-backgrounds nil)
-  :bind ((dired-mode-map
-          ("<tab>" . dired-subtree-toggle)
-          ("<C-tab>" . dired-subtree-cycle))))
-
-(leaf dired-x
-  :after dired
-  :bind (("C-x C-j" . dired-jump)
-         ("H-j" . dired-jump)))
 #+end_src
 
 * Web Development
@@ -2635,7 +2673,7 @@ Compile SASS to CSS with =sass --watch --style compressed sass:css=.
            (function index/org-hugo-new-subtree-post-capture-template)))))
 #+end_src
 
-* Lisp without the E
+* Lisp
 :PROPERTIES:
 :CUSTOM_ID: h:be2802e1-fd14-4bc0-b50c-62f3e7d58479
 :END:
@@ -2645,6 +2683,36 @@ Working with LISP inside Emacs is not hard at all.  It only requires
 have it be evaluated in its dedicated compiler/interpreter.  This makes
 for a smooth REPL-- read-eval-print loop-- experience, which supersedes
 LISP above other programming languages: easily act on the code.
+
+** Elisp
+:PROPERTIES:
+:CUSTOM_ID: h:f53ec8f1-e054-4ef5-b046-deccfb950c43
+:END:
+*** TODO Lispy - Tree-like Lisp
+:PROPERTIES:
+:CUSTOM_ID: h:60cb0dca-5506-4f84-a01f-75f6a04c4f57
+:END:
+
+http://danmidwood.com/content/2014/11/21/animated-paredit.html
+
+#+begin_src emacs-lisp :tangle yes
+(leaf lispy
+  :ensure t
+  :hook ((lisp-interaction-mode-hook . lispy-mode)
+         (emacs-lisp-mode-hook . lispy-mode)
+         (common-lisp-mode-hook . lispy-mode)
+         (scheme-mode-hook . lispy-mode)))
+#+end_src
+
+#+begin_src emacs-lisp :tangle yes
+;; (leaf paredit
+;;   :ensure t
+;;   :hook ((lisp-interaction-mode-hook . paredit-mode)
+;;          (emacs-lisp-mode-hook . paredit-mode)
+;;          (common-lisp-mode-hook . paredit-mode)
+;;          (scheme-mode-hook . paredit-mode)
+;;          (clojure-mode-hook . paredit-mode)))
+#+end_src
 
 ** Common Lisp
 :PROPERTIES:
@@ -2924,7 +2992,9 @@ This will add a '*' tag on the current entry."
 
 Since elfeed updates are rather slow by default, I tweaked with them
 more or less.  Well actually I stole some code from Reddit User
-/github-alphapapa/: https://github.com/skeeto/elfeed/issues/293.
+/github-alphapapa/.
+
++ URL: https://github.com/skeeto/elfeed/issues/293.
 
 #+begin_src emacs-lisp :tangle yes
 (leaf elfeed
@@ -3333,53 +3403,6 @@ If called with a prefix don't indent, otherwise indent."
           ("C-M-o" . index/insert-line-above))))
 #+end_src
 
-** Writing Mode
-:PROPERTIES:
-:CUSTOM_ID: h:701e567a-13d9-47ec-a0c4-194721157652
-:END:
-
-#+begin_src emacs-lisp :tangle yes
-(leaf emacs
-  :config
-  (define-minor-mode index/focused-writing-mode
-    "Toggle between Focused Writing."
-    :init-value nil
-    :global t
-    (if index/focused-writing-mode
-        (progn
-          (setq-local mode-line-format nil)
-          (setq cursor-type 'bar))
-      (kill-local-variable 'mode-line-format)
-      (force-mode-line-update)
-      (setq cursor-type 'box))
-    (olivetti-mode 'toggle)
-    (focus-mode 'toggle)
-    (variable-pitch-mode 'toggle))
-
-  ;; TODO: Move back to auto-fill-mode section?
-  (defun index/auto-fill-mode (&optional arg)
-    "Wrapper around `auto-fill-mode'.
-When executing, firstly call `fill-paragraph', and then enable
-`auto-fill-mode'.  If `auto-fill-mode' is disabled, then do not
-call `fill-paragraph', since paragraph should already be
-indented.
-
-Calls `index/focused-writing' when called with an argument.
-\\{index/focused-writing}"
-    (interactive "P")
-    (when arg
-      (index/focused-writing-mode 'toggle))
-    (unless (bound-and-true-p auto-fill-function)
-      (if (region-active-p)
-          (fill-paragraph nil (region-bounds))
-        (fill-paragraph)))
-    (auto-fill-mode 'toggle))
-
-  :bind ((index/keys-minor-mode-map
-          ("C-M-q" . index/auto-fill-mode))
-         ("C-c w" . index/focused-writing-mode)))
-#+end_src
-
 ** Dummy Text
 :PROPERTIES:
 :CUSTOM_ID: h:bc3e27bd-15cd-440d-b6d8-31e9d58d1bc0
@@ -3577,6 +3600,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>."))
   (defvar index/big-font-value 4
     "The amount to raise the font size by. In `pt'.")
 
+  (defmacro index/big-font--builder (font sign)
+    `(->> (* 10 index/big-font-value)
+          (,sign (face-attribute ,font :height))
+          (set-face-attribute ,font nil :height)))
+
   (define-minor-mode index/big-font-mode
     "Enlarges the global font by `index/big-font-value'."
     :init-value nil
@@ -3587,19 +3615,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>."))
      (index/small-font-mode
       (ignore))
      (index/big-font-mode
-      (->> (* 10 index/big-font-value)
-           (+ (face-attribute 'default :height))
-           (set-face-attribute 'default nil :height))
-      (->> (* 10 index/big-font-value)
-           (+ (face-attribute 'variable-pitch :height))
-           (set-face-attribute 'variable-pitch nil :height)))
+      (index/big-font--builder 'default +)
+      (index/big-font--builder 'variable-pitch +)
+      (index/big-font--builder 'fixed-pitch +))
      (t
-      (->> (* 10 index/big-font-value)
-           (- (face-attribute 'default :height))
-           (set-face-attribute 'default nil :height))
-      (->> (* 10 index/big-font-value)
-           (- (face-attribute 'variable-pitch :height))
-           (set-face-attribute 'variable-pitch nil :height)))))
+      (index/big-font--builder 'default -)
+      (index/big-font--builder 'variable-pitch -)
+      (index/big-font--builder 'fixed-pitch -))))
 
   :bind (("C-c C-=" . index/big-font-mode)))
 #+end_src
@@ -3615,6 +3637,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>."))
   (defvar index/small-font-value 4
     "The amount to raise the font size by. In `pt'.")
 
+  (defmacro index/small-font--builder (font sign)
+    `(->> (* 10 index/small-font-value)
+          (,sign (face-attribute ,font :height))
+          (set-face-attribute ,font nil :height)))
+
   (define-minor-mode index/small-font-mode
     "Enlarges the global font by `index/small-font-value'."
     :init-value nil
@@ -3625,19 +3652,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>."))
      (index/big-font-mode
       (ignore))
      (index/small-font-mode
-      (->> (* 10 index/small-font-value)
-           (- (face-attribute 'default :height))
-           (set-face-attribute 'default nil :height))
-      (->> (* 10 index/small-font-value)
-           (- (face-attribute 'variable-pitch :height))
-           (set-face-attribute 'variable-pitch nil :height)))
+      (index/small-font--builder 'default -)
+      (index/small-font--builder 'variable-pitch -)
+      (index/small-font--builder 'fixed-pitch -))
      (t
-      (->> (* 10 index/small-font-value)
-           (+ (face-attribute 'default :height))
-           (set-face-attribute 'default nil :height))
-      (->> (* 10 index/small-font-value)
-           (+ (face-attribute 'variable-pitch :height))
-           (set-face-attribute 'variable-pitch nil :height)))))
+      (index/small-font--builder 'default +)
+      (index/small-font--builder 'variable-pitch +)
+      (index/small-font--builder 'fixed-pitch +))))
 
   :bind ((index/keys-minor-mode-map
           ("C-c =" . index/small-font-mode))))
@@ -3656,12 +3677,59 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>."))
          ("H-B" . switch-to-buffer-other-window)))
 #+end_src
 
+*** Ibuffer
+:PROPERTIES:
+:CUSTOM_ID: h:ff8d2bf4-b1c5-479c-bebb-6aff585f039e
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(leaf ibuffer
+  :bind (("C-x C-b" . ibuffer)))
+#+end_src
+
 * This Document
 :PROPERTIES:
 :CUSTOM_ID: h:e5803f69-1ef3-4d25-a619-2ef6b2f44756
 :END:
 
 Here cometh additional information.
+
+** Namespace
+:PROPERTIES:
+:CUSTOM_ID: h:c6c9e3c5-9e19-4c76-9def-6207a0a8afb9
+:END:
+
+In this document I use a strict naming convention.
+
+*** Index =index/=
+:PROPERTIES:
+:CUSTOM_ID: h:c3486661-c12d-4b89-9f52-8d040333830f
+:END:
+
+Every function, macro, minor-mode, et cetera start with the =index/=
+namespace.  Following the slash =/= I give them their respective name.
+This is so I have a clear distinction between my code and Emacs' code.
+There is never a name collision.
+
+Technically I could query them all and print them out.  Or look up the
+documentation with =^index/=.  These extra keystrokes when defining some
+code have a lot of benefits.
+
+*** Tributi =tributi/=
+:PROPERTIES:
+:CUSTOM_ID: h:6331a66d-97ed-42d7-9cfe-e21ec80ecb53
+:END:
+
+This has the same method as the above mentioned namespace.  The only
+difference is that these functions, macros, minor-modes, et cetera are
+imported from other people; the code that I took without changing
+anything.
+
+Once I gave it just a minor tweak, I convert them into the =index/=
+prefix.
+
+As for now-- 2020-12-29-- I try to have a comment for every code that I
+imported pointing to the author/creator or where I got it from.
 
 ** Keybindings Table
 :PROPERTIES:
@@ -3686,8 +3754,18 @@ You put this-- as I stated above-- under the table:
 #+begin_example ascii
 | Keybinding | Name | Description |
 |------------+------+-------------|
-|            |      |             |
+| C-M-q      |      |             |
 #+TBLFM: $2='(key-binding (kbd $1))::$3='(car (s-split "\n" (documentation (key-binding (kbd $1)))))
 #+end_example
 
-And then execute the formula via =C-c C-c= while the point is above the formula.
+And then execute the formula via =C-c C-c= while the point is above the formula:
+
+#+begin_example ascii
+| Keybinding | Name                 | Description                      |
+|------------+----------------------+----------------------------------|
+| C-M-q      | index/auto-fill-mode | Wrapper around ‘auto-fill-mode’. |
+#+TBLFM: $2='(key-binding (kbd $1))::$3='(car (s-split "\n" (documentation (key-binding (kbd $1)))))
+#+end_example
+
+This is very easy and I highly recommend to look up the [[https://orgmode.org/manual/Tables.html#Tables][table
+documentation]] especially the [[https://orgmode.org/manual/The-Spreadsheet.html#The-Spreadsheet][spreadsheet section]].
