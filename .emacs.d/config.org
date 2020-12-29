@@ -1913,12 +1913,39 @@ World's most powerful git interface.
 (leaf magit
   :ensure t
   :config
-  (defun index/magit-status-emacs ()
-    "Finds the Emacs repository."
-    (interactive)
-    (magit-status "~/dot/emacs/"))
+  (setq vc-follow-symlinks t)
+  (setq git-commit-summary-max-length 50)
+
+  (defvar index/magit-repository-directories
+    '("~/dot/emacs/" "~/web/" "~/lin/" "~/wtn/")
+    "Directories with a repository.")
+
+  (defun index/magit-status-emacs (&optional arg)
+    "Finds the Emacs repository.
+If called with the universal argument prompt for a repository
+from the variable `index/magit-repository-directories'."
+    (interactive "P")
+    (if arg
+        (magit-status
+         (completing-read
+          "Repository: "
+          index/magit-repository-directories))
+      (magit-status "~/dot/emacs/")))
+
+  :hook ((after-save-hook . magit-after-save-refresh-status))
   :bind (("C-c g" . magit-status)
          ("H-g" . index/magit-status-emacs)))
+
+(leaf ediff
+  :config
+  (setq ediff-keep-variants nil)
+  (setq ediff-make-buffers-readonly-at-startup nil)
+  (setq ediff-merge-revisions-with-ancestor t)
+  (setq ediff-show-clashes-only t)
+  (setq ediff-split-window-function 'split-window-horizontally)
+  (setq ediff-window-setup-function 'ediff-setup-windows-plain)
+
+  :hook ((ediff-prepare-buffer-hook . org-show-all)))
 #+end_src
 
 ** Diff-hl - A Git Diff Gutter
