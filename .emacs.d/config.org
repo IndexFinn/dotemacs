@@ -56,7 +56,7 @@ Whenever I quit Emacs, I want to load my new configurations from this
 file.  Therefore this function will recompile the preexisting Emacs-lisp
 file to a newer version every time Emacs closes.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :config
   (defun index/rebuild-emacs-init ()
@@ -65,7 +65,7 @@ file to a newer version every time Emacs closes.
           (e (expand-file-name "config.el" user-emacs-directory)))
       (when (file-readable-p e)
         (delete-file e))
-      (org-babel-tangle-file f)))
+      (org-babel-tangle-file f e)))
   :hook ((kill-emacs-hook . index/rebuild-emacs-init)
          (kill-emacs-hook . package-quickstart-refresh)))
 #+end_src
@@ -73,7 +73,7 @@ file to a newer version every time Emacs closes.
 After this I want Emacs to report the time it took for Emacs to launch
 and how many Garbage Collections took place.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :config
   (defun index/startup-report ()
@@ -96,13 +96,12 @@ insert it into the `*scratch*' buffer's header."
 :PROPERTIES:
 :CUSTOM_ID: h:6d58c23d-c387-4714-9600-aade75a620ae
 :END:
-
 *** The /init.el/ file
 :PROPERTIES:
 :CUSTOM_ID: h:6e1a02b2-b6b7-4015-99c5-d3ae45832ce9
 :END:
 
-#+begin_src emacs-lisp
+#+begin_example emacs-lisp
 ;; init.el --- initialization file
 
 ;; Copyright (C) 2020 Finn Sauer <finn@finnsauer.xyz>
@@ -157,14 +156,14 @@ insert it into the `*scratch*' buffer's header."
     (org-babel-load-file o f)))
 
 ;;; init.el ends here
-#+end_src
+#+end_example
 
 *** The /early-init.el/ file
 :PROPERTIES:
 :CUSTOM_ID: h:1dda032f-3bc7-4c67-a57b-263c130c5ee5
 :END:
 
-#+begin_src emacs-lisp
+#+begin_example emacs-lisp
 ;; early-init.el --- init.el just earlier
 
 ;; Copyright (C) 2020 Finn Sauer <finn@finnsauer.xyz>
@@ -195,7 +194,7 @@ insert it into the `*scratch*' buffer's header."
 (setq frame-inhibit-implied-resize t)
 
 ;;; early-init.el ends here
-#+end_src
+#+end_example
 
 ** Enforce Keybindings
 :PROPERTIES:
@@ -232,7 +231,7 @@ This method is neat, because when you want to disable the now enforced
 keybindings you can simply type =M-x index/keys-minor-mode= and get back
 the default keybindings.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :init
   (defvar index/keys-minor-mode-map (make-sparse-keymap)
@@ -262,7 +261,7 @@ not at the top of the =minor-mode-map-alist=.
 
 # DEPRECATED : Is not required anymore with the
 # `emulation-mode-map-alist'.
-#+begin_src emacs-lisp
+#+begin_example emacs-lisp
 (leaf emacs
   :config
   (defun index/keys-have-priority (&rest _)
@@ -275,14 +274,14 @@ priority over other minor modes.  Called via the
         (add-to-list 'minor-mode-map-alist keys))))
 
   :hook ((after-load-functions . index/keys-have-priority)))
-#+end_src
+#+end_example
 
 ** Authinfo
 :PROPERTIES:
 :CUSTOM_ID: h:e12f564e-36f9-40eb-8795-088cc90d9d33
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf auth-info
   :config
   (setq auth-sources '("~/.authinfo.gpg"))
@@ -301,7 +300,7 @@ priority over other minor modes.  Called via the
 :CUSTOM_ID: h:39e38a6a-07dc-4c05-9db9-574396b93730
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (defmacro ->> (&rest body)
   "Clojure threading macro.
 The thread-last macro:
@@ -358,7 +357,7 @@ wouldn't seem like a problem on newer hardware with more memory
 accessible, but every MiB counts on my limited hardware.  With this hook
 and function we set the garbage collection to a reasonable value.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf gc
   :config
   (defun index/gc-reset ()
@@ -377,7 +376,7 @@ Magic Hack.  This will, during normal Emacs usage, be a higher value
 than usual, but not infinite as shown above.  When idling it turns
 Emacs' Garbage Collection back on.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf gcmh
   :ensure t
   :hook ((after-init-hook . gcmh-mode)))
@@ -394,7 +393,7 @@ initialize emacs.  With the =emacs --daemon= starting up a new window is
 very responsive.  One other useful functionality is to add new buffers
 from the terminal with =emacsclient -n <file>=.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf server
   :hook ((after-init-hook . server-start)))
 #+end_src
@@ -406,7 +405,7 @@ left in the blue.  You can immediately work on what you left.
 
 The “Desktop” package will keep my registers and buffers available.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf desktop
   :config
   (setq desktop-auto-save-timeout 300)
@@ -425,7 +424,7 @@ The “Desktop” package will keep my registers and buffers available.
 Make sure to always go to the /scratch/ buffer upon spawning a new Emacs
 frame.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :config
   (setq initial-buffer-choice (lambda ()
@@ -465,7 +464,7 @@ displayed in a window it will lower the background color of said
 buffers.  This even works when accessing the minibuffer-- this option
 can of course be turned off.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf auto-dim-other-buffers
   :ensure t
   :commands auto-dim-other-buffers-mode
@@ -485,7 +484,7 @@ seeing the cursor.
 
 This package will enable us to highlight a line with a pulse signal.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf pulse
   :config
   (defface pulse-line-modus-theme
@@ -518,7 +517,7 @@ This package will enable us to highlight a line with a pulse signal.
 Whenever the window scrolls a light will shine on top of your cursor so
 you know where it is.  This includes changing the window.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf beacon
   :ensure t
   :config
@@ -533,7 +532,7 @@ you know where it is.  This includes changing the window.
 :CUSTOM_ID: h:19aca65c-acf0-4812-862b-b1962f573172
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf doom-modeline
   :ensure t
   :hook ((after-init-hook . doom-modeline-mode))
@@ -544,7 +543,7 @@ you know where it is.  This includes changing the window.
   (setq doom-modeline-buffer-eppncoding nil))
 #+end_src
 
-# #+begin_src emacs-lisp :tangle yes
+# #+begin_src emacs-lisp
 #   (leaf emacs
 #     :config
 #     (defconst index/mode-line-format
@@ -572,7 +571,7 @@ you know where it is.  This includes changing the window.
 :CUSTOM_ID: h:1c69692e-d7a8-44f9-986f-9aa3ab8b8e34
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (line-number-mode 1)
 (column-number-mode 1)
 #+end_src
@@ -582,7 +581,7 @@ you know where it is.  This includes changing the window.
 :CUSTOM_ID: h:d4ace9a3-763b-4a68-9194-09fe6c8dd0fa
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
@@ -597,7 +596,7 @@ you know where it is.  This includes changing the window.
 :CUSTOM_ID: h:58c1cf8d-4a0f-4127-965b-177b1f66923b
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf modus-operandi-theme :ensure t)
 
 (leaf modus-vivendi-theme :ensure t)
@@ -608,22 +607,22 @@ you know where it is.  This includes changing the window.
 ;;         calendar-longitude (getenv "LONGITUDE")))
 
 ;; Light theme at sunrise
-(load-theme 'modus-operandi t t)
-(enable-theme 'modus-operandi)
+;; (load-theme 'modus-operandi t t)
+;; (enable-theme 'modus-operandi)
 ;; (run-at-time (nth 1 (split-string (sunrise-sunset)))
 ;;              (* 60 60 24)
 ;;              (lambda () (enable-theme 'modus-operandi)))
 
 ;; Dark theme at sunset
-(load-theme 'modus-vivendi t t)
+;; (load-theme 'modus-vivendi t t)
 ;; (run-at-time (nth 4 (split-string (sunrise-sunset)))
 ;;              (* 60 60 24)
 ;;              (lambda () (enable-theme 'modus-vivendi)))
 
 (leaf doom-themes :ensure t)
 
-;; (load-theme 'doom-dracula)
-;; (enable-theme 'doom-dracula)
+(load-theme 'doom-dracula)
+(enable-theme 'doom-dracula)
 
 ;; (load-theme 'doom-nord)
 ;; (enable-theme 'doom-nord)
@@ -637,7 +636,7 @@ you know where it is.  This includes changing the window.
 :CUSTOM_ID: h:3f32e500-b52c-457a-9152-68718de8d383
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf org
   :config
   (set-face-attribute 'org-link nil
@@ -670,7 +669,7 @@ you know where it is.  This includes changing the window.
 :CUSTOM_ID: h:8ab00c0a-0aef-4367-bb11-2b82773048f5
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :config
   (set-face-attribute 'default nil
@@ -689,7 +688,7 @@ you know where it is.  This includes changing the window.
 :CUSTOM_ID: h:b5439b93-d1c9-44a4-a0ba-8af9d3209ef0
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :config
   (setq blink-cursor-interval 0.75)
@@ -703,7 +702,7 @@ you know where it is.  This includes changing the window.
 :CUSTOM_ID: h:7fda8611-073e-48b5-95e4-471772653fa7
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (global-hl-line-mode t)
 #+end_src
 
@@ -715,7 +714,7 @@ you know where it is.  This includes changing the window.
 This package is used to erase the lighter of a minor mode.  This can be
 called with leaf/use-package.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf diminish :ensure t)
 #+end_src
 
@@ -724,7 +723,7 @@ called with leaf/use-package.
 :CUSTOM_ID: h:24cd8c81-308c-41c0-ba27-d0599fd3972d
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (global-prettify-symbols-mode 1)
 #+end_src
 
@@ -743,7 +742,7 @@ be nice to see it...  That's where a visual bell comes into place:
 the modeline and blink for a predefined amount.  This does not annoy you
 but tells you when the bell rang.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf mode-line-bell
   :ensure t
   :config
@@ -760,7 +759,7 @@ but tells you when the bell rang.
 :CUSTOM_ID: h:a968f986-8941-41d8-bde9-fcd2fb040354
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :config
   (setq backup-by-copying t)
@@ -778,7 +777,7 @@ but tells you when the bell rang.
 :CUSTOM_ID: h:035a8b90-67b5-4928-93d1-77d051ef42c4
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (defalias 'yes-or-no-p 'y-or-n-p)
 #+end_src
 
@@ -787,7 +786,7 @@ but tells you when the bell rang.
 :CUSTOM_ID: h:54ef46ab-46b2-427e-a741-93cedfadf21f
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (show-paren-mode)
 #+end_src
 
@@ -796,7 +795,7 @@ but tells you when the bell rang.
 :CUSTOM_ID: h:dfe60159-d514-4390-b9e5-0da6198d96f3
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :config
   (setq-default tab-always-indent 'complete)
@@ -811,7 +810,7 @@ but tells you when the bell rang.
 
 Best way of saving your Ass; trust me, you'll need it!
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf undo-tree
   :ensure t
   :config
@@ -824,7 +823,7 @@ Best way of saving your Ass; trust me, you'll need it!
 :CUSTOM_ID: h:d9b2825b-2e8c-40cf-b887-a92bcb8c50e4
 :END:
 
- #+begin_src emacs-lisp :tangle yes
+ #+begin_src emacs-lisp
 (leaf smartparens
   :ensure t
   :config (smartparens-global-mode))
@@ -835,7 +834,7 @@ Best way of saving your Ass; trust me, you'll need it!
 :CUSTOM_ID: h:66882eea-9955-45e9-b6e3-698459e92d66
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :config
   (setq scroll-conservatively 1)
@@ -848,7 +847,7 @@ Best way of saving your Ass; trust me, you'll need it!
 :CUSTOM_ID: h:36c6e555-9e63-40f8-a759-909e383c60bd
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf goto-last-change
   :ensure t
   :config
@@ -866,7 +865,7 @@ This will call `beacon-blink' after `goto-last-change'."
 :CUSTOM_ID: h:cf4afc30-821a-43b1-aa88-15ee1e6f173b
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (add-hook 'before-save-hook #'delete-trailing-whitespace)
 #+end_src
 
@@ -875,7 +874,7 @@ This will call `beacon-blink' after `goto-last-change'."
 :CUSTOM_ID: h:2893e941-8ed7-44f8-9d78-cadede740009
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :config
   (put 'narrow-to-region 'disabled nil)
@@ -893,7 +892,7 @@ This will call `beacon-blink' after `goto-last-change'."
 This will allow the storage of the minibuffer history.  This
 functionality will be enhanced by any powerful completion framework.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf savehist
   :config
   (setq savehist-file (expand-file-name "savehist" user-emacs-directory))
@@ -911,7 +910,7 @@ functionality will be enhanced by any powerful completion framework.
 It is nice to have your cursor be exactly where it was when you opened a
 file.  This is good for picking up work you used to do.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf saveplace
   :config
   (setq save-place-file (expand-file-name "savecursor" user-emacs-directory))
@@ -924,7 +923,7 @@ file.  This is good for picking up work you used to do.
 :CUSTOM_ID: h:a6fdbeaa-a4cb-430b-8a4d-9b435ad25295
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (delete-selection-mode 1)
 #+end_src
 
@@ -942,7 +941,7 @@ Quick and easy editing and reloading of my emacs config file.
 
 Easy opening.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :config
   (defun index/find-config-file ()
@@ -962,7 +961,7 @@ Easy opening.
 
 Easy reloading of emacs.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :config
   (defun index/reload-config-file ()
@@ -981,7 +980,7 @@ Easy reloading of emacs.
 :CUSTOM_ID: h:89848a75-f3e8-4b3d-ab9d-cbf0ca6eab13
 :END:
 
-#+begin_src emacs-lisp
+#+begin_example emacs-lisp
 (defun list-symbols (regexp)
   (let ((lst))
     (mapatoms
@@ -1001,7 +1000,7 @@ Easy reloading of emacs.
 ;; G   - Same as g but ignores Breakpoints
 ;; i   - Jumps into the definition of a function
 ;;       => To stop this just re-evaluate the lisp form
-#+end_src
+#+end_example
 
 ** Macroexpand
 :PROPERTIES:
@@ -1013,7 +1012,7 @@ exactly where the macro is.  This looks like what the lisp interpreter
 sees.  To futher expand any other macros type =e=, to undo it type =c=,
 or to cancel it type =q=.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf sly-macrostep
   :ensure t
   :commands (macrostep-expand))
@@ -1024,7 +1023,7 @@ or to cancel it type =q=.
 :CUSTOM_ID: h:17561d81-8a49-4510-b2d0-a715055eb628
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :config
   (setq view-read-only t))
@@ -1046,7 +1045,7 @@ TODO : Structure these sub headers more nicely.
 :CUSTOM_ID: h:e5f8a1c5-faef-4bf5-85a9-8a815764381a
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf org
   :ensure t
   :config
@@ -1067,7 +1066,7 @@ TODO : Structure these sub headers more nicely.
 :CUSTOM_ID: h:f09f6fbc-6ec3-49a8-aad7-329e8944b7c1
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf org-bullets
   :ensure t
   :hook ((org-mode-hook . org-bullets-mode)))
@@ -1078,7 +1077,7 @@ TODO : Structure these sub headers more nicely.
 :CUSTOM_ID: h:95541ad9-40c2-4706-8d6e-6927b2d0c02e
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf org
   :config
   (setq org-ellipsis " ▾ "
@@ -1097,7 +1096,7 @@ TODO : Structure these sub headers more nicely.
 :CUSTOM_ID: h:28cb0aef-0d22-4a8c-8964-e9ca3c8a0981
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf ol
   :config
   (setq org-link-keep-stored-after-insertion t)
@@ -1112,7 +1111,7 @@ TODO : Structure these sub headers more nicely.
 :CUSTOM_ID: h:b2bbebda-00d2-49f6-9d4e-069091039687
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf org-capture
   :after org
   :config
@@ -1139,7 +1138,7 @@ TODO : Structure these sub headers more nicely.
 :CUSTOM_ID: h:56b7968d-45bd-4738-abc8-ee7f90aafc74
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf org-src
   :after org
   :config
@@ -1169,7 +1168,7 @@ stored link.  To store a link one must type =M-x org-store-link=.  I of
 course have a keybinding for that.  Now with this you can refer to
 different section.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf org
   :config
   (setq org-id-link-to-org-use-id 'create-if-interactive-and-no-custom-id)
@@ -1223,7 +1222,7 @@ different section.
 :CUSTOM_ID: h:60a03e14-3e82-4010-845e-35bd2939335d
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf org
   :config
 
@@ -1248,7 +1247,7 @@ will be run each time after saving the buffer, so C-x C-s."
 
 Why I use LaTeX?
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf auctex
   :ensure t
   ;; (leaf auctex-latexmk
@@ -1277,7 +1276,7 @@ Why I use LaTeX?
 
 This package is used to center the entire frame.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf olivetti
   :ensure t
   :config
@@ -1293,7 +1292,7 @@ This package is used to center the entire frame.
 
 This package will dim down other sentences, paragraphs, and code-blocks.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf focus
   :ensure t
   :config
@@ -1306,7 +1305,7 @@ This package will dim down other sentences, paragraphs, and code-blocks.
 :CUSTOM_ID: h:fffae484-26c2-4b51-ba72-bb7912592caa
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :config
   (setq-default fill-column 72)
@@ -1338,7 +1337,7 @@ Calls `index/focused-writing' when called with an argument.
 :CUSTOM_ID: h:92e33bfb-aa56-4539-886b-9a23b9658a43
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :config
   (setq sentence-end-double-space t)
@@ -1352,7 +1351,7 @@ Calls `index/focused-writing' when called with an argument.
 :CUSTOM_ID: h:58d548b6-eb51-4628-9e6f-9174c7892f14
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf flyspell
   :ensure t
   :hook ((text-mode-hook . flyspell-mode)
@@ -1376,7 +1375,7 @@ Calls `index/focused-writing' when called with an argument.
 :CUSTOM_ID: h:701e567a-13d9-47ec-a0c4-194721157652
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :config
   (define-minor-mode index/focused-writing-mode
@@ -1409,7 +1408,7 @@ Calls `index/focused-writing' when called with an argument.
 :CUSTOM_ID: h:2bf0554c-6f68-487a-bbca-ee21a7e11161
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :config
   ;; (defun tributi/describe-symbol-at-point (&optional arg)
@@ -1455,7 +1454,7 @@ Calls `index/focused-writing' when called with an argument.
 :CUSTOM_ID: h:341b2d29-d4da-4399-9c39-907793945884
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf ivy
   :ensure t
   :config
@@ -1490,7 +1489,7 @@ Calls `index/focused-writing' when called with an argument.
 :CUSTOM_ID: h:ccb3fb58-029a-44bc-8214-493644159cd5
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf selectrum
   :ensure t
   :config
@@ -1540,7 +1539,7 @@ Calls `index/focused-writing' when called with an argument.
 :CUSTOM_ID: h:cd17803a-17ca-4ad6-b695-68310d8f81f3
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf company
   :ensure t
   :hook ((after-init-hook . global-company-mode))
@@ -1556,13 +1555,13 @@ Calls `index/focused-writing' when called with an argument.
 :CUSTOM_ID: h:83016a2f-fe28-4c37-b472-86c45603196e
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf yasnippet
   :ensure t
   :hook ((after-init-hook . yas-global-mode)))
 #+end_src
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf yasnippet-snippets :ensure t :after yasnippet)
 #+end_src
 
@@ -1571,7 +1570,7 @@ Calls `index/focused-writing' when called with an argument.
 :CUSTOM_ID: h:14a8773c-5ed3-4627-af45-396db35c8166
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf newcomment
   :config
   (setq comment-empty-lines t)
@@ -1606,7 +1605,7 @@ Calls `index/focused-writing' when called with an argument.
 :CUSTOM_ID: h:80c2fb0a-f1d4-4219-a390-1308483fd28a
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf dired
   :config
   (setq dired-recursive-copies 'always)
@@ -1687,7 +1686,7 @@ Calls `index/focused-writing' when called with an argument.
 :CUSTOM_ID: h:66a3a052-9d23-415b-ad4b-936614906851
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :config
   (setq display-buffer-alist
@@ -1727,7 +1726,7 @@ Calls `index/focused-writing' when called with an argument.
 :CUSTOM_ID: h:7ccb5bef-d925-4ba7-b690-440dabd542c6
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :config
   (defun tributi/window-dired-vc-root-left ()
@@ -1754,7 +1753,7 @@ Calls `index/focused-writing' when called with an argument.
         (add-to-list 'aw-ignored-buffers "*Dired-Side*")))))
 #+end_src
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :config
   (defvar tributi/window-configuration nil
@@ -1790,7 +1789,7 @@ managers such as DWM, BSPWM refer to this state as 'monocle'."
 :CUSTOM_ID: h:e830c1c2-d8d5-4ba4-86ae-e86ff3161661
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :bind (("H-o" . other-window)
          ("H-0" . delete-window)
@@ -1808,7 +1807,7 @@ This little build-in package keeps track of windows that have been
 closed.  This is useful when you accidentally delete a window and you
 wish to undo that particular deletion process.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf winner
   :hook ((after-init-hook . winner-mode))
   :bind (("<H-backspace>" . winner-undo)
@@ -1831,7 +1830,7 @@ shell evaluation.  There is a great manual for eshell in the info
 buffer.  Just go there by typing =C-h i C-s eshell RET= or =M-x
 info-display-manual eshell RET=.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf eshell
   :ensure t
   :config
@@ -1926,7 +1925,7 @@ great feature: if you define a function with the namespace =eshell/= it
 will be autoloaded as a command in eshell with the name after the =/=,
 thus you can define custom made functions easily.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf eshell
   :config
   (defun eshell/f (file)
@@ -2008,7 +2007,7 @@ thus you can define custom made functions easily.
 
 World's most powerful git interface.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf magit
   :ensure t
   :config
@@ -2054,7 +2053,7 @@ from the variable `index/magit-repository-directories'."
 
 Simple way of displaying the changes in a git directory.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf diff-hl
   :ensure t
   :config
@@ -2072,7 +2071,7 @@ Simple way of displaying the changes in a git directory.
 :CUSTOM_ID: h:eff9abd1-c9ad-40ba-b8c5-78ca494cbd04
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf scratch
   :ensure t
   :config
@@ -2096,7 +2095,7 @@ Simple way of displaying the changes in a git directory.
 :CUSTOM_ID: h:a6bc12f3-bdbb-4198-a864-7676ca6ea3e5
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf fish-mode
   :ensure t
   :config
@@ -2119,7 +2118,7 @@ Simple way of displaying the changes in a git directory.
 This package will highlight code keywords such as TODO.  This is one
 thing I missed from (n)vim OOTB-Experience.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf hl-todo
   :ensure t
   :config
@@ -2139,7 +2138,7 @@ thing I missed from (n)vim OOTB-Experience.
 :CUSTOM_ID: h:3a44521a-f545-4101-ab1d-bb9a4cd7b11d
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf flymake
   :hook ((prog-mode-hook . flymake-mode)))
 #+end_src
@@ -2237,7 +2236,7 @@ as the current user."
 :CUSTOM_ID: h:7df1e363-b25b-4cc8-8ab5-d41037c64bbf
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf kmacro
   :config
   (defvar index/kmacro-file (expand-file-name "kmacro.el" user-emacs-directory)
@@ -2302,7 +2301,7 @@ there is no last keyboard macro in`index/execute-named-kmacro-last'
 :CUSTOM_ID: h:5807431f-d1fd-45f9-9f76-5d8ca84f7b12
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf dumb-jump
   :ensure t
   :commands dumb-jump-go
@@ -2340,7 +2339,7 @@ This will save up the first two keybindings.
 Since to my luck someone already thought  about this already and defined
 these functions, we just need to bind them.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :bind (("M-u" . upcase-dwim)
          ("M-l" . downcase-dwim)
@@ -2354,7 +2353,7 @@ these functions, we just need to bind them.
 :CUSTOM_ID: h:c7ad9c08-7f81-4c99-bcd7-75bfe4f9ccbc
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf tab-bar
   :config
   (setq tab-bar-close-button-show nil)
@@ -2421,7 +2420,7 @@ way, like =ol>li.class$$*4 C-j=, and it expands to this:
 
 This is a very quick and less annoying way to write HTML.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emmet-mode
   :ensure t
   :hook ((html-mode-hook . emmet-mode)))
@@ -2435,7 +2434,7 @@ This is a very quick and less annoying way to write HTML.
 This package shows coloring definition as actual color. So something
 like =#454545= will be shown with its corresponding background.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf rainbow-mode
   :ensure t
   :hook (((html-mode-hook css-mode-hook) . rainbow-mode)))
@@ -2449,9 +2448,7 @@ like =#454545= will be shown with its corresponding background.
 Since HTML was annoying to write they decided that CSS must be
 cumbersome too. Well with SASS writing CSS becomes a blast. You can do
 something like this:
-# TODO: Simpler example
-
-#+begin_src scss
+# TOD
 $background-color: #333;
 $background-color-alt: #111;
 $foreground-color: #fff;
@@ -2483,9 +2480,7 @@ $foreground-color: #fff;
 #+end_src
 
 Which expands to the following CSS file when compiled with the SASS
-command line utility:
-
-#+begin_src css
+command line utilit
 .navigation {
     list-style-type: none;
     margin: 0;
@@ -2538,7 +2533,7 @@ specified in one line each inside the =master.scss= file. You use the =@use=
 rule for this kind of task.
 Compile SASS to CSS with =sass --watch --style compressed sass:css=.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf scss-mode
   :ensure t
   :config
@@ -2563,7 +2558,7 @@ Compile SASS to CSS with =sass --watch --style compressed sass:css=.
 :CUSTOM_ID: h:94e138ec-eed4-42b3-a810-580aa7c6ac7e
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf org-capture
   :after org
   :config
@@ -2613,7 +2608,7 @@ LISP above other programming languages: easily act on the code.
 
 http://danmidwood.com/content/2014/11/21/animated-paredit.html
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf lispy
   :ensure t
   :hook ((lisp-interaction-mode-hook . lispy-mode)
@@ -2622,7 +2617,7 @@ http://danmidwood.com/content/2014/11/21/animated-paredit.html
          (scheme-mode-hook . lispy-mode)))
 #+end_src
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 ;; (leaf paredit
 ;;   :ensure t
 ;;   :hook ((lisp-interaction-mode-hook . paredit-mode)
@@ -2637,7 +2632,7 @@ http://danmidwood.com/content/2014/11/21/animated-paredit.html
 :CUSTOM_ID: h:7c6b3758-9583-42ee-a49b-03f96d49a27b
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 ;; (leaf slime
 ;;   :ensure t
 ;;   :config
@@ -2646,7 +2641,7 @@ http://danmidwood.com/content/2014/11/21/animated-paredit.html
 ;;   (slime-setup))
 #+end_src
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf sly
   :config
   (load (expand-file-name "~/.local/lib/quicklisp/slime-helper.el")) ; requires quicklisp
@@ -2660,7 +2655,7 @@ http://danmidwood.com/content/2014/11/21/animated-paredit.html
 :CUSTOM_ID: h:0b0e4e18-7923-4655-876d-b7e98265af12
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf geiser
   :ensure t
   :config
@@ -2672,7 +2667,7 @@ http://danmidwood.com/content/2014/11/21/animated-paredit.html
 :CUSTOM_ID: h:5fefc3b5-d879-4f56-9ea3-6d226bb1bd6b
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf cider
   :ensure t)
 
@@ -2686,7 +2681,7 @@ http://danmidwood.com/content/2014/11/21/animated-paredit.html
 :CUSTOM_ID: h:3842c6df-a0a7-4498-807b-9d882568576f
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf bongo
   :ensure t
   :config
@@ -2729,7 +2724,7 @@ http://danmidwood.com/content/2014/11/21/animated-paredit.html
 :CUSTOM_ID: h:45b54719-5b5f-44f0-8fc1-88af5f1c25a2
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf gnus
   :config
   (setq user-mail-address "public@finnsauer.xyz")
@@ -2745,7 +2740,7 @@ http://danmidwood.com/content/2014/11/21/animated-paredit.html
 :CUSTOM_ID: h:b3c80b42-07a9-4732-ad53-f321fbeda72f
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf elfeed
   :ensure t
   :config
@@ -2914,7 +2909,7 @@ more or less.  Well actually I stole some code from Reddit User
 
 + URL: https://github.com/skeeto/elfeed/issues/293.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf elfeed
   :config
   (defvar tributi/elfeed-update-complete-hook nil
@@ -2981,7 +2976,7 @@ more or less.  Well actually I stole some code from Reddit User
 :CUSTOM_ID: h:d00581fc-84db-483a-9f05-14a9fd074077
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf erc
   :config
   (setq erc-echo-notices-in-minibuffer-flag t)
@@ -3028,7 +3023,7 @@ more or less.  Well actually I stole some code from Reddit User
 :CUSTOM_ID: h:579700dd-5a9b-4197-b629-7225b39606d8
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf mu4e
   ;; This depends on the Arch package `mu'.
   :load-path "/usr/share/emacs/site-lisp/mu4e/"
@@ -3078,7 +3073,7 @@ more or less.  Well actually I stole some code from Reddit User
 :CUSTOM_ID: h:1412f13c-10fa-4102-92af-ce0aef30c18e
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :config
   (defun index/move-beginning-of-line ()
@@ -3102,7 +3097,7 @@ non-whitespace character.
 :CUSTOM_ID: h:152467d6-8f56-49ca-854a-d0dd5bc1aedd
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :config
   (defun index/move-end-of-line ()
@@ -3128,7 +3123,7 @@ line move to the front of a comment.  Otherwise do nothing."
 :CUSTOM_ID: h:69a755de-a0dd-424a-8211-7653e5f9a2f7
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :config
   (defvar index/align-column-dwim "\\(\\s-*\\) "
@@ -3174,7 +3169,7 @@ the prefix option.
 I missed the vim =J= since it was a super easy way to join lines as I used
 it all the time.  Well, this implements that feature.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :config
   (defun index/join-line (&optional arg)
@@ -3192,7 +3187,7 @@ This emulates vim behavior."
 :CUSTOM_ID: h:e64c476e-9610-4efb-891f-6c4c65e3355a
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :bind (("H-f" . find-file)
          ("H-F" . find-file-other-window)
@@ -3205,7 +3200,7 @@ This emulates vim behavior."
 :CUSTOM_ID: h:63f6d730-44fd-45f7-8c2f-b3ead470587a
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :config
   (defmacro index/transpose (name textobj)
@@ -3251,7 +3246,7 @@ line."
 :CUSTOM_ID: h:80023739-89ec-4a14-9e9c-d85fd5061c86
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf avy
   :ensure t
   :bind (("M-s" . avy-goto-char-timer)))
@@ -3262,7 +3257,7 @@ line."
 :CUSTOM_ID: h:7613db1b-0c77-4f1f-8ea3-5da099646c08
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf expand-region
   :ensure t
   :bind (("M-C-SPC" . er/expand-region)))
@@ -3273,7 +3268,7 @@ line."
 :CUSTOM_ID: h:559da13d-3b61-47e0-a637-6cbde8a27610
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf multiple-cursors
   :ensure t
   :config
@@ -3293,7 +3288,7 @@ line."
 :CUSTOM_ID: h:cea67f7c-cc71-4cab-8a0b-3a5d0cb3fc13
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :config
   (defun index/insert-line-below (&optional arg)
@@ -3354,7 +3349,7 @@ More reading up can be found on [[https://lipsum.com/][here]].
 # to redefine a preexisting function.  Some Linux enthusiasts will call
 # this Bloat Prevention-- but I call it recycling and laziness.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :config
 
@@ -3453,7 +3448,7 @@ text after the second one.  This effectively creates sentences."
 :CUSTOM_ID: h:e3110cc0-b78b-4b08-b94d-034be60deb68
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :config
   (defmacro index/insert-GPLv3--variable (var)
@@ -3512,7 +3507,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>."))
 :CUSTOM_ID: h:dd54a3c2-9df7-4367-94f7-897bd9628702
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :config
   (defvar index/big-font-value 4
@@ -3549,7 +3544,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>."))
 :CUSTOM_ID: h:e3856980-ba71-4ec2-96dc-3d667afc06b4
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf emacs
   :config
   (defvar index/small-font-value 4
@@ -3587,7 +3582,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>."))
 :CUSTOM_ID: h:11d39ec3-ae3d-47ea-bdff-129a8b02df8e
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf buffer
   :bind (("H-n" . next-buffer)
          ("H-p" . previous-buffer)
@@ -3600,7 +3595,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>."))
 :CUSTOM_ID: h:ff8d2bf4-b1c5-479c-bebb-6aff585f039e
 :END:
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
 (leaf ibuffer
   :bind (("C-x C-b" . ibuffer)))
 #+end_src
