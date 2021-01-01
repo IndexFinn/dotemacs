@@ -77,18 +77,15 @@ and how many Garbage Collections took place.
 (leaf emacs
   :config
   (defun index/startup-report ()
-    "Startup report message.
-As I am not seeing the output of message at startup, I simply
-insert it into the `*scratch*' buffer's header."
-    (with-current-buffer (get-buffer "*scratch*")
-      (save-excursion
-        (beginning-of-buffer)
-        (insert
-         (format
-          ";; EMACS started in %.3fs with %d garbage collections.\n"
-          (float-time
-           (time-subtract after-init-time before-init-time))
-          gcs-done)))))
+    "Startup report message."
+    (index/call-process
+     `("notify-send"
+       "Emacs"
+       ,(format
+         "Started in %.3fs with %d garbage collections.\n"
+         (float-time
+          (time-subtract after-init-time before-init-time))
+         gcs-done))))
   :hook ((emacs-startup-hook . index/startup-report)))
 #+end_src
 
