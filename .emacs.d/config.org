@@ -2390,6 +2390,315 @@ questions.  Else use completion to select the tab to switch to."
          ("C-x t s" . tab-switcher)))
 #+end_src
 
+* EXWM - Emacs X Window Manager
+:PROPERTIES:
+:CUSTOM_ID: h:4c4d9c0b-785b-4357-a844-17d628d101c0
+:END:
+
+#+begin_src emacs-lisp
+(leaf exwm
+  :ensure t
+  :require exwm exwm-randr
+  :config
+
+  (exwm-randr-enable)
+
+  (defun index/call-process (command)
+    "Call a process of COMMAND.
+COMMAND must be a string separated via white space or a list of
+strings with no white space in the strings."
+    (when (stringp command)
+      (setq command (s-split "[ ]+" command)))
+    (apply
+     #'call-process
+     `(,(car command) nil 0 nil ,@(cdr command))))
+
+  (defvar index/exwm-polybar-mode-process nil
+    "The process of polybar")
+
+  (define-minor-mode index/exwm-polybar-mode
+    "Toggle between polybar enabled and disabled."
+    :init-value nil
+    :global t
+    :lighter ""
+    (if index/exwm-polybar-mode
+        (setq
+         index/exwm-polybar-mode-process
+         (start-process-shell-command
+          "polybar"
+          nil
+          "polybar exwm"))
+      (kill-process index/exwm-polybar-mode-process)))
+
+  (defun index/exwm-switch-transparency ()
+    "Toggle between transparency.
+Available are 92, 30, and 100.  If toggling to 100, kill picom.
+If toggling to 92, start picom"
+    (interactive)
+    (case (frame-parameter nil 'alpha)
+      ((= 92)
+       (set-frame-parameter (selected-frame) 'alpha 30)
+       (add-to-list 'default-frame-alist '(alpha . 30)))
+      ((= 30)
+       (index/call-process "pkill picom")
+       (set-frame-parameter (selected-frame) 'alpha 100)
+       (add-to-list 'default-frame-alist '(alpha . 100)))
+      ((= 100)
+       (index/call-process "picom")
+       (set-frame-parameter (selected-frame) 'alpha 92)
+       (add-to-list 'default-frame-alist '(alpha . 92)))))
+
+  (defun tributi/exwm-update-class ()
+    (unless (string-prefix-p "sun-awt-X11-" exwm-instance-name)
+      (exwm-workspace-rename-buffer exwm-class-name)))
+
+  (defun index/exwm-modifier-passthrough (modifier)
+    "Add all the keybindings starting with a modifier key
+e.g. hyper 'H' to the variable `exwm-input-prefix-keys'.  This
+will have the effect that when inside a buffer with the major
+mode `exwm-mode' pass the keybindings to Emacs instead of to the
+X window."
+    (dolist (key (with-temp-buffer
+                   (describe-buffer-bindings (current-buffer))
+                   (let ((tmp nil))
+                     (mapc
+                      (lambda (str)
+                        (when (s-match
+                               (concat
+                                "^"
+                                modifier
+                                "-")
+                               str)
+                          (setq tmp (cons (car (s-split " " str)) tmp))))
+                      (s-split "\n" (buffer-string)))
+                     (reverse tmp))))
+      (add-to-list 'exwm-input-prefix-keys (car (append (kbd key) nil)))))
+
+  (defun index/exwm-launch (&optional arg)
+    "Launch a process in $PATH.
+With optional ARG prompt for additional argument to the selected
+process."
+    (interactive "P")
+    (index/call-process
+     (concat
+      (completing-read
+       "Launch in $PATH: "
+       (let ((lst nil))
+         (mapc
+          (lambda (dir)
+            (setq lst (cons (directory-files-recursively dir ".") lst)))
+          (s-split ":" (getenv "PATH")))
+         (flatten-tree (reverse lst))))
+      (when arg
+        (concat
+         " "
+         (read-string "Arguments: "))))))
+
+  (defvar index/exwm-launch-mpv-dirs
+    '("~/vid/" "~/ytb/")
+    "Directories where to look at.")
+
+  (defconst index/exwm-launch-mpv-file-ending-regex
+    "\\.\\(mkv\\|webm\\|mp4\\)$")
+
+  (define-minor-mode index/exwm-floating-window-mode
+    ""
+    :init-value nil
+    :global nil
+    :lighter " EXWM: Floating"
+    (when (derived-mode-p 'exwm-mode)
+      (if index/exwm-floating-window-mode
+          (progn
+            (exwm-floating--set-floating exwm--id)
+            ;; FIXME : grays out x windows; transparency?
+            ;; (exwm-workspace--hide-minibuffer)
+            (setq-local mode-line-format nil))
+        ;; FIXME : grays out x windows; transparency?
+        ;; (exwm-workspace--show-minibuffer)
+        (exwm-floating--unset-floating exwm--id)
+        (kill-local-variable 'mode-line-format))))
+
+  (defun index/exwm-launch-mpv (&optional arg)
+    "Launch mpv via `mpv_open'.
+Prompt for file completion from the directories defined in
+`index/exwm-launch-mpv-dirs'.  Will focus the `mpv' buffer and
+the selected file will be played.  If called with universal ARG,
+only focus the buffer; if current buffer is the mpv buffer,
+switch to old buffer."
+    (interactive "P")
+    (cond
+     ((equal arg '(4))
+      (if (string= (buffer-name (current-buffer)) "mpv")
+          (switch-to-buffer (other-buffer (current-buffer) t))
+        (switch-to-buffer (get-buffer "mpv"))))
+     ((equal arg '(16))
+      (with-current-buffer (get-buffer "mpv")
+        (index/exwm-floating-window-mode 'toggle))
+      (switch-to-buffer (current-buffer)))
+     (t
+      (index/call-process
+       (concat
+        "mpv_open "
+        (expand-file-name
+         (completing-read
+          "Launch MPV: "
+          (let ((lst nil))
+            (mapc
+             (lambda (dir)
+               (setq lst (cons
+                          (directory-files-recursively
+                           dir
+                           index/exwm-launch-mpv-file-ending-regex
+                           nil nil t)
+                          lst)))
+             index/exwm-launch-mpv-dirs)
+            (flatten-tree (reverse lst)))))))
+      (shell-command "sleep .1 ; echo script-binding uosc/next | socat - $MPV_SOCKET")
+      (switch-to-buffer (get-buffer "mpv")))))
+
+  (defmacro index/exwm--raise-or-spawn (command keybinding)
+    (let* ((name-str (concat "index/exwm-spawn-or-raise--" command))
+           (name (intern name-str)))
+      `(prog1 t
+         (defun ,name ()
+           "This function has three dwim operations:
+1. If window of command does not exist, spawn command.
+2. If window of command exist, switch to it.
+3. If current buffer is window, switch to last buffer.
+
+This function is auto generated via `index/exwm--raise-or-spawn'."
+           (interactive)
+           (let ((ret (ignore-errors
+                        (cdr (assoc (car (last
+                                          (s-split
+                                           "\n"
+                                           (shell-command-to-string
+                                            ;; TODO : change pgrep since it is rather slow
+                                            (concat "pgrep " ,command))
+                                           t)))
+                                    (mapcar
+                                     (lambda (str)
+                                       (setq str (s-split "[ ]+" str))
+                                       (cons (nth 2 str)
+                                             (car (last
+                                                   (s-split "\\." (nth 3 str))))))
+                                     (s-split
+                                      "\n"
+                                      (shell-command-to-string
+                                       "wmctrl -lpx")
+                                      t)))))))
+             (if ret
+                 (if (string= (buffer-name (current-buffer)) ret)
+                     (switch-to-buffer (other-buffer (current-buffer) t))
+                   (switch-to-buffer (get-buffer ret)))
+               (index/call-process ,command))))
+
+         (global-set-key (kbd ,keybinding) #',name))))
+
+  (defun index/ewxm-clear-gpg-password ()
+    "Clear the GPG password and prompt for entering."
+    (interactive)
+    (index/call-process "clear-gpg-password"))
+
+  (defun index/exwm-volume-up ()
+    (interactive)
+    (index/call-process "pamixer -i 5"))
+
+  (defun index/exwm-volume-down ()
+    (interactive)
+    (index/call-process "pamixer -d 5"))
+
+  (defun index/exwm-volume-mute ()
+    (interactive)
+    (index/call-process "pamixer -t"))
+
+  (defun index/exwm-wallpaper ()
+    (interactive)
+    ;; TODO: select via dired
+    (index/call-process
+     (concat
+      "bwp -w "
+      (completing-read
+       "Wallpaper: "
+       (mapcar
+        #'file-name-nondirectory
+        (directory-files-recursively
+         "~/.cache/wallpapers/walls"
+         "."))))))
+
+  ;; Multimedia -- from i3
+  (leaf emacs
+    :config
+    (global-set-key
+     (kbd "s-/")
+     #'(lambda ()
+         (interactive)
+         (index/call-process "mediacontrol toggle")))
+    (global-set-key
+     (kbd "s-.")
+     #'(lambda ()
+         (interactive)
+         (index/call-process "mediacontrol seek +5")))
+    (global-set-key
+     (kbd "s-,")
+     #'(lambda ()
+         (interactive)
+         (index/call-process "mediacontrol seek -5")))
+    (global-set-key
+     (kbd "s->")
+     #'(lambda ()
+         (interactive)
+         (index/call-process "mediacontrol next")))
+    (global-set-key
+     (kbd "s-<")
+     #'(lambda ()
+         (interactive)
+         (index/call-process "mediacontrol prev"))))
+
+  (defun index/exwm-scratchpad ()
+    "An Eshell scratch buffer."
+    (interactive)
+    (let ((eshell-buffer-name "*eshell scratchpad*"))
+      (if (string= (buffer-name (current-buffer)) eshell-buffer-name)
+          (switch-to-buffer (other-buffer (current-buffer) t))
+        (eshell))))
+
+  (defun index/exwm-init-functions ()
+    "Functions to be called with `exwm-init-hook'."
+    (prog1 t
+      (index/call-process "picom")
+      (index/call-process "bwp")
+      (index/call-process "xsetroot -cursor_name left_ptr")
+      (index/call-process "polybar exwm")
+
+      (index/exwm--raise-or-spawn "qutebrowser" "s-g")
+      (index/exwm--raise-or-spawn "arandr" "s-a")
+      (index/exwm--raise-or-spawn "pulseeffects" "s-p")
+      (index/exwm--raise-or-spawn "icecat" "s-C-g")
+
+      (add-to-list 'exwm-input-global-keys (kbd "<XF86AudioLowerVolume>"))
+      (add-to-list 'exwm-input-prefix-keys (kbd "<XF86AudioRaiseVolume>"))
+
+      (index/exwm-modifier-passthrough "H")
+      (index/exwm-modifier-passthrough "s")))
+
+  (set-frame-parameter (selected-frame) 'alpha 92)
+  (add-to-list 'default-frame-alist '(alpha . 92))
+
+  :hook ((exwm-init-hook . index/exwm-init-functions)
+         (exwm-update-class-hook . tributi/exwm-update-class))
+  :bind (("s-b" . index/exwm-polybar-mode)
+         ("s-t" . index/exwm-switch-transparency)
+         ("s-d" . index/exwm-launch)
+         ("s-m" . index/exwm-launch-mpv)
+         ("s-q" . index/ewxm-clear-gpg-password)
+         ("s-w" . index/exwm-wallpaper)
+         ("s-s" . index/exwm-scratchpad)
+         ("<XF86AudioLowerVolume>" . index/exwm-volume-down)
+         ("<XF86AudioRaiseVolume>" . index/exwm-volume-up)
+         ("<XF86AudioMute>" . index/exwm-volume-mute)))
+#+end_src
+
 * Web Development
 :PROPERTIES:
 :CUSTOM_ID: h:b2ee76c8-8799-4e5c-9f7f-15b0c7a2b94e
