@@ -2540,41 +2540,19 @@ process."
   (defconst index/exwm-launch-mpv-file-ending-regex
     "\\.\\(mkv\\|webm\\|mp4\\)$")
 
-  (define-minor-mode index/exwm-floating-window-mode
-    ""
-    :init-value nil
-    :global nil
-    :lighter " EXWM: Floating"
-    (when (derived-mode-p 'exwm-mode)
-      (if index/exwm-floating-window-mode
-          (progn
-            (exwm-floating--set-floating exwm--id)
-            ;; FIXME : grays out x windows; transparency?
-            ;; (exwm-workspace--hide-minibuffer)
-            (setq-local mode-line-format nil))
-        ;; FIXME : grays out x windows; transparency?
-        ;; (exwm-workspace--show-minibuffer)
-        (exwm-floating--unset-floating exwm--id)
-        (kill-local-variable 'mode-line-format))))
-
   (defun index/exwm-launch-mpv (&optional arg)
     "Launch mpv via `mpv_open'.
-Prompt for file completion from the directories defined in
-`index/exwm-launch-mpv-dirs'.  Will focus the `mpv' buffer and
-the selected file will be played.  If called with universal ARG,
-only focus the buffer; if current buffer is the mpv buffer,
-switch to old buffer."
+Raise the mpv buffer.  If called with the universal ARG prompt
+for file completion from the directories defined in
+`index/exwm-launch-mpv-dirs'.  Will focus the `mpv' buffer, too,
+and the selected file will be played.  Called with the universal
+ARG twice, toggle `index/exwm-floating-window-mode'.  To specify
+where the window will be placed once in floating window mode, set
+the mpv flag `--geometry'-- for documentation about this look
+into the well documented man page of mpv."
     (interactive "P")
     (cond
      ((equal arg '(4))
-      (if (string= (buffer-name (current-buffer)) "mpv")
-          (switch-to-buffer (other-buffer (current-buffer) t))
-        (switch-to-buffer (get-buffer "mpv"))))
-     ((equal arg '(16))
-      (with-current-buffer (get-buffer "mpv")
-        (index/exwm-floating-window-mode 'toggle))
-      (switch-to-buffer (current-buffer)))
-     (t
       (index/call-process
        (concat
         "mpv_open "
@@ -2593,7 +2571,33 @@ switch to old buffer."
              index/exwm-launch-mpv-dirs)
             (flatten-tree (reverse lst)))))))
       (shell-command "sleep .1 ; echo script-binding uosc/next | socat - $MPV_SOCKET")
-      (switch-to-buffer (get-buffer "mpv")))))
+      (switch-to-buffer (get-buffer "mpv")))
+     ((equal arg '(16))
+      (with-current-buffer (get-buffer "mpv")
+        (index/exwm-floating-window-mode 'toggle))
+      (switch-to-buffer (current-buffer)))
+     (t
+      (if (string= (buffer-name (current-buffer)) "mpv")
+          (switch-to-buffer (other-buffer (current-buffer) t))
+        (switch-to-buffer (get-buffer "mpv"))))))
+
+  (define-minor-mode index/exwm-floating-window-mode
+    "Enables EXWM floating window mode.
+This adds removing the mode line locally."
+    :init-value nil
+    :global nil
+    :lighter " EXWM: Floating"
+    (when (derived-mode-p 'exwm-mode)
+      (if index/exwm-floating-window-mode
+          (progn
+            (exwm-floating--set-floating exwm--id)
+            ;; FIXME : grays out x windows; transparency?
+            ;; (exwm-workspace--hide-minibuffer)
+            (setq-local mode-line-format nil))
+        ;; FIXME : grays out x windows; transparency?
+        ;; (exwm-workspace--show-minibuffer)
+        (exwm-floating--unset-floating exwm--id)
+        (kill-local-variable 'mode-line-format))))
 
   (defmacro index/exwm--raise-or-spawn (command keybinding)
     (let* ((name-str (concat "index/exwm-spawn-or-raise--" command))
@@ -2716,9 +2720,6 @@ This function is auto generated via `index/exwm--raise-or-spawn'."
       (index/exwm--raise-or-spawn "arandr" "s-a")
       (index/exwm--raise-or-spawn "pulseeffects" "s-p")
       (index/exwm--raise-or-spawn "icecat" "s-C-g")
-
-      (add-to-list 'exwm-input-global-keys (kbd "<XF86AudioLowerVolume>"))
-      (add-to-list 'exwm-input-prefix-keys (kbd "<XF86AudioRaiseVolume>"))
 
       (index/exwm-modifier-passthrough "H")
       (index/exwm-modifier-passthrough "s")))
