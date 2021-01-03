@@ -1026,6 +1026,34 @@ or to cancel it type =q=.
   (setq view-read-only t))
 #+end_src
 
+** All the Icons
+:PROPERTIES:
+:CUSTOM_ID: h:4e5d8584-c741-4a3a-bcb9-54b8149312c5
+:END:
+
+#+begin_src emacs-lisp
+(leaf all-the-icons
+  :straight t
+  :config
+  (unless (file-readable-p "~/.local/share/fonts/all-the-icons.ttf")
+    (all-the-icons-install-fonts 'ignore-prompt)))
+#+end_src
+
+** Preserve System Clipboard
+:PROPERTIES:
+:CUSTOM_ID: h:2c0e3238-440d-459f-b443-7227c1636571
+:END:
+
+This is for those nagging times when you copy something in the browser
+to be pasted into Emacs, but before that you kill something inside
+Emacs.  This will preserve that.
+
+#+begin_src emacs-lisp
+(leaf emacs
+  :config
+  (setq save-interprogram-paste-before-kill t))
+#+end_src
+
 * Writing
 :PROPERTIES:
 :CUSTOM_ID: h:10bd21be-8499-45e7-be2c-8fdea817684a
@@ -2325,7 +2353,7 @@ The keybinding for these are the following:
 | M-l        | downcase-word   | Convert to lower case from point to end of word, moving over.        |
 | M-u        | upcase-word     | Convert to upper case from point to end of word, moving over.        |
 | M-c        | capitalize-word | Capitalize from point to the end of word, moving over.               |
-#+TBLFM: $2='(key-binding (kbd $1))::$3='(car (s-split "\n" (documentation (key-binding (kbd $1)))))
+#+TBLFM: $2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation (key-binding (kbd $1))))))
 
 (I generated the Name and Description automatically; see [[#h:80d39c8d-709d-4a27-9008-89cfed7d87e7][how]].)
 
@@ -2344,6 +2372,17 @@ these functions, we just need to bind them.
          ("C-x C-u" . nil)
          ("C-x C-l" . nil)))
 #+end_src
+
+Afterwards the table will look like this:
+
+| Keybinding | Name            | Description                                                                  |
+|------------+-----------------+------------------------------------------------------------------------------|
+| C-x C-l    | nil             | nil                                                                          |
+| C-x C-u    | nil             | nil                                                                          |
+| M-l        | downcase-dwim   | Downcase words in the region, if active; if not, downcase word at point.     |
+| M-u        | upcase-dwim     | Upcase words in the region, if active; if not, upcase word at point.         |
+| M-c        | capitalize-dwim | Capitalize words in the region, if active; if not, capitalize word at point. |
+#+TBLFM: $2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation (key-binding (kbd $1))))))
 
 * Workspaces (Emacs 27 Tabs)
 :PROPERTIES:
@@ -2609,19 +2648,21 @@ This function is auto generated via `index/exwm--raise-or-spawn'."
     (interactive)
     (index/call-process "pamixer -t"))
 
-  (defun index/exwm-wallpaper ()
-    (interactive)
+  (defun index/exwm-wallpaper (&optional arg)
+    (interactive "P")
     ;; TODO: select via dired
-    (index/call-process
-     (concat
-      "bwp -w "
-      (completing-read
-       "Wallpaper: "
-       (mapcar
-        #'file-name-nondirectory
-        (directory-files-recursively
-         "~/.cache/wallpapers/walls"
-         "."))))))
+    (if arg
+        (index/call-process "bwp -wr")
+      (index/call-process
+       (concat
+        "bwp -w "
+        (completing-read
+         "Wallpaper: "
+         (mapcar
+          #'file-name-nondirectory
+          (directory-files-recursively
+           "~/.cache/wallpapers/walls"
+           ".")))))))
 
   ;; Multimedia -- from i3
   (leaf emacs
@@ -3547,6 +3588,17 @@ line."
          ("C-x C-M-t" . index/transpose-paragraphs)))
 #+end_src
 
+** Universal Argument
+:PROPERTIES:
+:CUSTOM_ID: h:d6f1c6ea-9ba5-4f6c-97b0-c9813f227fe7
+:END:
+
+#+begin_src emacs-lisp
+(leaf emacs
+  :bind (("H-u" . universal-argument)
+         ("s-u" . universal-argument)))
+#+end_src
+
 ** Avy - Jumping Around Never Was Easier
 :PROPERTIES:
 :CUSTOM_ID: h:80023739-89ec-4a14-9e9c-d85fd5061c86
@@ -3965,7 +4017,7 @@ table.  But since this is meant to be read in a formatted way, I specify
 it here for completion sake:
 
 #+begin_example ascii
-$2='(key-binding (kbd $1))::$3='(car (s-split "\n" (documentation (key-binding (kbd $1)))))
+$2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation (key-binding (kbd $1))))))
 #+end_example
 
 You put this-- as I stated above-- under the table:
@@ -3974,7 +4026,7 @@ You put this-- as I stated above-- under the table:
 | Keybinding | Name | Description |
 |------------+------+-------------|
 | C-M-q      |      |             |
-#+TBLFM: $2='(key-binding (kbd $1))::$3='(car (s-split "\n" (documentation (key-binding (kbd $1)))))
+#+TBLFM: $2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation (key-binding (kbd $1))))))
 #+end_example
 
 And then execute the formula via =C-c C-c= while the point is above the formula:
@@ -3983,7 +4035,7 @@ And then execute the formula via =C-c C-c= while the point is above the formula:
 | Keybinding | Name                 | Description                      |
 |------------+----------------------+----------------------------------|
 | C-M-q      | index/auto-fill-mode | Wrapper around ‘auto-fill-mode’. |
-#+TBLFM: $2='(key-binding (kbd $1))::$3='(car (s-split "\n" (documentation (key-binding (kbd $1)))))
+#+TBLFM: $2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation (key-binding (kbd $1))))))
 #+end_example
 
 This is very easy and I highly recommend to look up the [[https://orgmode.org/manual/Tables.html#Tables][table
