@@ -24,7 +24,6 @@
 ;; the `config.org' file.
 (setq gc-cons-threshold most-positive-fixnum)
 
-(setq package-enable-at-startup t)
 (setq frame-inhibit-implied-resize t)
 
 ;;; early-init.el ends here

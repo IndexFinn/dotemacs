@@ -66,8 +66,7 @@ file to a newer version every time Emacs closes.
       (when (file-readable-p e)
         (delete-file e))
       (org-babel-tangle-file f e)))
-  :hook ((kill-emacs-hook . index/rebuild-emacs-init)
-         (kill-emacs-hook . package-quickstart-refresh)))
+  :hook ((kill-emacs-hook . index/rebuild-emacs-init)))
 #+end_src
 
 After this I want Emacs to report the time it took for Emacs to launch
@@ -375,7 +374,7 @@ Emacs' Garbage Collection back on.
 
 #+begin_src emacs-lisp
 (leaf gcmh
-  :ensure t
+  :straight t
   :hook ((after-init-hook . gcmh-mode)))
 #+end_src
 
@@ -463,7 +462,7 @@ can of course be turned off.
 
 #+begin_src emacs-lisp
 (leaf auto-dim-other-buffers
-  :ensure t
+  :straight t
   :commands auto-dim-other-buffers-mode
   :config
   (setq auto-dim-other-buffers-dim-on-switch-to-minibuffer t)
@@ -516,7 +515,7 @@ you know where it is.  This includes changing the window.
 
 #+begin_src emacs-lisp
 (leaf beacon
-  :ensure t
+  :straight t
   :config
   (setq beacon-size 33)
   (setq beacon-color 0.44)
@@ -531,7 +530,7 @@ you know where it is.  This includes changing the window.
 
 #+begin_src emacs-lisp
 (leaf doom-modeline
-  :ensure t
+  :straight t
   :hook ((after-init-hook . doom-modeline-mode))
   :config
   (setq doom-modeline-height 36)
@@ -594,9 +593,9 @@ you know where it is.  This includes changing the window.
 :END:
 
 #+begin_src emacs-lisp
-(leaf modus-operandi-theme :ensure t)
+(leaf modus-operandi-theme :straight t)
 
-(leaf modus-vivendi-theme :ensure t)
+(leaf modus-vivendi-theme :straight t)
 
 ;; (leaf solar
 ;;   :config
@@ -616,7 +615,7 @@ you know where it is.  This includes changing the window.
 ;;              (* 60 60 24)
 ;;              (lambda () (enable-theme 'modus-vivendi)))
 
-(leaf doom-themes :ensure t)
+(leaf doom-themes :straight t)
 
 (load-theme 'doom-dracula)
 (enable-theme 'doom-dracula)
@@ -712,7 +711,7 @@ This package is used to erase the lighter of a minor mode.  This can be
 called with leaf/use-package.
 
 #+begin_src emacs-lisp
-(leaf diminish :ensure t)
+(leaf diminish :straight t)
 #+end_src
 
 ** Pretty symbols
@@ -741,7 +740,7 @@ but tells you when the bell rang.
 
 #+begin_src emacs-lisp
 (leaf mode-line-bell
-  :ensure t
+  :straight t
   :config
   (setq mode-line-bell-flash-time 0.1)
   (mode-line-bell-mode 1))
@@ -809,7 +808,7 @@ Best way of saving your Ass; trust me, you'll need it!
 
 #+begin_src emacs-lisp
 (leaf undo-tree
-  :ensure t
+  :straight t
   :config
   (global-undo-tree-mode 1)
   :bind (("C-c u" . undo-tree-visualize)))
@@ -822,7 +821,7 @@ Best way of saving your Ass; trust me, you'll need it!
 
  #+begin_src emacs-lisp
 (leaf smartparens
-  :ensure t
+  :straight t
   :config (smartparens-global-mode))
 #+end_src
 
@@ -846,7 +845,7 @@ Best way of saving your Ass; trust me, you'll need it!
 
 #+begin_src emacs-lisp
 (leaf goto-last-change
-  :ensure t
+  :straight t
   :config
   (defun index/goto-last-change ()
     "Modification of the `goto-last-change' function.
@@ -1011,7 +1010,7 @@ or to cancel it type =q=.
 
 #+begin_src emacs-lisp
 (leaf sly-macrostep
-  :ensure t
+  :straight t
   :commands (macrostep-expand))
 #+end_src
 
@@ -1072,7 +1071,7 @@ TODO : Structure these sub headers more nicely.
 
 #+begin_src emacs-lisp
 (leaf org
-  :ensure t
+  :straight t
   :config
   (setq org-directory (expand-file-name "~/wtn/org"))
   ;; (setq org-todo-keywords
@@ -1093,7 +1092,7 @@ TODO : Structure these sub headers more nicely.
 
 #+begin_src emacs-lisp
 (leaf org-bullets
-  :ensure t
+  :straight t
   :hook ((org-mode-hook . org-bullets-mode)))
 #+end_src
 
@@ -1274,9 +1273,9 @@ Why I use LaTeX?
 
 #+begin_src emacs-lisp
 (leaf auctex
-  :ensure t
+  :straight t
   ;; (leaf auctex-latexmk
-  ;;   :ensure t)
+  ;;   :straight t)
   :config
   (defun index/latex-RET ()
     "Will add two backslashes at the end."
@@ -1303,7 +1302,7 @@ This package is used to center the entire frame.
 
 #+begin_src emacs-lisp
 (leaf olivetti
-  :ensure t
+  :straight t
   :config
   (setq olivetti-body-width 0.61803)
   (setq olivetti-minimum-body-width 72)
@@ -1319,7 +1318,7 @@ This package will dim down other sentences, paragraphs, and code-blocks.
 
 #+begin_src emacs-lisp
 (leaf focus
-  :ensure t
+  :straight t
   :config
   (setq focus-mode-to-thing '((prog-mode . defun)
                               (text-mode . paragraph))))
@@ -1378,7 +1377,7 @@ Calls `index/focused-writing' when called with an argument.
 
 #+begin_src emacs-lisp
 (leaf flyspell
-  :ensure t
+  :straight t
   :hook ((text-mode-hook . flyspell-mode)
          (prog-mode-hook . flyspell-prog-mode))
   :config
@@ -1481,16 +1480,16 @@ Calls `index/focused-writing' when called with an argument.
 
 #+begin_src emacs-lisp
 (leaf ivy
-  :ensure t
+  :straight t
   :config
 
   (leaf ivy-posframe
-    :ensure t
+    :straight t
     :config
     (ivy-posframe-mode 1))
 
   (leaf ivy-prescient
-    :ensure t
+    :straight t
     :config
     (setq prescient-save-file
           (expand-file-name "prescienthist" user-emacs-directory))
@@ -1498,7 +1497,7 @@ Calls `index/focused-writing' when called with an argument.
     (ivy-prescient-mode 1))
 
   (leaf ivy-rich
-    :ensure t
+    :straight t
     :config
     (ivy-rich-mode 1))
 
@@ -1516,14 +1515,14 @@ Calls `index/focused-writing' when called with an argument.
 
 #+begin_src emacs-lisp
 (leaf selectrum
-  :ensure t
+  :straight t
   :config
   (setq selectrum-num-candidates-displayed 7)
   (setq selectrum-fix-minibuffer-height 7)
   (selectrum-mode 1))
 
 (leaf selectrum-prescient
-  :ensure t
+  :straight t
   :after selectrum
   :config
   (setq prescient-save-file
@@ -1532,11 +1531,10 @@ Calls `index/focused-writing' when called with an argument.
   (prescient-persist-mode 1))
 
 (leaf marginalia
-  :ensure t
-  :after selectrum
+  :straight t
+  :commands selectrum-read
   :config
-  (setq marginalia-annotators
-        '(marginalia-annotators-heavy nil))
+  (setq marginalia-annotators '(marginalia-annotators-heavy nil))
   (advice-add #'marginalia-cycle
               :after
               (lambda ()
@@ -1547,7 +1545,7 @@ Calls `index/focused-writing' when called with an argument.
           ("C-M-a" . marginalia-cycle))))
 
 (leaf embark
-  :ensure t
+  :straight t
   :bind (("H-e" . embark-act)))
 #+end_src
 
@@ -1566,11 +1564,11 @@ Calls `index/focused-writing' when called with an argument.
 
 #+begin_src emacs-lisp
 (leaf company
-  :ensure t
+  :straight t
   :hook ((after-init-hook . global-company-mode))
   :config
   (leaf company-prescient
-    :ensure t
+    :straight t
     :config
     (company-prescient-mode 1)))
 #+end_src
@@ -1582,12 +1580,12 @@ Calls `index/focused-writing' when called with an argument.
 
 #+begin_src emacs-lisp
 (leaf yasnippet
-  :ensure t
+  :straight t
   :hook ((after-init-hook . yas-global-mode)))
 #+end_src
 
 #+begin_src emacs-lisp
-(leaf yasnippet-snippets :ensure t :after yasnippet)
+(leaf yasnippet-snippets :straight t :after yasnippet)
 #+end_src
 
 *** Comments
@@ -1657,7 +1655,7 @@ Calls `index/focused-writing' when called with an argument.
   (setq wdired-create-parent-directories t))
 
 (leaf dired-subtree
-  :ensure t
+  :straight t
   :config
   (setq dired-subtree-use-backgrounds nil)
   :bind ((dired-mode-map
@@ -1670,7 +1668,7 @@ Calls `index/focused-writing' when called with an argument.
          ("H-j" . dired-jump)))
 
 (leaf peep-dired
-  :ensure t
+  :straight t
   :config
   ;; https://emacs.stackexchange.com/q/46664
   (defun tributi/toggle-window-split ()
@@ -1857,7 +1855,7 @@ info-display-manual eshell RET=.
 
 #+begin_src emacs-lisp
 (leaf eshell
-  :ensure t
+  :straight t
   :config
   (defun tributi/call-process (command &rest args)
     "Execute COMMAND with ARGS synchronously.
@@ -2034,7 +2032,7 @@ World's most powerful git interface.
 
 #+begin_src emacs-lisp
 (leaf magit
-  :ensure t
+  :straight t
   :config
   (setq vc-follow-symlinks t)
   (setq git-commit-summary-max-length 50)
@@ -2080,7 +2078,7 @@ Simple way of displaying the changes in a git directory.
 
 #+begin_src emacs-lisp
 (leaf diff-hl
-  :ensure t
+  :straight t
   :config
   (global-diff-hl-mode 1)
   :hook ((magit-pre-refresh-hook . diff-hl-magit-pre-refresh)
@@ -2098,7 +2096,7 @@ Simple way of displaying the changes in a git directory.
 
 #+begin_src emacs-lisp
 (leaf scratch
-  :ensure t
+  :straight t
   :config
   (defun tributi/scratch-buffer-setup ()
     "Add contents to `scratch' buffer and name it accordingly."
@@ -2122,7 +2120,7 @@ Simple way of displaying the changes in a git directory.
 
 #+begin_src emacs-lisp
 (leaf fish-mode
-  :ensure t
+  :straight t
   :config
   (defun index/fish-exit-editor ()
     "Exits the command line edit buffer."
@@ -2145,7 +2143,7 @@ thing I missed from (n)vim OOTB-Experience.
 
 #+begin_src emacs-lisp
 (leaf hl-todo
-  :ensure t
+  :straight t
   :config
   (add-to-list 'hl-todo-keyword-faces
                (cons "DEPRECATED" "#FF79C6"))
@@ -2328,7 +2326,7 @@ there is no last keyboard macro in`index/execute-named-kmacro-last'
 
 #+begin_src emacs-lisp
 (leaf dumb-jump
-  :ensure t
+  :straight t
   :commands dumb-jump-go
   :hook ((xref-backend-functions . dumb-jump-xref-activate))
   :bind (("C-x g" . dumb-jump-go)))
@@ -2433,12 +2431,12 @@ questions.  Else use completion to select the tab to switch to."
 
 #+begin_src emacs-lisp
 (leaf exwm
-  :ensure t
+  :straight t
   :require exwm exwm-randr
   :config
 
   (setq exwm-workspace-show-all-buffers t)
-  (setq exwm-workspace-switch-create-limit 1)
+  (setq exwm-workspace-switch-create-limit 2)
 
   (exwm-randr-enable)
 
@@ -2773,7 +2771,7 @@ This is a very quick and less annoying way to write HTML.
 
 #+begin_src emacs-lisp
 (leaf emmet-mode
-  :ensure t
+  :straight t
   :hook ((html-mode-hook . emmet-mode)))
 #+end_src
 
@@ -2787,7 +2785,7 @@ like =#454545= will be shown with its corresponding background.
 
 #+begin_src emacs-lisp
 (leaf rainbow-mode
-  :ensure t
+  :straight t
   :hook (((html-mode-hook css-mode-hook) . rainbow-mode)))
 #+end_src
 
@@ -2886,7 +2884,7 @@ Compile SASS to CSS with =sass --watch --style compressed sass:css=.
 
 #+begin_src emacs-lisp
 (leaf scss-mode
-  :ensure t
+  :straight t
   :config
   (setq scss-compile-at-save nil)
 
@@ -2961,7 +2959,7 @@ http://danmidwood.com/content/2014/11/21/animated-paredit.html
 
 #+begin_src emacs-lisp
 (leaf lispy
-  :ensure t
+  :straight t
   :hook ((lisp-interaction-mode-hook . lispy-mode)
          (emacs-lisp-mode-hook . lispy-mode)
          (common-lisp-mode-hook . lispy-mode)
@@ -2970,7 +2968,7 @@ http://danmidwood.com/content/2014/11/21/animated-paredit.html
 
 #+begin_src emacs-lisp
 ;; (leaf paredit
-;;   :ensure t
+;;   :straight t
 ;;   :hook ((lisp-interaction-mode-hook . paredit-mode)
 ;;          (emacs-lisp-mode-hook . paredit-mode)
 ;;          (common-lisp-mode-hook . paredit-mode)
@@ -2985,7 +2983,7 @@ http://danmidwood.com/content/2014/11/21/animated-paredit.html
 
 #+begin_src emacs-lisp
 ;; (leaf slime
-;;   :ensure t
+;;   :straight t
 ;;   :config
 ;;   (load (expand-file-name "~/.local/lib/quicklisp/slime-helper.el")) ; requires quicklisp
 ;;   (setq inferior-lisp-program "sbcl")                                ; requires sbcl
@@ -2998,7 +2996,7 @@ http://danmidwood.com/content/2014/11/21/animated-paredit.html
   (load (expand-file-name "~/.local/lib/quicklisp/slime-helper.el")) ; requires quicklisp
   (setq inferior-lisp-program "sbcl")                                ; requires sbcl
   (slime-setup)
-  :ensure t)
+  :straight t)
 #+end_src
 
 ** Scheme
@@ -3008,7 +3006,7 @@ http://danmidwood.com/content/2014/11/21/animated-paredit.html
 
 #+begin_src emacs-lisp
 (leaf geiser
-  :ensure t
+  :straight t
   :config
   (setq geiser-active-implementations '(guile)))
 #+end_src
@@ -3020,10 +3018,10 @@ http://danmidwood.com/content/2014/11/21/animated-paredit.html
 
 #+begin_src emacs-lisp
 (leaf cider
-  :ensure t)
+  :straight t)
 
 (leaf clj-refactor
-  :ensure t
+  :straight t
   :hook ((clojure-mode-hook . clj-refactor-mode)))
 #+end_src
 
@@ -3034,7 +3032,7 @@ http://danmidwood.com/content/2014/11/21/animated-paredit.html
 
 #+begin_src emacs-lisp
 (leaf bongo
-  :ensure t
+  :straight t
   :config
   (setq bongo-insert-whole-directory-trees t)
   (setq bongo-default-directory (expand-file-name "~/etc/music"))
@@ -3093,7 +3091,7 @@ http://danmidwood.com/content/2014/11/21/animated-paredit.html
 
 #+begin_src emacs-lisp
 (leaf elfeed
-  :ensure t
+  :straight t
   :config
 
   (setq elfeed-use-curl t)
@@ -3610,7 +3608,7 @@ line."
 
 #+begin_src emacs-lisp
 (leaf avy
-  :ensure t
+  :straight t
   :bind (("M-s" . avy-goto-char-timer)))
 #+end_src
 
@@ -3621,7 +3619,7 @@ line."
 
 #+begin_src emacs-lisp
 (leaf expand-region
-  :ensure t
+  :straight t
   :bind (("M-C-SPC" . er/expand-region)))
 #+end_src
 
@@ -3632,7 +3630,7 @@ line."
 
 #+begin_src emacs-lisp
 (leaf multiple-cursors
-  :ensure t
+  :straight t
   :config
   (eval-and-compile                     ; TODO : Not evaluating this
     (setq mc/always-run-for-all t)

@@ -20,35 +20,45 @@
 ;;; Code :
 
 (eval-and-compile
-  (require 'package)
+  ;; This is for deferring the check for modifications mechanism to
+  ;; `check-on-save' instead of `find-at-startup'-- which as the name
+  ;; implies runs a command at startup.  The command is quite slow.
+  (setq straight-check-for-modifications '(check-on-save))
 
-  ;; Specify the package archives-- where to download from.
-  (setq package-archives '(("MELPA" . "https://melpa.org/packages/")
-                           ("GNU"   . "https://elpa.gnu.org/packages/")
-                           ("ORG" . "https://orgmode.org/elpa/")))
+  ;; Bootstrap code for `straight.el'.
+  (defvar bootstrap-version)
+  (let ((bootstrap-file
+         (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+        (bootstrap-version 5))
+    (unless (file-exists-p bootstrap-file)
+      (with-current-buffer
+          (url-retrieve-synchronously
+           "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+           'silent 'inhibit-cookies)
+        (goto-char (point-max))
+        (eval-print-last-sexp)))
+    (load bootstrap-file nil 'nomessage))
 
-  ;; Initialize the packages, avoiding a re-initialization.
-  (unless (bound-and-true-p package--initialized)
-    (package-initialize))
+  ;; Install `leaf' and `leaf-keywords.'
+  (unless (require 'leaf nil 'noerror)
+    (straight-use-package 'leaf)
+    (straight-use-package 'leaf-keywords))
 
-  (unless (package-installed-p 'leaf)
-    (package-install 'leaf)))
+  ;; Uses a different file for `custom' in order to not clutter the
+  ;; `init.el' file with automatic settings made by custom.
+  (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+  (load custom-file t t)
 
-;; Uses a different file for `custom' in order to not clutter the
-;; `init.el' file with automatic settings made by custom.
-(setq custom-file
-      (expand-file-name
-       (concat user-emacs-directory "custom.el")))
-(load custom-file t t)
-
-;; This is the actual configuration file.  This will load `config.el'
-;; when it is available (I rebuild this file each time I quit Emacs).
-;; If it is not available, then use `org-babel-tangle-file'
-(let ((f (expand-file-name "config.el" user-emacs-directory))
-      (o (expand-file-name "config.org" user-emacs-directory)))
-  (require 'leaf)
-  (if (file-readable-p f)
-      (load-file f)
-    (org-babel-load-file o f)))
+  ;; This is the actual configuration file.  This will load `config.el'
+  ;; when it is available (I rebuild this file each time I quit Emacs).
+  ;; If it is not available, then use `org-babel-tangle-file'.
+  (let ((f (expand-file-name "config.el" user-emacs-directory))
+        (o (expand-file-name "config.org" user-emacs-directory)))
+    (require 'leaf)
+    (require 'leaf-keywords)
+    (leaf-keywords-init)
+    (if (file-readable-p f)
+        (load-file f)
+      (org-babel-load-file o f))))
 
 ;;; init.el ends here
