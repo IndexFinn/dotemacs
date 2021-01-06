@@ -1698,6 +1698,10 @@ Calls `index/focused-writing' when called with an argument.
   :bind ((dired-mode-map
           ("P" . peep-dired)
           ("T" . tributi/toggle-window-split))))
+
+(leaf all-the-icons-dired
+  :straight t
+  :hook (dired-mode-hook . all-the-icons-dired-mode))
 #+end_src
 
 ** Window
