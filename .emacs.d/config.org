@@ -3520,7 +3520,7 @@ the prefix option.
     (interactive "P")
     (let ((regexp (cond
                    ((equal arg '(16))
-                    (index/align-column-dwim))
+                    index/align-column-dwim)
                    ((equal arg '(4))
                     (concat
                      "\\(\\s-*\\)"
@@ -3532,9 +3532,7 @@ the prefix option.
       (save-excursion
         (unless (use-region-p)
           (mark-paragraph))
-        (if (equal arg '(64))
-            (align-regexp (region-beginning) (region-end) regexp 1 1 nil)
-          (align-regexp (region-beginning) (region-end) regexp 1 1 t)))))
+        (align-regexp (region-beginning) (region-end) regexp))))
   :bind (("C-M-h" . index/align-column-dwim)))
 #+end_src
 
@@ -3553,8 +3551,10 @@ it all the time.  Well, this implements that feature.
     "Concatenate the next line with the previous one.
 This emulates vim behavior."
     (interactive "p")
-    (dotimes (i arg)
-      (join-line -1)))
+    (if (region-active-p)
+        (join-line nil (region-beginning) (region-end))
+      (dotimes (i arg)
+        (join-line -1))))
   :bind (index/keys-minor-mode-map
          ("M-j" . index/join-line)))
 #+end_src
