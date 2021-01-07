@@ -3383,10 +3383,6 @@ more or less.  Well actually I stole some code from Reddit User
   :require t
   :config
   (setq mu4e-maildir "~/.mail")
-  (setq mu4e-sent-folder "/Sent")
-  (setq mu4e-drafts-folder "/Drafts")
-  (setq mu4e-trash-folder "/Trash")
-  (setq mu4e-refile-folder "/Archive")
   (setq mu4e-attachment-dir (expand-file-name "~/www"))
 
   (setq mu4e-headers-advance-after-mark t)
@@ -3394,6 +3390,35 @@ more or less.  Well actually I stole some code from Reddit User
   (setq mu4e-headers-date-format "%F")
   (setq mu4e-headers-time-format "%R")
   (setq mu4e-headers-long-date-format "%F, %R")
+
+  (setq mu4e-contexts
+        `(,(make-mu4e-context
+            :name "Trash"
+            :match-func
+            (lambda (msg)
+              (when msg
+                (string-prefix-p "/stizzl@cock.li" (mu4e-message-field msg :maildir))))
+            :vars '((user-mail-address      . "stizzl@cock.li")
+                    (user-full-name         . "Finn Sauer")
+                    (mu4e-sent-folder       . "/stizzl@cock.li/Sent")
+                    (mu4e-drafts-folder     . "/stizzl@cock.li/Drafts")
+                    (mu4e-trash-folder      . "/stizzl@cock.li/Trash")
+                    (mu4e-refile-folder     . "/stizzl@cock.li/Archive")
+                    (mu4e-compose-signature . "Finn Sauer\nfinnsauer.com\nDisposable Mail Address\n")))
+          ,(make-mu4e-context
+            :name "Gmail"
+            :match-func
+            (lambda (msg)
+              (when msg
+                (string-prefix-p "/indexfinn@gmail.com" (mu4e-message-field msg :maildir))))
+            :vars '((user-mail-address  . "indexfinn@gmail.com")
+                    (user-full-name     . "Finn Sauer")
+                    (mu4e-drafts-folder . "/indexfinn@gmail.com/[Gmail]/Drafts")
+                    (mu4e-sent-folder   . "/indexfinn@gmail.com/[Gmail]/Sent Mail")
+                    (mu4e-refile-folder . "/indexfinn@gmail.com/[Gmail]/All Mail")
+                    (mu4e-trash-folder  . "/indexfinn@gmail.com/[Gmail]/Trash")
+                    (mu4e-compose-signature . "Finn Sauer\nfinnsauer.com\n")))))
+
 
   (setq mu4e-headers-fields
         '((:human-date . 12)
@@ -3404,13 +3429,12 @@ more or less.  Well actually I stole some code from Reddit User
 
   (setq mu4e-completing-read-function #'completing-read)
   (setq mu4e-get-mail-command "mbsync -a")
-  (setq mu4e-update-interval nil ;; '(* 60 5)
-        )
-
-  (setq mu4e-compose-signature "Finn Sauer\n")
   (setq mu4e-display-update-status-in-modeline t)
 
-  :bind (("C-c m" . mu4e)))
+  :bind (("C-c m" . mu4e)
+         (mu4e-headers-mode-map
+          ("M-p" . mu4e-headers-query-prev)
+          ("M-n" . mu4e-headers-query-next))))
 #+end_src
 
 * Keyboard Enhancements / Movement
