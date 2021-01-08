@@ -1,6 +1,6 @@
 ;; early-init.el --- init.el just earlier
 
-;; Copyright (C) 2020 Finn Sauer <finn@finnsauer.xyz>
+;; Copyright (C) 2020-2021 Finn Sauer <finn@finnsauer.xyz>
 ;;
 ;; This file is part of my `config.org' ecosystem.
 ;;
