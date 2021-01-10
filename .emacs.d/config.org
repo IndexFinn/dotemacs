@@ -746,6 +746,20 @@ but tells you when the bell rang.
   (mode-line-bell-mode 1))
 #+end_src
 
+** Goggles
+:PROPERTIES:
+:CUSTOM_ID: h:1de21833-20de-4a01-80ef-4540767ac73c
+:END:
+
+This will add animations to deletion, yanking, etc.
+
+#+begin_src emacs-lisp
+(leaf goggles
+  :straight t
+  :config
+  (goggles-mode 1))
+#+end_src
+
 * Generic Settings
 :PROPERTIES:
 :CUSTOM_ID: h:832f56b8-3a3a-4b2d-8b3e-f5e917aafdb2
