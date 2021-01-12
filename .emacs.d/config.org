@@ -60,12 +60,16 @@ file to a newer version every time Emacs closes.
 (leaf emacs
   :config
   (defun index/rebuild-emacs-init ()
-    "Compile the .org configuration file to .el"
-    (let ((f (expand-file-name "config.org" user-emacs-directory))
-          (e (expand-file-name "config.el" user-emacs-directory)))
-      (when (file-readable-p e)
-        (delete-file e))
-      (org-babel-tangle-file f e)))
+    "Compile the ORG configuration file to ELC."
+    (let ((o (expand-file-name "config.org" user-emacs-directory))
+          (e (expand-file-name "config.el" user-emacs-directory))
+          (c (expand-file-name "config.elc" user-emacs-directory)))
+      (prog1 t
+        (when (file-readable-p c)
+          (delete-file c))
+        (org-babel-tangle-file o e)
+        (byte-compile-file e)
+        (delete-file e))))
   :hook ((kill-emacs-hook . index/rebuild-emacs-init)))
 #+end_src
 
