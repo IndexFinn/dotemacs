@@ -40,25 +40,26 @@
     (load bootstrap-file nil 'nomessage))
 
   ;; Install `leaf' and `leaf-keywords.'
-  (unless (require 'leaf nil 'noerror)
+  (unless (and (require 'leaf nil 'noerror)
+               (require 'leaf-keywords nil 'noerror)
+               (require 'org nil 'noerror))
     (straight-use-package 'leaf)
-    (straight-use-package 'leaf-keywords))
+    (straight-use-package 'leaf-keywords)
+    (straight-use-package 'org))
 
   ;; Uses a different file for `custom' in order to not clutter the
   ;; `init.el' file with automatic settings made by custom.
   (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-  (load custom-file t t)
+  (load custom-file 'noerror 'nomessage)
 
   ;; This is the actual configuration file.  This will load `config.el'
   ;; when it is available (I rebuild this file each time I quit Emacs).
   ;; If it is not available, then use `org-babel-tangle-file'.
-  (let ((f (expand-file-name "config.el" user-emacs-directory))
+  (let ((f (expand-file-name "config.elc" user-emacs-directory))
         (o (expand-file-name "config.org" user-emacs-directory)))
-    (require 'leaf)
-    (require 'leaf-keywords)
     (leaf-keywords-init)
     (if (file-readable-p f)
         (load-file f)
-      (org-babel-load-file o f))))
+      (org-babel-load-file o))))
 
 ;;; init.el ends here
