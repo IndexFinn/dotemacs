@@ -1584,7 +1584,15 @@ Calls `index/focused-writing' when called with an argument.
   (leaf company-prescient
     :straight t
     :config
-    (company-prescient-mode 1)))
+    (company-prescient-mode 1))
+
+  (defun index/company-abort-and-space ()
+    "Abort company and insert SPC."
+    (interactive)
+    (company-abort)
+    (insert " "))
+  :bind ((company-active-map
+          ("SPC" . index/company-abort-and-space))))
 #+end_src
 
 *** Yasnippet
