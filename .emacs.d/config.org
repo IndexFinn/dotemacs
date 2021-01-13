@@ -16,19 +16,24 @@ File Size:     *src_elisp{(file-size-human-readable
                               (expand-file-name
                                "config.org"
                                user-emacs-directory)))))}*.
+SRC-Blocks:    *src_elisp{(length
+                           (s-match-strings-all
+                            "#\\+begin_src emacs-lisp"
+                            (buffer-string)))}*.
 #+end_verse
 
-# TODO : REVIEW
 #+begin_abstract
-This is my config.org document for configuring the “GNU project['s]
-Emacs editor”.  This document is written in the so called [[https://en.wikipedia.org/wiki/Literate_programming][Literate
-Programming]] paradigm; you express yourself-- be it the idea of the
-snippet-- alongside writing the source code of said idea.  It's made
-possible by Emacs' [[https://orgmode.org/][Org Mode]].
+This  document is  my  own personal  configuration  for the  extensible,
+customizable,  self-documenting real-time  display editor  called Emacs.
+This configuration file is written in the so called [[https://en.wikipedia.org/wiki/Literate_programming][Literate Programming]]
+paradigm; the focus lies more on the text than the actual code, and they
+both go  hand-in-hand.  This  is made  possible via  [[https://orgmode.org/][Org Mode]]:  the best
+[[https://daringfireball.net/projects/markdown/][Markdown]] out there.
 #+end_abstract
 
-Refer to the section [[#h:e5803f69-1ef3-4d25-a619-2ef6b2f44756][This Document]] to get more information about this
-file and its conventions.
+Refer to  the section [[#h:e5803f69-1ef3-4d25-a619-2ef6b2f44756][This Document]]  to get more information  about this
+file and  its conventions.  This file  is source controlled with  [[http://www.git-scm.com/][Git]], a
+link to the repository can be found [[file:~/dot/emacs/.git/][here]].
 
 #+TOC: headlines 8 insert TOC here, with eight headline levels
 
@@ -41,20 +46,9 @@ file and its conventions.
 :CUSTOM_ID: h:4f188f72-2abe-47f7-b303-cfe12d7e7e3e
 :END:
 
-# REVIEW : change this or update `early-init.el'
-# Since newer versions of Emacs (Emacs 27 and newer) now support an
-# /early-init.el/ file, we use that to increase the startup time and for
-# package initialization.
-#
-# Emacs uses the =init.el= file to source custom Emacs configuration.  Since
-# we do everything in =org-mode= we only need the essential initialization.
-#
-# I use =package.el= to keep track of my extensions.  At the end of the file,
-# we source the =config.org= file and evaluate it in elisp.
-
 Whenever I quit Emacs, I want to load my new configurations from this
-file.  Therefore this function will recompile the preexisting Emacs-lisp
-file to a newer version every time Emacs closes.
+file.  Thus this function will recompile the preexisting Emacs-lisp file
+to a newer version every time Emacs closes.
 
 #+begin_src emacs-lisp
 (leaf emacs
@@ -101,100 +95,14 @@ and how many Garbage Collections took place.
 :CUSTOM_ID: h:6e1a02b2-b6b7-4015-99c5-d3ae45832ce9
 :END:
 
-#+begin_example emacs-lisp
-;; init.el --- initialization file
-
-;; Copyright (C) 2020 Finn Sauer <finn@finnsauer.xyz>
-;;
-;; This file is part of my `config.org' ecosystem.
-;;
-;; This program is free software: you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation, either version 3 of the License, or (at
-;; your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful, but
-;; WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-;;; Code :
-
-(eval-and-compile
-  (require 'package)
-
-  ;; Specify the package archives-- where to download from.
-  (setq package-archives '(("MELPA" . "https://melpa.org/packages/")
-                           ("GNU"   . "https://elpa.gnu.org/packages/")
-                           ("ORG" . "https://orgmode.org/elpa/")))
-
-  ;; Initialize the packages, avoiding a re-initialization.
-  (unless (bound-and-true-p package--initialized)
-    (package-initialize))
-
-  (unless (package-installed-p 'leaf)
-    (package-install 'leaf)))
-
-;; Uses a different file for `custom' in order to not clutter the
-;; `init.el' file with automatic settings made by custom.
-(setq custom-file
-      (expand-file-name
-       (concat user-emacs-directory "custom.el")))
-(load custom-file t t)
-
-;; This is the actual configuration file.  This will load `config.el'
-;; when it is available (I rebuild this file each time I quit Emacs).
-;; If it is not available, then use `org-babel-tangle-file'
-(let ((f (expand-file-name "config.el" user-emacs-directory))
-      (o (expand-file-name "config.org" user-emacs-directory)))
-  (require 'leaf)
-  (if (file-readable-p f)
-      (load-file f)
-    (org-babel-load-file o f)))
-
-;;; init.el ends here
-#+end_example
+File can be found [[file:init.el][here]].
 
 *** The /early-init.el/ file
 :PROPERTIES:
 :CUSTOM_ID: h:1dda032f-3bc7-4c67-a57b-263c130c5ee5
 :END:
 
-#+begin_example emacs-lisp
-;; early-init.el --- init.el just earlier
-
-;; Copyright (C) 2020 Finn Sauer <finn@finnsauer.xyz>
-;;
-;; This file is part of my `config.org' ecosystem.
-;;
-;; This program is free software: you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation, either version 3 of the License, or (at
-;; your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful, but
-;; WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-;;; Code:
-
-;; Slow down the Garbage Collection, effectively stopping it.  This
-;; setting will be overwritten by the function `index/gc-reset' inside
-;; the `config.org' file.
-(setq gc-cons-threshold most-positive-fixnum)
-
-(setq package-enable-at-startup t)
-(setq frame-inhibit-implied-resize t)
-
-;;; early-init.el ends here
-#+end_example
+File can be found [[file:early-init.el][here]].
 
 ** Enforce Keybindings
 :PROPERTIES:
