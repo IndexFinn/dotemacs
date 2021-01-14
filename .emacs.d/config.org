@@ -3950,6 +3950,11 @@ Technically I could query them all and print them out.  Or look up the
 documentation with =^index/=.  These extra keystrokes when defining some
 code have a lot of benefits.
 
+This name might get changed to =indicis=, since this would be more
+correctly with the Latin use of it.  =Indicis= is the genitive form of
+=index= and a genitive shows possession like the English's possessive
+='s= and possessive =its=.
+
 *** Tributi =tributi/=
 :PROPERTIES:
 :CUSTOM_ID: h:6331a66d-97ed-42d7-9cfe-e21ec80ecb53
