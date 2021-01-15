@@ -68,7 +68,8 @@ to a newer version every time Emacs closes.
 #+end_src
 
 After this I want Emacs to report the time it took for Emacs to launch
-and how many Garbage Collections took place.
+and how many Garbage Collections took place; as there should be none as
+described in [[#h:bad4e190-e76c-434a-bda1-b1317695fbc1][this section]].
 
 #+begin_src emacs-lisp
 (leaf emacs
@@ -116,7 +117,9 @@ overwrites those keybindings.
 
 It is important that this minor-mode is first or nearly fist in the
 =minor-mode-map-alist=.  Putting this near the end of your configuration
-file ought to be enough.  More to that later on.
+file ought to be enough.  But there is another variable which takes
+higher precedence over =minor-mode-map-alist= and that is
+=emulation-mode-map-alists=, thus we use that instead.
 
 In order to now force a keybinding you have to add the keybindings to
 the =index/keys-minor-mode-map=.  This can be achieved easily with
@@ -132,7 +135,7 @@ Or if you don't use something like leaf/use-package then you could
 define the keybindings like this:
 
 #+begin_example emacs-lisp
-(define-key index/keys-minor-mode-map (kbd "C-M-q") some-function)
+(define-key 'index/keys-minor-mode-map (kbd "C-M-q") #'some-function)
 #+end_example
 
 This method is neat, because when you want to disable the now enforced
@@ -161,6 +164,9 @@ the default keybindings.
   :hook ((emacs-startup-hook . index/keys-minor-mode)))
 #+end_src
 
+*The following has been DEPRECATED, as there is no need for it anymore
+with the =emulation-mode-map-alists= variable.*
+
 The following code snippet will ensure that when a new minor mode will
 add new keybindings, this function will then remove all keybindings
 associated with =index/keys-minor-mode=.  After that it will re enable
@@ -184,10 +190,15 @@ priority over other minor modes.  Called via the
   :hook ((after-load-functions . index/keys-have-priority)))
 #+end_example
 
-** Authinfo
+** DEPRECATED Authinfo
 :PROPERTIES:
 :CUSTOM_ID: h:e12f564e-36f9-40eb-8795-088cc90d9d33
 :END:
+
+*The following has been DEPRECATED, as /.authinfo.gpg/ will get replaced
+via the program =pass= or also called =password-store=.  This was stolen
+from [[https://protesilaos.com/][prot]] anyways where at the moment I didn't quite understand
+authinfo.*
 
 #+begin_src emacs-lisp
 (leaf auth-info
@@ -1008,6 +1019,9 @@ TODO : Structure these sub headers more nicely.
   (setq org-special-ctrl-a/e nil)
   (setq org-confirm-babel-evaluate nil)
   (setq org-html-postamble nil)
+  (and
+   (setcar (nthcdr 4 org-emphasis-regexp-components) 5)
+   (org-set-emph-re 'org-emphasis-regexp-components org-emphasis-regexp-components))
   :hook ((org-mode-hook . org-indent-mode)))
 #+end_src
 
