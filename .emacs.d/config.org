@@ -2452,12 +2452,7 @@ X window."
                    (let ((tmp nil))
                      (mapc
                       (lambda (str)
-                        (when (s-match
-                               (concat
-                                "^"
-                                modifier
-                                "-")
-                               str)
+                        (when (s-match (concat "^" modifier "-") str)
                           (setq tmp (cons (car (s-split " " str)) tmp))))
                       (s-split "\n" (buffer-string)))
                      (reverse tmp))))
