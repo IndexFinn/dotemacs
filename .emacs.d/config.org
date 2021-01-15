@@ -2472,12 +2472,10 @@ process."
      (concat
       (completing-read
        "Launch in $PATH: "
-       (let ((lst nil))
-         (mapc
-          (lambda (dir)
-            (setq lst (cons (directory-files-recursively dir ".") lst)))
-          (s-split ":" (getenv "PATH")))
-         (flatten-tree (reverse lst))))
+       (flatten-tree
+        (mapcar (lambda (str)
+                  (directory-files-recursively str "."))
+                (s-split ":" (getenv "PATH")))))
       (when arg
         (concat
          " "
@@ -2509,17 +2507,13 @@ into the well documented man page of mpv."
         (expand-file-name
          (completing-read
           "Launch MPV: "
-          (let ((lst nil))
-            (mapc
-             (lambda (dir)
-               (setq lst (cons
-                          (directory-files-recursively
-                           dir
-                           index/exwm-launch-mpv-file-ending-regex
-                           nil nil t)
-                          lst)))
-             index/exwm-launch-mpv-dirs)
-            (flatten-tree (reverse lst)))))))
+          (flatten-tree
+           (mapcar (lambda (dir)
+                     (directory-files-recursively
+                      dir
+                      index/exwm-launch-mpv-file-ending-regex
+                      nil nil t))
+                   index/exwm-launch-mpv-dirs))))))
       (shell-command "sleep .1 ; echo script-binding uosc/next | socat - $MPV_SOCKET")
       (switch-to-buffer (get-buffer "mpv")))
      ((equal arg '(16))
