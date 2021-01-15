@@ -1011,11 +1011,6 @@ TODO : Structure these sub headers more nicely.
   :straight t
   :config
   (setq org-directory (expand-file-name "~/wtn/org"))
-  ;; (setq org-todo-keywords
-  ;;       '((sequence "TODO(t)" "|" "DONE(D)" "CANCEL(C)")
-  ;;         (sequence "MEET(m)" "|" "MET(M)")
-  ;;         (sequence "STUDY(s)" "|" "STUDIED(S)")
-  ;;         (sequence "WRITE(w)" "|" "WROTE(W)")))
   (setq org-special-ctrl-a/e nil)
   (setq org-confirm-babel-evaluate nil)
   (setq org-html-postamble nil)
@@ -1023,17 +1018,6 @@ TODO : Structure these sub headers more nicely.
    (setcar (nthcdr 4 org-emphasis-regexp-components) 5)
    (org-set-emph-re 'org-emphasis-regexp-components org-emphasis-regexp-components))
   :hook ((org-mode-hook . org-indent-mode)))
-#+end_src
-
-*** COMMENT Org Bullets
-:PROPERTIES:
-:CUSTOM_ID: h:f09f6fbc-6ec3-49a8-aad7-329e8944b7c1
-:END:
-
-#+begin_src emacs-lisp
-(leaf org-bullets
-  :straight t
-  :hook ((org-mode-hook . org-bullets-mode)))
 #+end_src
 
 *** Theme
@@ -1044,18 +1028,14 @@ TODO : Structure these sub headers more nicely.
 #+begin_src emacs-lisp
 (leaf org
   :config
-  (setq org-ellipsis " ▾ "
-        org-bullets-bullet-list '("§")
-        org-hide-emphasis-markers nil
-        org-fontify-whole-heading-line t
-        org-fontify-done-headline t
-        org-fontify-quote-and-verse-blocks t))
-
-  ;;; https://zzamboni.org/post/beautifying-org-mode-in-emacs/
-;; (add-hook 'text-mode-hook 'variable-pitch-mode)
+  (setq org-ellipsis " ▾ ")
+  (setq org-hide-emphasis-markers nil)
+  (setq org-fontify-whole-heading-line t)
+  (setq org-fontify-done-headline t)
+  (setq org-fontify-quote-and-verse-blocks t))
 #+end_src
 
-*** COMMENT Org links
+*** Org links
 :PROPERTIES:
 :CUSTOM_ID: h:28cb0aef-0d22-4a8c-8964-e9ca3c8a0981
 :END:
@@ -1167,15 +1147,14 @@ different section.
     "Hook for `index/org-save-buffer'.")
 
   (defun index/org-save-buffer (&optional arg)
-    "Saves buffer and invokes
-    `tributi/org-add-ids-to-headlines-in-file'."
+    "Saves buffer and invokes hook `index/org-save-buffer-hook'"
     (interactive "p")
-    (tributi/org-add-ids-to-headlines-in-file)
     (save-buffer arg)
     (run-hooks 'index/org-save-buffer-hook))
 
   (org-defkey org-mode-map (kbd "C-x C-s") #'index/org-save-buffer)
 
+  :hook ((index/org-save-buffer-hook . tributi/org-add-ids-to-headlines-in-file))
   :bind ((org-mode-map
           ("C-c C-M-l" . org-store-link))))
 
