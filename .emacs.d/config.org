@@ -3610,8 +3610,7 @@ line."
   :config
   (eval-and-compile                     ; TODO : Not evaluating this
     (setq mc/always-run-for-all t)
-    (setq mc/cmds-to-run-once '(describe-bindings))
-    (define-key mc/keymap (kbd "<return>") nil))
+    (setq mc/cmds-to-run-once '(describe-bindings)))
   :bind (("H-M-SPC" . mc/mark-all-dwim)
          ("H-SPC" . mc/mark-next-like-this)
          ("C-<" . mc/mark-previous-like-this)
