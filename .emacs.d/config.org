@@ -3285,9 +3285,9 @@ non-whitespace character.
 
 \\{move-beginning-of-line}"
     (interactive)
-    (if (bolp)
-        (back-to-indentation)
-      (move-beginning-of-line 1)))
+    (if (or (not (bolp)) (and (derived-mode-p 'org-mode) (bolp) (eolp)))
+        (move-beginning-of-line 1)
+      (back-to-indentation)))
 
   :bind ((index/keys-minor-mode-map
           ("C-a" . index/move-beginning-of-line))))
