@@ -1622,9 +1622,29 @@ Calls `index/focused-writing' when called with an argument.
             (set-window-buffer (next-window) next-win-buffer)
             (select-window first-win)
             (if this-win-2nd (other-window 1))))))
+
+  (defun index/peep-dired-mark ()
+    "Mark current file and move to next file."
+    (interactive)
+    (save-excursion
+      (dired-mark nil))
+    (peep-dired-next-file))
+
+  (defun index/peep-dired-unmark ()
+    "Unmark current file and move to next file."
+    (interactive)
+    (save-excursion
+      (dired-unmark nil))
+    (peep-dired-next-file))
+
   :bind ((dired-mode-map
           ("P" . peep-dired)
-          ("T" . tributi/toggle-window-split))))
+          ("T" . tributi/toggle-window-split))
+         (peep-dired-mode-map
+          ("n" . peep-dired-next-file)
+          ("p" . peep-dired-prev-file)
+          ("m" . index/peep-dired-mark)
+          ("u" . index/peep-dired-unmark))))
 
 (leaf all-the-icons-dired
   :straight t
