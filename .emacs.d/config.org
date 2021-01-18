@@ -2004,9 +2004,20 @@ from the variable `index/magit-repository-directories'."
           index/magit-repository-directories))
       (magit-status "~/dot/emacs/")))
 
+  ;; TODO : Move it outside this src block.
+  ;; This function is super convenient.  Have your point be on a line
+  ;; you want to change, then invoke this function, and then magit will
+  ;; then rebase to the commit that introduced that line.  Form there
+  ;; you can change the file and stage [S] them and extend the commit [c
+  ;; e] or amend the commit [c a].  After that you can continue the
+  ;; rebase and revert to master with the changes taking effect.  If you
+  ;; changed your mind you can always cancel the rebase [r c].
+  (put 'magit-edit-line-commit 'disabled nil)
+
   :hook ((after-save-hook . magit-after-save-refresh-status))
   :bind (("C-c g" . magit-status)
-         ("H-g" . index/magit-status-emacs)))
+         ("H-g" . index/magit-status-emacs)
+         ("C-M-g" . magit-edit-line-commit)))
 
 (leaf ediff
   :config
