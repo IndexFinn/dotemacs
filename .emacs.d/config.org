@@ -3240,7 +3240,7 @@ more or less.  Well actually I stole some code from Reddit User
   :load-path "/usr/share/emacs/site-lisp/mu4e/"
   :require t
   :config
-  (setq mu4e-maildir "~/.mail")
+  (setq mu4e-maildir "~/etc/mail")
   (setq mu4e-attachment-dir (expand-file-name "~/www"))
 
   (setq mu4e-headers-advance-after-mark t)
@@ -3255,13 +3255,16 @@ more or less.  Well actually I stole some code from Reddit User
             :match-func
             (lambda (msg)
               (when msg
-                (string-prefix-p "/stizzl@cock.li" (mu4e-message-field msg :maildir))))
-            :vars '((user-mail-address      . "stizzl@cock.li")
+                (string-prefix-p "/fsauer@cock.li" (mu4e-message-field msg :maildir))))
+            :vars '((user-mail-address      . "fsauer@cock.li")
                     (user-full-name         . "Finn Sauer")
-                    (mu4e-sent-folder       . "/stizzl@cock.li/Sent")
-                    (mu4e-drafts-folder     . "/stizzl@cock.li/Drafts")
-                    (mu4e-trash-folder      . "/stizzl@cock.li/Trash")
-                    (mu4e-refile-folder     . "/stizzl@cock.li/Archive")
+                    (smtpmail-smtp-server   . "mail.cock.li")
+                    (smtpmail-smtp-service  . 465)
+                    (smtpmail-stream-type   . ssl)
+                    (mu4e-sent-folder       . "/fsauer@cock.li/Sent")
+                    (mu4e-drafts-folder     . "/fsauer@cock.li/Drafts")
+                    (mu4e-trash-folder      . "/fsauer@cock.li/Trash")
+                    (mu4e-refile-folder     . "/fsauer@cock.li/Archive")
                     (mu4e-compose-signature . "Finn Sauer\nfinnsauer.com\nDisposable Mail Address\n")))
           ,(make-mu4e-context
             :name "Gmail"
@@ -3269,12 +3272,15 @@ more or less.  Well actually I stole some code from Reddit User
             (lambda (msg)
               (when msg
                 (string-prefix-p "/indexfinn@gmail.com" (mu4e-message-field msg :maildir))))
-            :vars '((user-mail-address  . "indexfinn@gmail.com")
-                    (user-full-name     . "Finn Sauer")
-                    (mu4e-drafts-folder . "/indexfinn@gmail.com/[Gmail]/Drafts")
-                    (mu4e-sent-folder   . "/indexfinn@gmail.com/[Gmail]/Sent Mail")
-                    (mu4e-refile-folder . "/indexfinn@gmail.com/[Gmail]/All Mail")
-                    (mu4e-trash-folder  . "/indexfinn@gmail.com/[Gmail]/Trash")
+            :vars '((user-mail-address      . "indexfinn@gmail.com")
+                    (user-full-name         . "Finn Sauer")
+                    (smtpmail-smtp-server   . "smtp.gmail.com")
+                    (smtpmail-smtp-service  . 465)
+                    (smtpmail-stream-type   . ssl)
+                    (mu4e-sent-folder       . "/indexfinn@gmail.com/[Gmail]/Sent Mail")
+                    (mu4e-drafts-folder     . "/indexfinn@gmail.com/[Gmail]/Drafts")
+                    (mu4e-refile-folder     . "/indexfinn@gmail.com/[Gmail]/All Mail")
+                    (mu4e-trash-folder      . "/indexfinn@gmail.com/[Gmail]/Trash")
                     (mu4e-compose-signature . "Finn Sauer\nfinnsauer.com\n")))))
 
 
@@ -3288,6 +3294,13 @@ more or less.  Well actually I stole some code from Reddit User
   (setq mu4e-completing-read-function #'completing-read)
   (setq mu4e-get-mail-command "mbsync -a")
   (setq mu4e-display-update-status-in-modeline t)
+
+  (setq message-send-mail-function #'smtpmail-send-it)
+  ;; (setq mu4e-compose-format-flowed nil) ; TODO : Needs testing
+
+  (setq mml-secure-openpgp-signers '("3BB5A6686418275CC2598CCD84F1402B873B6B28"))
+
+  :hook ((message-send-hook . mml-secure-message-sign-pgpmime))
 
   :bind (("C-c m" . mu4e)
          (mu4e-headers-mode-map
