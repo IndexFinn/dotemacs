@@ -1017,7 +1017,31 @@ TODO : Structure these sub headers more nicely.
   (and
    (setcar (nthcdr 4 org-emphasis-regexp-components) 5)
    (org-set-emph-re 'org-emphasis-regexp-components org-emphasis-regexp-components))
-  :hook ((org-mode-hook . org-indent-mode)))
+
+  (defun index/org-goto-header ()
+    "Jump to Org Mode header."
+    (interactive)
+    (let ((res (completing-read
+                "Header: "
+                (let ((temp nil))
+                  (mapc
+                   (lambda (str)
+                     (when (s-match (concat "^" outline-regexp) str)
+                       (setq temp (cons str temp))))
+                   (s-split
+                    "\n"
+                    (buffer-substring-no-properties
+                     (point-min)
+                     (point-max))
+                    t))
+                  (reverse temp)))))
+      (when res
+        (beginning-of-buffer)
+        (search-forward res))))
+
+  :hook ((org-mode-hook . org-indent-mode))
+  :bind ((org-mode-map
+          ("C-c C-j" . index/org-goto-header))))
 #+end_src
 
 *** Theme
