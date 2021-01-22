@@ -2900,6 +2900,7 @@ http://danmidwood.com/content/2014/11/21/animated-paredit.html
   (setq bongo-default-directory (expand-file-name "~/etc/music"))
   (setq bongo-enabled-backends '(mpv))
   (setq bongo-mpv-extra-arguments '("--no-config" "--vo=null"))
+  (setq bongo-header-line-mode nil)
 
   (leaf bongo
     :config
@@ -2920,10 +2921,7 @@ http://danmidwood.com/content/2014/11/21/animated-paredit.html
         (if file
             (message "File added: %s" file)
           (message "Files added: %s" files))))
-    :bind (("<f8>" . index/bongo-add-dired-files)))
-
-
-  )
+    :bind (("<f8>" . index/bongo-add-dired-files))))
 #+end_src
 
 * (News)Feeds
