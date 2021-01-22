@@ -40,9 +40,9 @@
     (load bootstrap-file nil 'nomessage))
 
   ;; Install `leaf' and `leaf-keywords.'
-  (unless (and (require 'leaf nil 'noerror)
-               (require 'leaf-keywords nil 'noerror)
-               (require 'org nil 'noerror))
+  (unless (and (ignore-errors (require 'leaf))
+               (ignore-errors (require 'leaf-keywords))
+               (ignore-errors (require 'org)))
     (straight-use-package 'leaf)
     (straight-use-package 'leaf-keywords)
     (straight-use-package 'org))
