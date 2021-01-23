@@ -52,14 +52,18 @@
   (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
   (load custom-file 'noerror 'nomessage)
 
-  ;; This is the actual configuration file.  This will load `config.el'
-  ;; when it is available (I rebuild this file each time I quit Emacs).
-  ;; If it is not available, then use `org-babel-tangle-file'.
-  (let ((f (expand-file-name "config.elc" user-emacs-directory))
-        (o (expand-file-name "config.org" user-emacs-directory)))
+  ;; This is the actual configuration file.  This will try to load three
+  ;; files: `config.elc', `config.el', and `config.org'.  If none are
+  ;; found throw an error.  Both `config.elc' and `config.el' are
+  ;; recompiled on exit with `index/rebuild-emacs-init'.
+  (let ((o (expand-file-name "config.org" user-emacs-directory))
+        (e (expand-file-name "config.el" user-emacs-directory))
+        (c (expand-file-name "config.elc" user-emacs-directory)))
     (leaf-keywords-init)
-    (if (file-readable-p f)
-        (load-file f)
-      (org-babel-load-file o))))
+    (cond
+     ((file-readable-p c) (load-file c))
+     ((file-readable-p e) (load-file e))
+     ((file-readable-p o) (org-babel-load-file o))
+     (t (error "Found no init file in `user-emacs-directory'")))))
 
 ;;; init.el ends here
