@@ -96,14 +96,18 @@ described in [[#h:bad4e190-e76c-434a-bda1-b1317695fbc1][this section]].
 :CUSTOM_ID: h:6e1a02b2-b6b7-4015-99c5-d3ae45832ce9
 :END:
 
-File can be found [[file:init.el][here]].
+The original file can be found [[file:init.el][here]].  The source is shown below:
+
+#+include: init.el src emacs-lisp :tangle no
 
 *** The /early-init.el/ file
 :PROPERTIES:
 :CUSTOM_ID: h:1dda032f-3bc7-4c67-a57b-263c130c5ee5
 :END:
 
-File can be found [[file:early-init.el][here]].
+The original file can be found [[file:early-init.el][here]].  The source is shown below:
+
+#+include: early-init.el src emacs-lisp :tangle no
 
 ** Enforce Keybindings
 :PROPERTIES:
