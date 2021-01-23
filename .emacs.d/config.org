@@ -345,6 +345,7 @@ The “Desktop” package will keep my registers and buffers available.
   (setq desktop-restore-eager 0)
   (setq desktop-restore-frames nil)
   (setq desktop-save 'ask-if-new)
+  (add-to-list 'desktop-globals-to-save 'register-alist)
   (desktop-save-mode 1))
 #+end_src
 
@@ -354,8 +355,7 @@ frame.
 #+begin_src emacs-lisp
 (leaf emacs
   :config
-  (setq initial-buffer-choice (lambda ()
-                                (get-buffer "*scratch*"))))
+  (setq initial-buffer-choice (lambda () (get-buffer "*scratch*"))))
 #+end_src
 
 * Prettify Emacs
@@ -454,7 +454,7 @@ you know where it is.  This includes changing the window.
   (beacon-mode 1))
 #+end_src
 
-** Mode-Line
+** Modeline
 :PROPERTIES:
 :CUSTOM_ID: h:19aca65c-acf0-4812-862b-b1962f573172
 :END:
@@ -493,7 +493,7 @@ you know where it is.  This includes changing the window.
 #     (setq mode-line-format index/mode-line-format))
 # #+end_src
 
-*** line and column number
+*** Line and Column Number
 :PROPERTIES:
 :CUSTOM_ID: h:1c69692e-d7a8-44f9-986f-9aa3ab8b8e34
 :END:
@@ -501,21 +501,6 @@ you know where it is.  This includes changing the window.
 #+begin_src emacs-lisp
 (line-number-mode 1)
 (column-number-mode 1)
-#+end_src
-
-** No GUI Elements
-:PROPERTIES:
-:CUSTOM_ID: h:d4ace9a3-763b-4a68-9194-09fe6c8dd0fa
-:END:
-
-#+begin_src emacs-lisp
-(menu-bar-mode -1)
-(tool-bar-mode -1)
-(scroll-bar-mode -1)
-
-(setq use-file-dialog nil
-      use-dialog-box t
-      inhibit-splash-screen t)
 #+end_src
 
 ** Theme
@@ -713,7 +698,7 @@ This will add animations to deletion, yanking, etc.
   (setq create-lockfiles nil))
 #+end_src
 
-** yes or no
+** Yes or No
 :PROPERTIES:
 :CUSTOM_ID: h:035a8b90-67b5-4928-93d1-77d051ef42c4
 :END:
@@ -722,7 +707,7 @@ This will add animations to deletion, yanking, etc.
 (defalias 'yes-or-no-p 'y-or-n-p)
 #+end_src
 
-** highlight linked parentheses
+** Highlight Linked Parentheses
 :PROPERTIES:
 :CUSTOM_ID: h:54ef46ab-46b2-427e-a741-93cedfadf21f
 :END:
@@ -731,10 +716,15 @@ This will add animations to deletion, yanking, etc.
 (show-paren-mode)
 #+end_src
 
-** tab width
+** Tab Width
 :PROPERTIES:
 :CUSTOM_ID: h:dfe60159-d514-4390-b9e5-0da6198d96f3
 :END:
+
+I use spaces for tabs.  Some might disagree but that's fine.  Some
+people prefer tabs and some prefer spaces, some even mix them together
+and that is called “[[https://www.emacswiki.org/emacs/SmartTabs][smart tabs]]”.  I simply enforce my indentation for
+others...
 
 #+begin_src emacs-lisp
 (leaf emacs
@@ -759,7 +749,7 @@ Best way of saving your Ass; trust me, you'll need it!
   :bind (("C-c u" . undo-tree-visualize)))
 #+end_src
 
-** smart parens
+** Smart Parens
 :PROPERTIES:
 :CUSTOM_ID: h:d9b2825b-2e8c-40cf-b887-a92bcb8c50e4
 :END:
@@ -767,13 +757,16 @@ Best way of saving your Ass; trust me, you'll need it!
  #+begin_src emacs-lisp
 (leaf smartparens
   :straight t
-  :config (smartparens-global-mode))
+  :config (smartparens-global-mode 1))
 #+end_src
 
-** mouse
+** Mouse Settings
 :PROPERTIES:
 :CUSTOM_ID: h:66882eea-9955-45e9-b6e3-698459e92d66
 :END:
+
+The standard way how to scroll with the mouse is too fast for me, so I
+decreased it a fair amount.
 
 #+begin_src emacs-lisp
 (leaf emacs
@@ -783,10 +776,15 @@ Best way of saving your Ass; trust me, you'll need it!
   (setq mouse-wheel-progressive-speed nil))
 #+end_src
 
-** goto-last-change
+** Goto Last Change
 :PROPERTIES:
 :CUSTOM_ID: h:36c6e555-9e63-40f8-a759-909e383c60bd
 :END:
+
+Yet again something that I stole from prot and thought it would be
+useful.  It probably is, but I haven't really used it since then.  In
+theory I could use the =C-z= binding for different things, but the
+position of =C-z= is horrible.
 
 #+begin_src emacs-lisp
 (leaf goto-last-change
@@ -801,19 +799,29 @@ This will call `beacon-blink' after `goto-last-change'."
   :bind (("C-z" . index/goto-last-change)))
 #+end_src
 
-** delete trailing white spaces
+** Delete Trailing White Spaces
 :PROPERTIES:
 :CUSTOM_ID: h:cf4afc30-821a-43b1-aa88-15ee1e6f173b
 :END:
 
+Before I save a buffer I want to clean up all trailing white spaces.
+Disclaimer that this function will also delete newlines at the end of
+the buffer too, as they are also white spaces.  This has the negative
+effect when you want to space out your file at the end and on save that
+will be removed.
+
 #+begin_src emacs-lisp
-(add-hook 'before-save-hook #'delete-trailing-whitespace)
+(leaf emacs
+  :hook ((before-save-hook . delete-trailing-whitespace)))
 #+end_src
 
-** put
+** Enable Some Disabled Commands
 :PROPERTIES:
 :CUSTOM_ID: h:2893e941-8ed7-44f8-9d78-cadede740009
 :END:
+
+For =narrow-to-region=, =upcase-region=, and =downcase-region= look at
+[[#h:2e67abb4-4f1b-4d5b-96c1-0e8c0d504a22][this section]].
 
 #+begin_src emacs-lisp
 (leaf emacs
@@ -825,7 +833,7 @@ This will call `beacon-blink' after `goto-last-change'."
   (put 'overwrite-mode 'disabled nil))
 #+end_src
 
-** save history
+** Save History
 :PROPERTIES:
 :CUSTOM_ID: h:79f96698-096a-49d5-abd4-b0880b9eb159
 :END:
@@ -843,7 +851,7 @@ functionality will be enhanced by any powerful completion framework.
   :hook ((after-init-hook . savehist-mode)))
 #+end_src
 
-** save cursor
+** Save Cursor
 :PROPERTIES:
 :CUSTOM_ID: h:c1a1f58d-e303-45c4-9f5f-1b068d8914c6
 :END:
@@ -859,10 +867,13 @@ file.  This is good for picking up work you used to do.
   (save-place-mode 1))
 #+end_src
 
-** overwrite region
+** Overwrite Region
 :PROPERTIES:
 :CUSTOM_ID: h:a6fdbeaa-a4cb-430b-8a4d-9b435ad25295
 :END:
+
+If the region is active and I start typing, the region will be
+overwritten-- effectively deleting it.
 
 #+begin_src emacs-lisp
 (delete-selection-mode 1)
@@ -875,12 +886,8 @@ file.  This is good for picking up work you used to do.
 
 Quick and easy editing and reloading of my emacs config file.
 
-*** Edit
-:PROPERTIES:
-:CUSTOM_ID: h:163c1f78-3b2d-439e-971b-ed0dd0ebcc2c
-:END:
 
-Easy opening.
+To access this file with a keybinding; easy opening.
 
 #+begin_src emacs-lisp
 (leaf emacs
@@ -895,74 +902,54 @@ Easy opening.
   :bind (("C-c e" . index/find-config-file)))
 #+end_src
 
-*** Relaod
-:PROPERTIES:
-:CUSTOM_ID: h:55b02659-18b8-410d-b0ba-96fe9fc8f106
-:END:
-
-Easy reloading of emacs.
-
-#+begin_src emacs-lisp
-(leaf emacs
-  :config
-  (defun index/reload-config-file ()
-    "Reloads `config.org' inside emacs' user directory."
-    (interactive)
-    (org-babel-load-file
-     (expand-file-name
-      "config.org"
-      user-emacs-directory)))
-
-  :bind (("C-c r" . index/reload-config-file)))
-#+end_src emacs-lisp
-
 ** Edebug
 :PROPERTIES:
 :CUSTOM_ID: h:89848a75-f3e8-4b3d-ab9d-cbf0ca6eab13
 :END:
 
-#+begin_example emacs-lisp
-(defun list-symbols (regexp)
-  (let ((lst))
-    (mapatoms
-     (lambda (a)
-       (when (string-match-p regexp (symbol-name a))
-         (push a lst))))
-    lst))
+=C-u C-M-x= Will evaluate the =defun= form and mark it as edebug.  Once
+you call this function it will enter =edebug-mode=.
 
-(list-symbols "^string-match")
-;; C-u C-M-x => (eval-defun 'edebug-it)
-;; This will enter `edebug-mode'.
-;; SPC - Step through sexpr
-;; q   - Quit
-;; g   - Go => Continue Evaluation as normal until Breakpoint
-;; h   - Here => Will jump to sexpr and debug that
-;; b   - Set a Breakpoint on point
-;; G   - Same as g but ignores Breakpoints
-;; i   - Jumps into the definition of a function
-;;       => To stop this just re-evaluate the lisp form
-#+end_example
+| Keybinding | Description                                           |
+|------------+-------------------------------------------------------|
+| SPC        | Step through sexpr                                    |
+| q          | Quit                                                  |
+| g          | Go => Continue Evaluation as normal until breakpoint  |
+| h          | Here => Will jump to sexpr and debug that             |
+| b          | Set a Breakpoint on point                             |
+| G          | Same as g but ignores Breakpoints                     |
+| i          | Jumps into the definition of a function and edebug it |
 
-** Macroexpand
-:PROPERTIES:
-:CUSTOM_ID: h:fe2f6bf6-148b-4109-a3e8-e441104f88eb
-:END:
-
-When calling =macrostep-expand= on a macro it will expand the macro
-exactly where the macro is.  This looks like what the lisp interpreter
-sees.  To futher expand any other macros type =e=, to undo it type =c=,
-or to cancel it type =q=.
-
-#+begin_src emacs-lisp
-(leaf sly-macrostep
-  :straight t
-  :commands (macrostep-expand))
-#+end_src
+To stop edebugging, just re-evaluate the lisp s-expression.
 
 ** View Mode
 :PROPERTIES:
 :CUSTOM_ID: h:17561d81-8a49-4510-b2d0-a715055eb628
 :END:
+
+If the buffer is read-only, activate some extra keybindings that make
+life easy:
+
+| Keybinding | Name                             | Description                                                                     |
+|------------+----------------------------------+---------------------------------------------------------------------------------|
+| SPC        | View-scroll-page-forward         | Scroll "page size" or prefix LINES lines forward in View mode.                  |
+| S-SPC      | View-scroll-page-backward        | Scroll "page size" or prefix LINES lines backward in View mode.                 |
+| DEL        | View-scroll-page-backward        | Scroll "page size" or prefix LINES lines backward in View mode.                 |
+| <          | beginning-of-buffer              | Move point to the beginning of the buffer.                                      |
+| >          | end-of-buffer                    | Move point to the end of the buffer.                                            |
+| d          | View-scroll-half-page-forward    | Scroll forward a "half page" (or prefix LINES) lines in View mode.              |
+| u          | View-scroll-half-page-backward   | Scroll backward a "half page" (or prefix LINES) lines in View mode.             |
+| s          | isearch-forward                  | This function has :around advice: ‘ad-Advice-isearch-forward’.                  |
+| r          | isearch-backward                 | This function has :around advice: ‘ad-Advice-isearch-backward’.                 |
+| g          | View-goto-line                   | Move to first (or prefix LINE) line in View mode.                               |
+| m          | point-to-register                | Store current location of point in register REGISTER.                           |
+| '          | register-to-point                | Move point to location stored in a register.                                    |
+| n          | View-search-last-regexp-forward  | Search forward for first (or prefix Nth) instance of last regexp in View mode.  |
+| p          | View-search-last-regexp-backward | Search backward for first (or prefix Nth) instance of last regexp in View mode. |
+#+TBLFM: $2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation (key-binding (kbd $1))))))
+
+Of course you can allways look at all the possible keybindings with =C-h
+m=.  When =view-mode= is active, search for /View/.
 
 #+begin_src emacs-lisp
 (leaf emacs

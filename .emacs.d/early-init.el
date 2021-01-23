@@ -24,6 +24,21 @@
 ;; the `config.org' file.
 (setq gc-cons-threshold most-positive-fixnum)
 
+;; Disable GUI Elements
+(menu-bar-mode -1)
+(tool-bar-mode -1)
+(scroll-bar-mode -1)
+(setq use-file-dialog nil)
+(setq use-dialog-box t)
+(setq inhibit-splash-screen t)
+
+;; Found on `https://github.com/miklos1/dotemacs/blob/master/early-init.el'.
+;; Ignore X resources; its settings would be redundant with the other settings
+;; in this file and can conflict with later config (particularly where the
+;; cursor color is concerned).
+(advice-add #'x-apply-session-resources :override #'ignore)
+
+;; This will prevent resizing with fonts.
 (setq frame-inhibit-implied-resize t)
 
 ;;; early-init.el ends here
