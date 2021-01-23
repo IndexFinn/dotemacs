@@ -2017,7 +2017,7 @@ World's most powerful git interface.
   (setq git-commit-summary-max-length 50)
 
   (defvar index/magit-repository-directories
-    '("~/dot/emacs/" "~/web/" "~/lin/" "~/wtn/")
+    '("~/web/" "~/lin/" "~/wtn/" "~/rel/")
     "Directories with a repository.")
 
   (defun index/magit-status-emacs (&optional arg)
