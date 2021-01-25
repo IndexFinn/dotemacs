@@ -503,6 +503,21 @@ you know where it is.  This includes changing the window.
 (column-number-mode 1)
 #+end_src
 
+** No GUI Elements
+:PROPERTIES:
+:CUSTOM_ID: h:d4ace9a3-763b-4a68-9194-09fe6c8dd0fa
+:END:
+
+#+begin_src emacs-lisp :tangle yes
+(menu-bar-mode -1)
+(tool-bar-mode -1)
+(scroll-bar-mode -1)
+
+(setq use-file-dialog nil)
+(setq use-dialog-box t)
+(setq inhibit-splash-screen t)
+#+end_src
+
 ** Theme
 :PROPERTIES:
 :CUSTOM_ID: h:58c1cf8d-4a0f-4127-965b-177b1f66923b
@@ -674,6 +689,30 @@ This will add animations to deletion, yanking, etc.
   :straight t
   :config
   (goggles-mode 1))
+#+end_src
+
+** Prism
+:PROPERTIES:
+:CUSTOM_ID: h:2117c3df-a263-4ed8-8143-3ed526e206fd
+:END:
+
+Prism is a package that highlights complex syntax trees differently to
+its parent or child.  Every syntax tree has a different color.
+
+Highlight Code Via Depth Level.
+
+#+begin_src emacs-lisp
+(leaf prism
+  :straight t
+  :config
+  (setq prism-comments nil)
+  (setq prism-num-faces 12)
+
+  :hook ((emacs-lisp-mode-hook . prism-mode)
+         (scheme-mode-hook . prism-mode)
+         (clojure-mode-hook . prism-mode)
+         (common-lisp-mode-hook . prism-mode)
+         (sh-mode-hook . prism-whitespace-mode)))
 #+end_src
 
 * Generic Settings

@@ -25,12 +25,9 @@
 (setq gc-cons-threshold most-positive-fixnum)
 
 ;; Disable GUI Elements
-(menu-bar-mode -1)
-(tool-bar-mode -1)
-(scroll-bar-mode -1)
-(setq use-file-dialog nil)
-(setq use-dialog-box t)
-(setq inhibit-splash-screen t)
+(push '(menu-bar-lines . 0) default-frame-alist)
+(push '(tool-bar-lines . 0) default-frame-alist)
+(push '(vertical-scroll-bars) default-frame-alist)
 
 ;; Found on `https://github.com/miklos1/dotemacs/blob/master/early-init.el'.
 ;; Ignore X resources; its settings would be redundant with the other settings
