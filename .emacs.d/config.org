@@ -1886,6 +1886,16 @@ code of the process and OUTPUT is its stdout output."
               (format " [%s]" output)
             "")))))
 
+  (defvar index/eshell-time-command nil
+    "Stores the starting time of the command.")
+
+  (defun index/eshell-time-command (&optional end)
+    (if end
+        (if index/eshell-time-command
+            (format " %.03fs" (float-time (time-since index/eshell-time-command)))
+          " 0s")
+      (setq index/eshell-time-command (current-time))))
+
   (setq eshell-prompt-function
         (lambda ()
           (concat
@@ -1895,6 +1905,10 @@ code of the process and OUTPUT is its stdout output."
                (abbreviate-file-name pwd)))
            (propertize
             (tributi/eshell--current-git-branch)
+            'face
+            'shadow)
+           (propertize
+            (index/eshell-time-command 'end)
             'face
             'shadow)
            (propertize
@@ -1925,20 +1939,21 @@ run `eshell'."
         (eshell-mode)))
 
     (let ((buf (buffer-file-name (current-buffer))))
-          (if buf
-              (with-current-buffer eshell-buffer-name
-                (end-of-buffer)
-                (eshell-kill-input)
-                (insert
-                 (concat
-                  "cd \""
-                  (file-name-directory buf)
-                  "\"; ls"))
-                (eshell-send-input)
-                (eshell))
-            (eshell))))
+      (if buf
+          (with-current-buffer eshell-buffer-name
+            (end-of-buffer)
+            (eshell-kill-input)
+            (insert
+             (concat
+              "cd \""
+              (file-name-directory buf)
+              "\"; ls"))
+            (eshell-send-input)
+            (eshell))
+        (eshell))))
 
-  :hook ((eshell-mode-hook . index/eshell-smartparens-mode))
+  :hook ((eshell-mode-hook . index/eshell-smartparens-mode)
+         (eshell-pre-command-hook . index/eshell-time-command))
   :bind (("C-c s" . index/eshell-dwim)))
 #+end_src
 
