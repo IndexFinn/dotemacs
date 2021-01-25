@@ -2507,15 +2507,15 @@ strings with no white space in the strings."
 Available are 92, 30, and 100.  If toggling to 100, kill picom.
 If toggling to 92, start picom"
     (interactive)
-    (case (frame-parameter nil 'alpha)
-      ((= 92)
+    (pcase (frame-parameter nil 'alpha)
+      (92
        (set-frame-parameter (selected-frame) 'alpha 30)
        (add-to-list 'default-frame-alist '(alpha . 30)))
-      ((= 30)
+      (30
        (index/call-process "pkill picom")
        (set-frame-parameter (selected-frame) 'alpha 100)
        (add-to-list 'default-frame-alist '(alpha . 100)))
-      ((= 100)
+      (100
        (index/call-process "picom")
        (set-frame-parameter (selected-frame) 'alpha 92)
        (add-to-list 'default-frame-alist '(alpha . 92)))))
