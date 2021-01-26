@@ -3379,6 +3379,32 @@ more or less.  Well actually I stole some code from Reddit User
           ("M-n" . mu4e-headers-query-next))))
 #+end_src
 
+*** Org Send Mail
+:PROPERTIES:
+:CUSTOM_ID: h:77d04907-80e5-4d76-9951-ce7f9d71c609
+:END:
+
+Nowadays one usually would send mail in html format.  This has some nice
+features such as bold text, headers, and inline images.  Since Org Mode
+is a markup language that can convert to html we can incorporate it into
+=mail-send=.
+
+#+begin_src emacs-lisp
+(leaf org-mime
+  :straight t
+  :config
+  (defun index/mu4e-org-mail ()
+    "Enter Org Mode for Mail."
+    (interactive)
+    (org-mime-edit-mail-in-org-mode)
+    (delete-window)
+    (switch-to-buffer (get-buffer "OrgMimeMailBody")))
+
+  :bind ((mu4e-compose-mode-map
+          ("C-c C-o C-o" . index/mu4e-org-mail)
+          ("C-c C-o C-f" . org-mime-htmlize))))
+#+end_src
+
 * Keyboard Enhancements / Movement
 :PROPERTIES:
 :CUSTOM_ID: h:c0065ba1-7f8b-4ef4-8f9a-446f48553e88
