@@ -2057,6 +2057,9 @@ World's most powerful git interface.
 #+begin_src emacs-lisp
 (leaf magit
   :straight t
+  ;; `index/magit-status-emacs' calls `magit-status' internally, so it
+  ;; should be fine to omit it here.
+  :commands (magit-status magit-edit-line-commit)
   :config
   (setq vc-follow-symlinks t)
   (setq git-commit-summary-max-length 50)
@@ -2093,6 +2096,7 @@ from the variable `index/magit-repository-directories'."
          ("C-M-g" . magit-edit-line-commit)))
 
 (leaf ediff
+  :commands magit-ediff-dwim
   :config
   (setq ediff-keep-variants nil)
   (setq ediff-make-buffers-readonly-at-startup nil)
@@ -2102,6 +2106,13 @@ from the variable `index/magit-repository-directories'."
   (setq ediff-window-setup-function 'ediff-setup-windows-plain)
 
   :hook ((ediff-prepare-buffer-hook . org-show-all)))
+
+(leaf magit-todos
+  :straight t
+  :commands magit-status
+  :after magit
+  :config
+  (magit-todos-mode 1))
 #+end_src
 
 ** Diff-hl - A Git Diff Gutter
