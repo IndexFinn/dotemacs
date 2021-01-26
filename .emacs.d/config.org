@@ -2787,6 +2787,42 @@ This function is auto generated via `index/exwm--raise-or-spawn'."
          ("s--" . exwm-outer-gaps-decrement)))
 #+end_src
 
+** Transmission
+:PROPERTIES:
+:CUSTOM_ID: h:010216bf-f118-4428-a3d5-87867020b088
+:END:
+
+This is a substitute for the program /tremc/.
+
+#+begin_src emacs-lisp
+(leaf transmission
+  :straight t
+  :config
+  (defun index/transmission-mpv-open ()
+    "Open a torrent file via `mpv_open'"
+    (interactive)
+    (cond
+     ((eq major-mode 'transmission-mode)
+      (save-excursion
+        (transmission-files)
+        (index/call-process
+         `("mpv_open"
+           ,(expand-file-name
+             (transmission-files-file-at-point))))
+        (quit-window)))
+     ((eq major-mode 'transmission-files-mode)
+      (index/call-process
+       `("mpv_open"
+         ,(expand-file-name
+           (transmission-files-file-at-point)))))
+     (t (error "Not in `transmission-mode'."))))
+
+  :bind ((transmission-mode-map
+          ("o" . index/transmission-mpv-open))
+         (transmission-files-mode-map
+          ("o" . index/transmission-mpv-open))))
+#+end_src
+
 * Web Development
 :PROPERTIES:
 :CUSTOM_ID: h:b2ee76c8-8799-4e5c-9f7f-15b0c7a2b94e
