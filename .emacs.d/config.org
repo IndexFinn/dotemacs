@@ -2772,6 +2772,19 @@ This function is auto generated via `index/exwm--raise-or-spawn'."
          ("<XF86AudioLowerVolume>" . index/exwm-volume-down)
          ("<XF86AudioRaiseVolume>" . index/exwm-volume-up)
          ("<XF86AudioMute>" . index/exwm-volume-mute)))
+
+(leaf exwm-outer-gaps
+  :straight (exwm-outer-gaps :host github :repo "lucasgruss/exwm-outer-gaps")
+  :after exwm
+  :config
+  (add-to-list 'exwm-input-global-keys `(,(kbd "s-0") . exwm-outer-gaps-mode))
+  (add-to-list 'exwm-input-global-keys `(,(kbd "s-=") . exwm-outer-gaps-increment))
+  (add-to-list 'exwm-input-global-keys `(,(kbd "s-+") . exwm-outer-gaps-increment))
+  (add-to-list 'exwm-input-global-keys `(,(kbd "s--") . exwm-outer-gaps-decrement))
+  :bind (("s-0" . exwm-outer-gaps-mode)
+         ("s-=" . exwm-outer-gaps-increment)
+         ("s-+" . exwm-outer-gaps-increment)
+         ("s--" . exwm-outer-gaps-decrement)))
 #+end_src
 
 * Web Development
