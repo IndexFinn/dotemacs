@@ -3630,7 +3630,10 @@ line."
 #+begin_src emacs-lisp
 (leaf emacs
   :bind (("H-u" . universal-argument)
-         ("s-u" . universal-argument)))
+         ("s-u" . universal-argument)
+         (universal-argument-map
+          ("H-u" . universal-argument-more)
+          ("s-u" . universal-argument-more))))
 #+end_src
 
 ** Avy - Jumping Around Never Was Easier
