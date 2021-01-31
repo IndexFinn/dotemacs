@@ -2779,14 +2779,23 @@ This function is auto generated via `index/exwm--raise-or-spawn'."
   (defun index/exwm-volume-up ()
     (interactive)
     (index/call-process "pamixer -i 5"))
-
-  (defun index/exwm-volume-down ()
-    (interactive)
-    (index/call-process "pamixer -d 5"))
+  (add-to-list
+   'exwm-input-global-keys
+   `(,(kbd "<XF86AudioRaiseVolume>") . index/exwm-volume-up))
 
   (defun index/exwm-volume-mute ()
     (interactive)
     (index/call-process "pamixer -t"))
+  (add-to-list
+   'exwm-input-global-keys
+   `(,(kbd "<XF86AudioLowerVolume>") . index/exwm-volume-down))
+
+  (defun index/exwm-volume-down ()
+    (interactive)
+    (index/call-process "pamixer -d 5"))
+  (add-to-list
+   'exwm-input-global-keys
+   `(,(kbd "<XF86AudioMute>") . index/exwm-volume-mute))
 
   (defun index/exwm-wallpaper (&optional arg)
     (interactive "P")
