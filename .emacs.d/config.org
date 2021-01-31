@@ -1021,6 +1021,93 @@ Emacs.  This will preserve that.
   (setq save-interprogram-paste-before-kill t))
 #+end_src
 
+** Visual (query) replace
+:PROPERTIES:
+:CUSTOM_ID: h:5c01eb40-af01-49d1-af12-6dd5e9568ad1
+:END:
+
+The build-in query-replace is very powerful.  But there was one feature
+missing, and that is to immediately see the changes in the buffer.  This
+package provides this functionality.
+
+#+begin_src emacs-lisp
+(leaf visual-regexp
+  :straight t
+  :bind (("C-%" . vr/query-replace)
+         ("C-M-%" . vr/query-replace)))
+#+end_src
+
+** Browse Kill Ring
+:PROPERTIES:
+:CUSTOM_ID: h:802fccbf-ae6e-47cc-bf8c-dbf1c7146a47
+:END:
+
+As the author of this package states: "Are you tired of using the
+endless keystrokes of =C-y M-y M-y M-y ...= to get at that bit of text you
+killed thirty-seven kills ago?" ([[https://github.com/browse-kill-ring/browse-kill-ring][Synopsis on README]]).  This is indeed
+one of my biggest problems with the kill ring.
+
+#+begin_src emacs-lisp
+(leaf browse-kill-ring
+  :straight t
+  :bind (("M-y" . browse-kill-ring)))
+#+end_src
+
+** Suggest Elisp Function
+:PROPERTIES:
+:CUSTOM_ID: h:04cdd725-3479-4056-ba50-4dc7ae9dcc37
+:END:
+
+Suggest is a very complicated and magical package.  It provides you with
+an interactive interface accessible via =M-x suggest=.  In there you can
+type in Inputs lets say ="Hello World"= and give it an output ='("Hello"
+"World")= and it will print out possible function that achieve that
+functionality.
+
+#+begin_src emacs-lisp
+(leaf suggest
+  :straight t)
+#+end_src
+
+** Elisp Virtual Text
+:PROPERTIES:
+:CUSTOM_ID: h:c7ec613d-2dcc-4f70-bf33-304a1de189b0
+:END:
+
+One of the coolest features about [[#h:5fefc3b5-d879-4f56-9ea3-6d226bb1bd6b][CIDER]]; virtual text.  This package
+will overwrite =C-x C-e= and =C-M-x= with its own versions.  These will
+print the output in the minibuffer (default) and next to the evaluated
+s-expression.
+
+It seems like a redundant feature, but I think it forces the user to
+stop the Lisp experience of trial and error to look at the minibuffer
+and then look back.  This will negate it.
+
+#+begin_src emacs-lisp
+(leaf eros
+  :straight t
+  :config
+  (eros-mode 1))
+#+end_src
+
+** Vterm
+:PROPERTIES:
+:CUSTOM_ID: h:18fe3b27-7ab2-4bba-a18f-0c83e8d1e103
+:END:
+
+I barely use this one as I use eshell-- covered in [[#h:6877d266-5821-4d09-baa1-734e1393b68b][this section]]-- but
+when I need to go into a native terminal, be it that I need to run an
+ncurses program or similar tools.
+
+What I would do is press =<C-M-F2>= what would bring me to a TTY.  But
+the TTY is limited, as it only supports 8 colors.  For those rare
+occasions I like to keep vterm around; just to be save.
+
+#+begin_src emacs-lisp
+(leaf vterm
+  :straight t)
+#+end_src
+
 * Writing
 :PROPERTIES:
 :CUSTOM_ID: h:10bd21be-8499-45e7-be2c-8fdea817684a
