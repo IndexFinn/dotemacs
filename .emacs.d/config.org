@@ -2988,31 +2988,59 @@ like =#454545= will be shown with its corresponding background.
 :END:
 
 #+begin_src emacs-lisp
-(leaf org-capture
-  :after org
+(leaf org
   :config
-  (defun index/org-hugo-new-subtree-post-capture-template ()
+  (defun index/ox-html ()
+    "Export `config.org' into the website."
+    (interactive)
+    (with-current-buffer (find-file-noselect
+                          (expand-file-name
+                           "config.org"
+                           user-emacs-directory))
+      (org-export-to-file 'html (expand-file-name
+                                 "~/web/layouts/dotemacs/list.html")
+        nil nil nil t nil)
+      (with-current-buffer (find-file-noselect
+                            (expand-file-name
+                             "~/web/layouts/dotemacs/list.html"))
+        (beginning-of-buffer)
+        (insert "{{ define \"content\" }}\n")
+        (end-of-buffer)
+        (insert "{{ end }}")
+        (save-buffer)
+        (kill-buffer (current-buffer)))))
+  :bind (("C-c M-e M-e" . index/ox-html)))
+
+(leaf ox-hugo
+  :straight t
+  :require t
+  :config
+  (setq org-hugo-front-matter-format 'yaml)
+  (setq org-log-done-with-time nil)
+  (setq org-tag-alist
+        '(("emacs")
+          ("org")))
+
+  (defun index/org-capture-website ()
     "Returns `org-capture' template string for new Hugo post.
-  See `org-capture-templates' for more information."
-    (let* ((title (read-from-minibuffer "Title: "))
+See `org-capture-templates' for more information."
+    (let* ((title (read-from-minibuffer "Post Title: "))
            (fname (org-hugo-slug title)))
       (mapconcat #'identity
-                 `(,(concat "* TODO " title)
+                 `(,(concat "* TODO " title " %^g")
                    ":PROPERTIES:"
                    ,(concat ":EXPORT_FILE_NAME: " fname)
                    ":END:\n"
-                   "#+begin_abstract"
-                   "%?"
-                   "#+end_abstract\n"
-                   "%i")
+                   "%i%?\n")
                  "\n")))
 
-  (setq org-capture-templates
-        '(("b"
-           "Blog Post"
-           entry
-           (file+olp "~/wtn/website.org" "Posts")
-           (function index/org-hugo-new-subtree-post-capture-template)))))
+  (add-to-list 'org-capture-templates
+               '("b"
+                 "Blog post"
+                 entry
+                 (file+olp "~/web/website.org" "Blog Posts")
+                 (function index/org-capture-website)))
+  :bind (("C-c M-e M-b" . org-capture)))
 #+end_src
 
 * Lisp
