@@ -220,10 +220,13 @@ authinfo.*
         (user-error "No entry in auth sources")))))
 #+end_src
 
-* Common Stuff
+* DEPRECATED Common Stuff
 :PROPERTIES:
 :CUSTOM_ID: h:39e38a6a-07dc-4c05-9db9-574396b93730
 :END:
+
+*The following has been DEPRECATED, as I want to move away from these
+macros-- even though they are super nice*
 
 #+begin_src emacs-lisp
 (defmacro ->> (&rest body)
