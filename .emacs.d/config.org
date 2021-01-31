@@ -2,8 +2,6 @@
 #+AUTHOR: Finn Sauer
 #+EMAIL: <finn@finnsauer.xyz>
 #+OPTIONS: toc:nil
-#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="/home/finn/.emacs.d/style.css" />
-#+HTML: <hr style="border-top: 1px #545454 dashed" />
 
 #+begin_verse
 Updated:       *src_elisp{(format-time-string "%F %R %z")}*.
