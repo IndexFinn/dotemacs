@@ -285,7 +285,7 @@ accessible, but every MiB counts on my limited hardware.  With this hook
 and function we set the garbage collection to a reasonable value.
 
 #+begin_src emacs-lisp
-(leaf gc
+(leaf emacs
   :config
   (defun index/gc-reset ()
     "Set `gc-cons-threshold' to another value."
@@ -339,7 +339,7 @@ The “Desktop” package will keep my registers and buffers available.
   (setq desktop-dirname user-emacs-directory)
   (setq desktop-base-file-name "desktop")
   (setq desktop-files-not-to-save nil)
-  (setq desktop-globals-to-clear nil)
+  ;; (setq desktop-globals-to-clear nil)
   (setq desktop-load-locked-desktop t)
   (setq desktop-missing-file-warning nil)
   (setq desktop-restore-eager 0)
@@ -564,31 +564,28 @@ you know where it is.  This includes changing the window.
 :END:
 
 #+begin_src emacs-lisp
-(leaf org
-  :config
-  (set-face-attribute 'org-link nil
-                      :weight 'normal
-                      :background nil)
-  (set-face-attribute 'org-level-1 nil
-                      :height 1.2
-                      :weight 'normal)
-  (set-face-attribute 'org-level-2 nil
-                      :height 1.0
-                      :weight 'normal)
-  (set-face-attribute 'org-level-3 nil
-                      :height 1.0
-                      :weight 'normal)
-  (set-face-attribute 'org-level-4 nil
-                      :height 1.0
-                      :weight 'normal)
-  (set-face-attribute 'org-level-5 nil
-                      :weight 'normal)
-  (set-face-attribute 'org-level-6 nil
-                      :weight 'normal)
-  (set-face-attribute 'org-document-title nil
-                      :family "UnifrakturCook"
-                      :height 2.5
-                      :weight 'bold))
+;; (leaf org
+;;   :config
+;;   (set-face-attribute 'org-level-1 nil
+;;                       :height 1.2
+;;                       :weight 'normal)
+;;   (set-face-attribute 'org-level-2 nil
+;;                       :height 1.0
+;;                       :weight 'normal)
+;;   (set-face-attribute 'org-level-3 nil
+;;                       :height 1.0
+;;                       :weight 'normal)
+;;   (set-face-attribute 'org-level-4 nil
+;;                       :height 1.0
+;;                       :weight 'normal)
+;;   (set-face-attribute 'org-level-5 nil
+;;                       :weight 'normal)
+;;   (set-face-attribute 'org-level-6 nil
+;;                       :weight 'normal)
+;;   (set-face-attribute 'org-document-title nil
+;;                       :family "UnifrakturCook"
+;;                       :height 2.5
+;;                       :weight 'bold))
 #+end_src
 
 ** Font
