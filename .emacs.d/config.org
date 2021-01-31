@@ -1736,6 +1736,8 @@ Calls `index/focused-writing' when called with an argument.
 
 (leaf dired-subtree
   :straight t
+  :after dired
+  :commands dired
   :config
   (setq dired-subtree-use-backgrounds nil)
   :bind ((dired-mode-map
@@ -1749,6 +1751,8 @@ Calls `index/focused-writing' when called with an argument.
 
 (leaf peep-dired
   :straight t
+  :after dired
+  :commands dired
   :config
   ;; https://emacs.stackexchange.com/q/46664
   (defun tributi/toggle-window-split ()
@@ -1801,7 +1805,8 @@ Calls `index/focused-writing' when called with an argument.
 
 (leaf all-the-icons-dired
   :straight t
-  :hook (dired-mode-hook . all-the-icons-dired-mode))
+  :after dired
+  :hook (dried-mode-hook . all-the-icons-dired-mode))
 #+end_src
 
 ** Window
