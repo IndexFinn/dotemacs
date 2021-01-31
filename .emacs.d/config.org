@@ -2671,7 +2671,7 @@ process."
          (read-string "Arguments: "))))))
 
   (defvar index/exwm-launch-mpv-dirs
-    '("~/vid/" "~/ytb/")
+    '("~/vid/ssd" "~/ytb/")
     "Directories where to look at.")
 
   (defconst index/exwm-launch-mpv-file-ending-regex
