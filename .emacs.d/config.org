@@ -3047,10 +3047,11 @@ See `org-capture-templates' for more information."
 :END:
 
 Working with LISP inside Emacs is not hard at all.  It only requires
-=slime= for Common Lisp and =geiser= for Scheme.  Now we can use =C-x C-e= and
-have it be evaluated in its dedicated compiler/interpreter.  This makes
-for a smooth REPL-- read-eval-print loop-- experience, which supersedes
-LISP above other programming languages: easily act on the code.
+=slime= for Common Lisp and =geiser= for Scheme.  Now we can use =C-x
+C-e= and have it be evaluated in its dedicated compiler/interpreter.
+This makes for a smooth REPL-- read-eval-print loop-- experience, which
+supersedes LISP above other programming languages: easily act on the
+code.
 
 ** Elisp
 :PROPERTIES:
@@ -3082,19 +3083,12 @@ http://danmidwood.com/content/2014/11/21/animated-paredit.html
 ;;          (clojure-mode-hook . paredit-mode)))
 #+end_src
 
-** Common Lisp
+** COMMENT DEPRECATED Common Lisp
 :PROPERTIES:
 :CUSTOM_ID: h:7c6b3758-9583-42ee-a49b-03f96d49a27b
 :END:
 
-#+begin_src emacs-lisp
-;; (leaf slime
-;;   :straight t
-;;   :config
-;;   (load (expand-file-name "~/.local/lib/quicklisp/slime-helper.el")) ; requires quicklisp
-;;   (setq inferior-lisp-program "sbcl")                                ; requires sbcl
-;;   (slime-setup))
-#+end_src
+*The following has been DEPRECATED; 2021-01-31*
 
 #+begin_src emacs-lisp
 (leaf sly
