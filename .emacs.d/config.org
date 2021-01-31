@@ -710,10 +710,14 @@ Highlight Code Via Depth Level.
          (sh-mode-hook . prism-whitespace-mode)))
 #+end_src
 
-* Generic Settings
+* TODO Generic Settings
 :PROPERTIES:
 :CUSTOM_ID: h:832f56b8-3a3a-4b2d-8b3e-f5e917aafdb2
 :END:
+
+*As of 2021-01-31 this section is under REVIEW; merge this section with
+the [[#h:bd0507c8-82c4-48d3-af74-b8f629303685][Miscellaneous]] section.*
+
 ** No backup files cluttering
 :PROPERTIES:
 :CUSTOM_ID: h:a968f986-8941-41d8-bde9-fcd2fb040354
@@ -1944,10 +1948,14 @@ wish to undo that particular deletion process.
          ("<C-H-backspace>" . winner-redo)))
 #+end_src
 
-* Miscellaneous
+* TODO Miscellaneous
 :PROPERTIES:
 :CUSTOM_ID: h:bd0507c8-82c4-48d3-af74-b8f629303685
 :END:
+
+*As of 2021-01-31 this section is under REVIEW; merge this section with
+the [[#h:832f56b8-3a3a-4b2d-8b3e-f5e917aafdb2][Generic Settings]] section.*
+
 ** Scratch Buffer for Current Major Mode
 :PROPERTIES:
 :CUSTOM_ID: h:eff9abd1-c9ad-40ba-b8c5-78ca494cbd04
