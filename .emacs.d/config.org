@@ -1944,291 +1944,6 @@ wish to undo that particular deletion process.
          ("<C-H-backspace>" . winner-redo)))
 #+end_src
 
-* Eshell
-:PROPERTIES:
-:CUSTOM_ID: h:6877d266-5821-4d09-baa1-734e1393b68b
-:END:
-
-Eshell gives you everything from a traditional shell. It integrates with
-elisp very nicely.  You can do something like =echo (propertize "Hello,
-EShell" 'face 'success)=.  Of course there is way more powerful ways you
-can utilize this functionality. One thing that's different is how you
-write =do= blocks in eshell: =for i in one two three { echo $i }=.  And
-=$(...)= is not like in bash as a subshell execution, but it is an elisp
-evaluation.  If you want this functionality you can use =${...}= as
-shell evaluation.  There is a great manual for eshell in the info
-buffer.  Just go there by typing =C-h i C-s eshell RET= or =M-x
-info-display-manual eshell RET=.
-
-#+begin_src emacs-lisp
-(leaf eshell
-  :straight t
-  :config
-  (defun tributi/call-process (command &rest args)
-    "Execute COMMAND with ARGS synchronously.
-Returns (STATUS . OUTPUT) when it is done, where STATUS is the returned error
-code of the process and OUTPUT is its stdout output."
-    (with-temp-buffer
-      (cons (or (apply #'call-process command nil t nil (remq nil args))
-                -1)
-            (string-trim (buffer-string)))))
-
-  (defun tributi/eshell--current-git-branch ()
-    (cl-destructuring-bind (status . output)
-        (tributi/call-process "git" "symbolic-ref" "-q" "--short" "HEAD")
-      (if (equal status 0)
-          (format " [%s]" output)
-        (cl-destructuring-bind (status . output)
-            (tributi/call-process "git" "describe" "--all" "--always" "HEAD")
-          (if (equal status 0)
-              (format " [%s]" output)
-            "")))))
-
-  (defvar index/eshell-time-command nil
-    "Stores the starting time of the command.")
-
-  (defun index/eshell-time-command (&optional end)
-    (if end
-        (if index/eshell-time-command
-            (format " %.03fs" (float-time (time-since index/eshell-time-command)))
-          " 0s")
-      (setq index/eshell-time-command (current-time))))
-
-  (setq eshell-prompt-function
-        (lambda ()
-          (concat
-           (let ((pwd (eshell/pwd)))
-             (if (equal pwd "~")
-                 pwd
-               (abbreviate-file-name pwd)))
-           (propertize
-            (tributi/eshell--current-git-branch)
-            'face
-            'shadow)
-           (propertize
-            (index/eshell-time-command 'end)
-            'face
-            'shadow)
-           (propertize
-            " λ"
-            'face
-            (if (zerop eshell-last-command-status)
-                'success
-              'error))
-           " ")))
-  (setq eshell-prompt-regexp "^[^λ]*λ ")
-
-  (setenv "PAGER" "cat")
-
-  (defun index/eshell-smartparens-mode ()
-    "Calls `smartparens-mode' in eshell.
-  Intended as a hook call, since eshell doesn't seem to respect
-  `smartparens-global-mode'."
-    (smartparens-mode))
-
-  (defun index/eshell-dwim ()
-    "Do what I mean function for `eshell'.
-When in a buffer with a valid filename, change to that
-directory (plus list directly) and run `eshell'.  Otherwise just
-run `eshell'."
-    (interactive)
-    (unless (get-buffer "*eshell*")
-      (with-current-buffer (get-buffer-create eshell-buffer-name)
-        (eshell-mode)))
-
-    (let ((buf (buffer-file-name (current-buffer))))
-      (if buf
-          (with-current-buffer eshell-buffer-name
-            (end-of-buffer)
-            (eshell-kill-input)
-            (insert
-             (concat
-              "cd \""
-              (file-name-directory buf)
-              "\"; ls"))
-            (eshell-send-input)
-            (eshell))
-        (eshell))))
-
-  :hook ((eshell-mode-hook . index/eshell-smartparens-mode)
-         (eshell-pre-command-hook . index/eshell-time-command))
-  :bind (("C-c s" . index/eshell-dwim)))
-#+end_src
-
-** Aliases
-:PROPERTIES:
-:CUSTOM_ID: h:84cf7e34-3da6-49c0-92eb-d8be1faafa20
-:END:
-
-Aliases in Eshell are a bit different in comparison to bash.  Yes, you
-can still define aliases in the prompt the same way: =alias name
-'function $n'=.  This will store and enable the alias.  Where it will be
-stored will be printed in the minibuffer.
-
-But I like to keep my configuration in one place; here.  Eshell has a
-great feature: if you define a function with the namespace =eshell/= it
-will be autoloaded as a command in eshell with the name after the =/=,
-thus you can define custom made functions easily.
-
-#+begin_src emacs-lisp
-(leaf eshell
-  :config
-  (defun eshell/f (file)
-    (find-file file))
-
-  (defun eshell/ll (&optional file)
-    (eshell/ls "-Al" file))
-
-  (defun eshell/cd (&rest args)         ; all but first ignored
-    "Alias to extend the behavior of `cd'."
-    ;; below is from its original function
-    (setq args (flatten-tree args))
-    (let ((path (car args))
-	      (subpath (car (cdr args)))
-	      (case-fold-search (eshell-under-windows-p))
-	      handled)
-      (if (numberp path)
-	      (setq path (number-to-string path)))
-      (if (numberp subpath)
-	      (setq subpath (number-to-string subpath)))
-      (cond
-       (subpath
-        (let ((curdir (eshell/pwd)))
-	      (if (string-match path curdir)
-	          (setq path (replace-match subpath nil nil curdir))
-	        (error "Path substring `%s' not found" path))))
-       ((and path (string-match "^-\\([0-9]*\\)$" path))
-        (let ((index (match-string 1 path)))
-	      (setq path
-	            (ring-remove eshell-last-dir-ring
-			                 (if index
-			                     (string-to-number index)
-			                   0)))))
-       ((and path (string-match "^=\\(.*\\)$" path))
-        (let ((oldpath (eshell-find-previous-directory
-		                (match-string 1 path))))
-	      (if oldpath
-	          (setq path oldpath)
-	        (let ((len (ring-length eshell-last-dir-ring))
-		          (index 0))
-	          (if (= len 0)
-		          (error "Directory ring empty"))
-	          (eshell-init-print-buffer)
-	          (while (< index len)
-	            (eshell-buffered-print
-	             (concat (number-to-string index) ": "
-		                 (ring-ref eshell-last-dir-ring index) "\n"))
-	            (setq index (1+ index)))
-	          (eshell-flush)
-	          (setq handled t)))))
-       (path
-        (setq path (eshell-expand-multiple-dots path))))
-      (unless handled
-        (let ((curdir (eshell/pwd))
-	          (newdir (or path "~")))
-	      (unless (equal curdir newdir)
-	        (eshell-add-to-dir-ring curdir))
-	      (let ((result (cd newdir)))
-	        (and eshell-cd-shows-directory
-	             (eshell-printn result)))
-	      (run-hooks 'eshell-directory-change-hook)
-	      (if eshell-list-files-after-cd
-	          ;; Let-bind eshell-last-command around this?
-	          (eshell-plain-command "ls" (cdr args)))
-	      nil)))
-    ;; above is from its original function
-    (eshell/ls "-A")))
-#+end_src
-
-* Git - The Stupid Content Tracker
-:PROPERTIES:
-:CUSTOM_ID: h:0a94883e-e2e1-4853-bbbb-d30e6f7ceaa0
-:END:
-
-** Magit
-:PROPERTIES:
-:CUSTOM_ID: h:a2917dbe-5084-4833-9628-da9eed65a77d
-:END:
-
-World's most powerful git interface.
-
-#+begin_src emacs-lisp
-(leaf magit
-  :straight t
-  ;; `index/magit-status-emacs' calls `magit-status' internally, so it
-  ;; should be fine to omit it here.
-  :commands (magit-status magit-edit-line-commit)
-  :config
-  (setq vc-follow-symlinks t)
-  (setq git-commit-summary-max-length 50)
-
-  (defvar index/magit-repository-directories
-    '("~/web/" "~/lin/" "~/wtn/" "~/rel/")
-    "Directories with a repository.")
-
-  (defun index/magit-status-emacs (&optional arg)
-    "Finds the Emacs repository.
-If called with the universal argument prompt for a repository
-from the variable `index/magit-repository-directories'."
-    (interactive "P")
-    (if arg
-        (magit-status
-         (completing-read
-          "Repository: "
-          index/magit-repository-directories))
-      (magit-status "~/dot/emacs/")))
-
-  ;; TODO : Move it outside this src block.
-  ;; This function is super convenient.  Have your point be on a line
-  ;; you want to change, then invoke this function, and then magit will
-  ;; then rebase to the commit that introduced that line.  Form there
-  ;; you can change the file and stage [S] them and extend the commit [c
-  ;; e] or amend the commit [c a].  After that you can continue the
-  ;; rebase and revert to master with the changes taking effect.  If you
-  ;; changed your mind you can always cancel the rebase [r c].
-  (put 'magit-edit-line-commit 'disabled nil)
-
-  :hook ((after-save-hook . magit-after-save-refresh-status))
-  :bind (("C-c g" . magit-status)
-         ("H-g" . index/magit-status-emacs)
-         ("C-M-g" . magit-edit-line-commit)))
-
-(leaf ediff
-  :commands magit-ediff-dwim
-  :config
-  (setq ediff-keep-variants nil)
-  (setq ediff-make-buffers-readonly-at-startup nil)
-  (setq ediff-merge-revisions-with-ancestor t)
-  (setq ediff-show-clashes-only t)
-  (setq ediff-split-window-function 'split-window-horizontally)
-  (setq ediff-window-setup-function 'ediff-setup-windows-plain)
-
-  :hook ((ediff-prepare-buffer-hook . org-show-all)))
-
-(leaf magit-todos
-  :straight t
-  :commands magit-status
-  :after magit
-  :config
-  (magit-todos-mode 1))
-#+end_src
-
-** Diff-hl - A Git Diff Gutter
-:PROPERTIES:
-:CUSTOM_ID: h:0a563f0c-a5a0-43a6-8a6d-fbe63a37b564
-:END:
-
-Simple way of displaying the changes in a git directory.
-
-#+begin_src emacs-lisp
-(leaf diff-hl
-  :straight t
-  :config
-  (global-diff-hl-mode 1)
-  :hook ((magit-pre-refresh-hook . diff-hl-magit-pre-refresh)
-         (magit-post-refresh-hook . diff-hl-magit-post-refresh)))
-#+end_src
-
 * Miscellaneous
 :PROPERTIES:
 :CUSTOM_ID: h:bd0507c8-82c4-48d3-af74-b8f629303685
@@ -2525,6 +2240,750 @@ Afterwards the table will look like this:
 | M-u        | upcase-dwim     | Upcase words in the region, if active; if not, upcase word at point.         |
 | M-c        | capitalize-dwim | Capitalize words in the region, if active; if not, capitalize word at point. |
 #+TBLFM: $2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation (key-binding (kbd $1))))))
+
+* Utilities
+:PROPERTIES:
+:CUSTOM_ID: h:ed0a862a-6c16-4059-8e14-7fcdd3f6a2e6
+:END:
+
+Emacs is known to be more than a text editor.  I like to think of Emacs
+as an Emacs Lisp interpreter with a provided text interface.  So
+applications that can be used in text-only are perfect for Emacs.
+
+Here are those special niches that one would consider not fit to be in
+a text editor-- but those fools haven't truly grasped the beauty of
+Emacs and its text based interface.
+
+** (News)Feeds
+:PROPERTIES:
+:CUSTOM_ID: h:1475cbfc-56dc-4039-a88a-539b5e7672cb
+:END:
+
+*** TODO Gnus
+:PROPERTIES:
+:CUSTOM_ID: h:45b54719-5b5f-44f0-8fc1-88af5f1c25a2
+:END:
+
+#+begin_src emacs-lisp
+(leaf gnus
+  :config
+  (setq user-mail-address "public@finnsauer.xyz")
+  (setq user-full-name "Finn Sauer"))
+#+end_src
+
+*** Elfeed
+:PROPERTIES:
+:CUSTOM_ID: h:ff4d5141-64fa-4edb-be39-7b1e3af87d50
+:END:
+**** Config
+:PROPERTIES:
+:CUSTOM_ID: h:b3c80b42-07a9-4732-ad53-f321fbeda72f
+:END:
+
+#+begin_src emacs-lisp
+(leaf elfeed
+  :straight t
+  :config
+
+  (setq elfeed-use-curl t)
+  (setq elfeed-curl-max-connections 16)
+  (setq elfeed-db-directory (concat user-emacs-directory "elfeed"))
+  (setq elfeed-enclosure-default-dir "~/www/")
+  (setq elfeed-search-filter "@6-months-ago -torrent")
+  (setq elfeed-sort-order 'descending)
+  (setq elfeed-search-clipboard-type 'CLIPBOARD)
+  (setq elfeed-search-title-max-width 72)
+  (setq elfeed-search-title-min-width 40)
+  (setq elfeed-search-trailing-width 25)
+  (setq elfeed-show-truncate-long-urls t)
+  (setq elfeed-show-unique-buffers t)
+
+  (defun index/elfeed-load-feeds ()
+    "Loads the encryped `feed.el.gpg' file.
+Used in combination with `elfeed-search-mode-hook', because it
+only gets loaded when it is needed and not on startup."
+    (let ((f (expand-file-name "gpg/feeds.el.gpg" user-emacs-directory)))
+      (when (file-readable-p f)
+        (load-file f))))
+
+  (defun index/elfeed-mpv-open-link ()
+    "Play entry link with external `mpv' program.
+This will launch `mpv' without any buffer."
+    (interactive)
+    (let* ((entry (if (eq major-mode 'elfeed-show-mode)
+                      elfeed-show-entry
+                    (elfeed-search-selected :ignore-region)))
+           (link (elfeed-entry-link entry)))
+      (start-process "mpv" nil "mpv_open" link)
+      (save-excursion
+        (elfeed-search-untag-all-unread))
+      (message
+       (concat "Launching MPV for " (propertize link 'face 'success)))))
+
+  (defun index/elfeed-toggle-read-unread ()
+    "Used to toggle between read and unread."
+    (interactive)
+    (let* ((entry (elfeed-search-selected :ignore-region))
+           (tags (elfeed-entry-tags entry)))
+      (if (member 'unread tags)
+          (elfeed-search-untag-all-unread)
+        (elfeed-search-tag-all-unread))))
+
+  (defun index/elfeed-toggle-read-unread-all ()
+    "Used to toggle all entrys between read and unread."
+    (interactive)
+    (let* ((entry (elfeed-search-selected :ignore-region))
+           (tags (elfeed-entry-tags entry)))
+      (if (member 'unread tags)
+          (progn
+            (save-excursion
+              (mark-whole-buffer)
+              (elfeed-search-untag-all-unread)))
+        (save-excursion
+          (mark-whole-buffer)
+          (elfeed-search-tag-all-unread)))))
+
+  (defun index/elfeed-new-entry-notification (entry)
+    "Spawns a notify-send shell process after `elfeed-new-entry'
+Meant to be used in combination with `add-hook' and
+`elfeed-new-entry-hook'"
+    (let* ((title (elfeed-entry-title entry))
+           (name (elfeed-feed-title (elfeed-entry-feed entry)))
+           (link (elfeed-entry-link entry)))
+      (unless (or (string-match "^magnet:" link)
+                  (string-match "\.torrent$" link))
+        (start-process "notify" nil "notify-send" "RSS"
+                       (concat "Title: " title "\nAuthor: " name "\nLink: " link)))))
+
+  (defvar index/elfeed-toggle-between-predef-tags 0
+    "Counter for the corresponding function.")
+
+  (defvar index/elfeed-toggle-between-predef-tags-default-filter-value elfeed-search-filter
+    "The default value of the `elfeed-search-filter' variable.")
+
+  (advice-add
+   'elfeed-search-clear-filter
+   :after (lambda ()
+            (setq index/elfeed-toggle-between-predef-tags
+                  0)))
+
+  (defun index/elfeed-toggle-between-predef-tags ()
+    "Toggle between predefined tags.
+This cycles through the following iterations:
+
+0. \"\"
+1. \"+unread\"
+2. \"+video\"
+3. \"-video\"
+
+After hitting the last iteration, it will wrap around to the
+first."
+    (interactive)
+    (if (eq 3 index/elfeed-toggle-between-predef-tags)
+        (setq index/elfeed-toggle-between-predef-tags 0)
+      (setq index/elfeed-toggle-between-predef-tags
+            (1+ index/elfeed-toggle-between-predef-tags)))
+    (cond
+     ((eq 0 index/elfeed-toggle-between-predef-tags)
+      (elfeed-search-set-filter nil))
+     ((eq 1 index/elfeed-toggle-between-predef-tags)
+      (setq elfeed-search-filter
+            (concat
+             index/elfeed-toggle-between-predef-tags-default-filter-value
+             " +unread"))
+      (elfeed-search-update :force))
+     ((eq 2 index/elfeed-toggle-between-predef-tags)
+      (setq elfeed-search-filter
+            (concat
+             index/elfeed-toggle-between-predef-tags-default-filter-value
+             " +video"))
+      (elfeed-search-update :force))
+     ((eq 3 index/elfeed-toggle-between-predef-tags)
+      (setq elfeed-search-filter
+            (concat
+             index/elfeed-toggle-between-predef-tags-default-filter-value
+             " -video"))
+      (elfeed-search-update :force))))
+
+  (defun index/elfeed-format-content (entry)
+    (let* ((original (elfeed-deref (elfeed-entry-content entry)))
+           (replace (with-temp-buffer
+                      (insert original)
+                      (mark-whole-buffer)
+                      (fill-paragraph)
+                      (buffer-string))))
+      (setf (elfeed-entry-content entry) (elfeed-ref replace))))
+
+  (defun index/elfeed-toggle-star ()
+    "Toggle between '*' on entry.
+This will add a '*' tag on the current entry."
+    (interactive)
+    (save-excursion
+      (apply 'elfeed-search-toggle-all '(*))))
+
+  :hook ((elfeed-search-mode-hook . index/elfeed-load-feeds)
+         (elfeed-new-entry-hook . index/elfeed-new-entry-notification)
+         (elfeed-show-mode-hook . olivetti-mode)
+         (elfeed-new-entry-hook . index/elfeed-format-content))
+
+  :bind (("C-c f" . elfeed)
+         (elfeed-show-mode-map
+          ("o" . index/elfeed-mpv-open-link)
+          ("TAB" . forward-button))
+         (elfeed-search-mode-map
+          ("o" . index/elfeed-mpv-open-link)
+          ("a" . index/elfeed-toggle-read-unread)
+          ("A" . index/elfeed-toggle-read-unread-all)
+          ("t" . index/elfeed-toggle-between-predef-tags)
+          ("m" . index/elfeed-toggle-star))))
+#+end_src
+
+**** Update
+:PROPERTIES:
+:CUSTOM_ID: h:57023cef-8d6b-4f48-bda9-e2be881b379b
+:END:
+
+Since elfeed updates are rather slow by default, I tweaked with them
+more or less.  Well actually I stole some code from Reddit User
+/github-alphapapa/.
+
++ URL: https://github.com/skeeto/elfeed/issues/293.
+
+#+begin_src emacs-lisp
+(leaf elfeed
+  :config
+  (defvar tributi/elfeed-update-complete-hook nil
+    "Functions called with no arguments when `elfeed-update' is
+    finished.")
+
+  (defvar tributi/elfeed-updates-in-progress 0
+    "Number of feed updates in-progress.")
+
+  (defvar tributi/elfeed-search-update-filter nil
+    "The filter when `elfeed-update' is called.")
+
+  (defun tributi/elfeed-update-complete-hook (&rest _)
+    "When update queue is empty, run
+`tributi/elfeed-update-complete-hook' functions."
+    (when (= 0 tributi/elfeed-updates-in-progress)
+      (run-hooks 'tributi/elfeed-update-complete-hook)))
+
+  (add-hook 'elfeed-update-hooks
+            #'tributi/elfeed-update-complete-hook)
+
+  (defun tributi/elfeed-search-update-restore-filter (&rest _)
+    "Restore filter after feeds update."
+    (when tributi/elfeed-search-update-filter
+      (elfeed-search-set-filter tributi/elfeed-search-update-filter)
+      (setq tributi/elfeed-search-update-filter nil)))
+
+  (add-hook 'tributi/elfeed-update-complete-hook
+            #'tributi/elfeed-search-update-restore-filter)
+
+  (defun tributi/elfeed-search-update-save-filter (&rest _)
+    "Save and change the filter while updating."
+    (setq tributi/elfeed-search-update-filter elfeed-search-filter)
+    (setq elfeed-search-filter "#0"))
+
+  ;; NOTE: It would be better if this hook were run before starting the
+  ;; feed updates, but in `elfeed-update', it happens afterward.
+  (add-hook 'elfeed-update-init-hooks
+            #'tributi/elfeed-search-update-save-filter)
+
+  (defun tributi/elfeed-update-counter-inc (&rest _)
+    (cl-incf tributi/elfeed-updates-in-progress))
+
+  (advice-add
+   #'elfeed-update-feed
+   :before
+   #'tributi/elfeed-update-counter-inc)
+
+  (defun tributi/elfeed-update-counter-dec (&rest _)
+    (cl-decf tributi/elfeed-updates-in-progress)
+    (when (< tributi/elfeed-updates-in-progress 0)
+      ;; Just in case
+      (setq tributi/elfeed-updates-in-progress 0)))
+
+  (add-hook 'elfeed-update-hooks
+            #'tributi/elfeed-update-counter-dec)
+
+  ;; (run-at-time nil (* 10 60) #'elfeed-update)
+  )
+#+end_src
+
+*** ERC
+:PROPERTIES:
+:CUSTOM_ID: h:d00581fc-84db-483a-9f05-14a9fd074077
+:END:
+
+#+begin_src emacs-lisp
+(leaf erc
+  :config
+  (setq erc-echo-notices-in-minibuffer-flag t)
+  (setq erc-rename-buffers t)
+  (setq erc-interpret-mirc-color t)
+  (setq erc-server-auto-reconnect t)
+  (setq erc-server-reconnect-timeout 15)
+  (setq erc-prompt-for-nickserv-password nil)
+  (setq erc-fill-function 'erc-fill-static)
+  (setq erc-fill-static-center 12)
+  (setq erc-track-switch-direction 'newest)
+
+  (defun index/erc-dwim ()
+    "Switch to `erc-mode' buffer(s) or log into IRC."
+    (interactive)
+    (let ((irc "irc.freenode.net")
+          (nick "xinjyz")
+          (pass (shell-command-to-string "pass irc.freenode.net/xinjyz"))
+          (buffers (erc-buffer-list)))
+      (cond ((eq 1 (length buffers))    ; switch to the only buffer
+             (switch-to-buffer
+              (nth
+               (cl-position
+                'erc-mode
+                (mapcar (lambda (buf)
+                          (with-current-buffer buf
+                            major-mode))
+                        (buffer-list)))
+               (buffer-list))))
+            (buffers
+             (erc-switch-to-buffer))
+            (t
+             (erc :server irc
+                  :nick nick
+                  :password pass
+                  :full-name nick)))))
+  :hook ((erc-mode-hook . erc-fill-enable)
+         (erc-mode-hook . erc-track-mode))
+  :bind (("C-c i" . index/erc-dwim)))
+#+end_src
+
+*** Mu4e
+:PROPERTIES:
+:CUSTOM_ID: h:579700dd-5a9b-4197-b629-7225b39606d8
+:END:
+
+#+begin_src emacs-lisp
+(leaf mu4e
+  ;; This depends on the Arch package `mu'.
+  :load-path "/usr/share/emacs/site-lisp/mu4e/"
+  :require t
+  :config
+  (setq mu4e-maildir "~/etc/mail")
+  (setq mu4e-attachment-dir (expand-file-name "~/www"))
+
+  (setq mu4e-headers-advance-after-mark t)
+  (setq mu4e-headers-auto-update t)
+  (setq mu4e-headers-date-format "%F")
+  (setq mu4e-headers-time-format "%R")
+  (setq mu4e-headers-long-date-format "%F, %R")
+
+  (setq mu4e-contexts
+        `(,(make-mu4e-context
+            :name "Trash"
+            :match-func
+            (lambda (msg)
+              (when msg
+                (string-prefix-p "/fsauer@cock.li" (mu4e-message-field msg :maildir))))
+            :vars '((user-mail-address      . "fsauer@cock.li")
+                    (user-full-name         . "Finn Sauer")
+                    (smtpmail-smtp-server   . "mail.cock.li")
+                    (smtpmail-smtp-service  . 465)
+                    (smtpmail-stream-type   . ssl)
+                    (mu4e-sent-folder       . "/fsauer@cock.li/Sent")
+                    (mu4e-drafts-folder     . "/fsauer@cock.li/Drafts")
+                    (mu4e-trash-folder      . "/fsauer@cock.li/Trash")
+                    (mu4e-refile-folder     . "/fsauer@cock.li/Archive")
+                    (mu4e-compose-signature . "Finn Sauer\nfinnsauer.com\nDisposable Mail Address\n")))
+          ,(make-mu4e-context
+            :name "Gmail"
+            :match-func
+            (lambda (msg)
+              (when msg
+                (string-prefix-p "/indexfinn@gmail.com" (mu4e-message-field msg :maildir))))
+            :vars '((user-mail-address      . "indexfinn@gmail.com")
+                    (user-full-name         . "Finn Sauer")
+                    (smtpmail-smtp-server   . "smtp.gmail.com")
+                    (smtpmail-smtp-service  . 465)
+                    (smtpmail-stream-type   . ssl)
+                    (mu4e-sent-folder       . "/indexfinn@gmail.com/[Gmail]/Sent Mail")
+                    (mu4e-drafts-folder     . "/indexfinn@gmail.com/[Gmail]/Drafts")
+                    (mu4e-refile-folder     . "/indexfinn@gmail.com/[Gmail]/All Mail")
+                    (mu4e-trash-folder      . "/indexfinn@gmail.com/[Gmail]/Trash")
+                    (mu4e-compose-signature . "Finn Sauer\nfinnsauer.com\n")))))
+
+
+  (setq mu4e-headers-fields
+        '((:human-date . 12)
+          (:flags . 6)
+          (:mailing-list . 10)
+          (:from . 22)
+          (:subject)))
+
+  (setq mu4e-completing-read-function #'completing-read)
+  (setq mu4e-get-mail-command "mbsync -a")
+  (setq mu4e-display-update-status-in-modeline t)
+
+  (setq message-send-mail-function #'smtpmail-send-it)
+  ;; (setq mu4e-compose-format-flowed nil) ; TODO : Needs testing
+
+  (setq mml-secure-openpgp-signers '("3BB5A6686418275CC2598CCD84F1402B873B6B28"))
+
+  :hook ((message-send-hook . mml-secure-message-sign-pgpmime))
+
+  :bind (("C-c m" . mu4e)
+         (mu4e-headers-mode-map
+          ("M-p" . mu4e-headers-query-prev)
+          ("M-n" . mu4e-headers-query-next))))
+#+end_src
+
+**** Org Send Mail
+:PROPERTIES:
+:CUSTOM_ID: h:77d04907-80e5-4d76-9951-ce7f9d71c609
+:END:
+
+Nowadays one usually would send mail in html format.  This has some nice
+features such as bold text, headers, and inline images.  Since Org Mode
+is a markup language that can convert to html we can incorporate it into
+=mail-send=.
+
+#+begin_src emacs-lisp
+(leaf org-mime
+  :straight t
+  :config
+  (defun index/mu4e-org-mail ()
+    "Enter Org Mode for Mail."
+    (interactive)
+    (org-mime-edit-mail-in-org-mode)
+    (delete-window)
+    (switch-to-buffer (get-buffer "OrgMimeMailBody")))
+
+  :bind ((mu4e-compose-mode-map
+          ("C-c C-o C-o" . index/mu4e-org-mail)
+          ("C-c C-o C-f" . org-mime-htmlize))))
+#+end_src
+
+** Eshell
+:PROPERTIES:
+:CUSTOM_ID: h:6877d266-5821-4d09-baa1-734e1393b68b
+:END:
+
+Eshell gives you everything from a traditional shell. It integrates with
+elisp very nicely.  You can do something like =echo (propertize "Hello,
+EShell" 'face 'success)=.  Of course there is way more powerful ways you
+can utilize this functionality. One thing that's different is how you
+write =do= blocks in eshell: =for i in one two three { echo $i }=.  And
+=$(...)= is not like in bash as a subshell execution, but it is an elisp
+evaluation.  If you want this functionality you can use =${...}= as
+shell evaluation.  There is a great manual for eshell in the info
+buffer.  Just go there by typing =C-h i C-s eshell RET= or =M-x
+info-display-manual eshell RET=.
+
+#+begin_src emacs-lisp
+(leaf eshell
+  :straight t
+  :config
+  (defun tributi/call-process (command &rest args)
+    "Execute COMMAND with ARGS synchronously.
+Returns (STATUS . OUTPUT) when it is done, where STATUS is the returned error
+code of the process and OUTPUT is its stdout output."
+    (with-temp-buffer
+      (cons (or (apply #'call-process command nil t nil (remq nil args))
+                -1)
+            (string-trim (buffer-string)))))
+
+  (defun tributi/eshell--current-git-branch ()
+    (cl-destructuring-bind (status . output)
+        (tributi/call-process "git" "symbolic-ref" "-q" "--short" "HEAD")
+      (if (equal status 0)
+          (format " [%s]" output)
+        (cl-destructuring-bind (status . output)
+            (tributi/call-process "git" "describe" "--all" "--always" "HEAD")
+          (if (equal status 0)
+              (format " [%s]" output)
+            "")))))
+
+  (defvar index/eshell-time-command nil
+    "Stores the starting time of the command.")
+
+  (defun index/eshell-time-command (&optional end)
+    (if end
+        (if index/eshell-time-command
+            (format " %.03fs" (float-time (time-since index/eshell-time-command)))
+          " 0s")
+      (setq index/eshell-time-command (current-time))))
+
+  (setq eshell-prompt-function
+        (lambda ()
+          (concat
+           (let ((pwd (eshell/pwd)))
+             (if (equal pwd "~")
+                 pwd
+               (abbreviate-file-name pwd)))
+           (propertize
+            (tributi/eshell--current-git-branch)
+            'face
+            'shadow)
+           (propertize
+            (index/eshell-time-command 'end)
+            'face
+            'shadow)
+           (propertize
+            " λ"
+            'face
+            (if (zerop eshell-last-command-status)
+                'success
+              'error))
+           " ")))
+  (setq eshell-prompt-regexp "^[^λ]*λ ")
+
+  (setenv "PAGER" "cat")
+
+  (defun index/eshell-smartparens-mode ()
+    "Calls `smartparens-mode' in eshell.
+  Intended as a hook call, since eshell doesn't seem to respect
+  `smartparens-global-mode'."
+    (smartparens-mode))
+
+  (defun index/eshell-dwim ()
+    "Do what I mean function for `eshell'.
+When in a buffer with a valid filename, change to that
+directory (plus list directly) and run `eshell'.  Otherwise just
+run `eshell'."
+    (interactive)
+    (unless (get-buffer "*eshell*")
+      (with-current-buffer (get-buffer-create eshell-buffer-name)
+        (eshell-mode)))
+
+    (let ((buf (buffer-file-name (current-buffer))))
+      (if buf
+          (with-current-buffer eshell-buffer-name
+            (end-of-buffer)
+            (eshell-kill-input)
+            (insert
+             (concat
+              "cd \""
+              (file-name-directory buf)
+              "\"; ls"))
+            (eshell-send-input)
+            (eshell))
+        (eshell))))
+
+  :hook ((eshell-mode-hook . index/eshell-smartparens-mode)
+         (eshell-pre-command-hook . index/eshell-time-command))
+  :bind (("C-c s" . index/eshell-dwim)))
+#+end_src
+
+*** Aliases
+:PROPERTIES:
+:CUSTOM_ID: h:84cf7e34-3da6-49c0-92eb-d8be1faafa20
+:END:
+
+Aliases in Eshell are a bit different in comparison to bash.  Yes, you
+can still define aliases in the prompt the same way: =alias name
+'function $n'=.  This will store and enable the alias.  Where it will be
+stored will be printed in the minibuffer.
+
+But I like to keep my configuration in one place; here.  Eshell has a
+great feature: if you define a function with the namespace =eshell/= it
+will be autoloaded as a command in eshell with the name after the =/=,
+thus you can define custom made functions easily.
+
+#+begin_src emacs-lisp
+(leaf eshell
+  :config
+  (defun eshell/f (file)
+    (find-file file))
+
+  (defun eshell/ll (&optional file)
+    (eshell/ls "-Al" file))
+
+  (defun eshell/cd (&rest args)         ; all but first ignored
+    "Alias to extend the behavior of `cd'."
+    ;; below is from its original function
+    (setq args (flatten-tree args))
+    (let ((path (car args))
+	      (subpath (car (cdr args)))
+	      (case-fold-search (eshell-under-windows-p))
+	      handled)
+      (if (numberp path)
+	      (setq path (number-to-string path)))
+      (if (numberp subpath)
+	      (setq subpath (number-to-string subpath)))
+      (cond
+       (subpath
+        (let ((curdir (eshell/pwd)))
+	      (if (string-match path curdir)
+	          (setq path (replace-match subpath nil nil curdir))
+	        (error "Path substring `%s' not found" path))))
+       ((and path (string-match "^-\\([0-9]*\\)$" path))
+        (let ((index (match-string 1 path)))
+p	      (setq path
+	            (ring-remove eshell-last-dir-ring
+			                 (if index
+			                     (string-to-number index)
+			                   0)))))
+       ((and path (string-match "^=\\(.*\\)$" path))
+        (let ((oldpath (eshell-find-previous-directory
+		                (match-string 1 path))))
+	      (if oldpath
+	          (setq path oldpath)
+	        (let ((len (ring-length eshell-last-dir-ring))
+		          (index 0))
+	          (if (= len 0)
+		          (error "Directory ring empty"))
+	          (eshell-init-print-buffer)
+	          (while (< index len)
+	            (eshell-buffered-print
+	             (concat (number-to-string index) ": "
+		                 (ring-ref eshell-last-dir-ring index) "\n"))
+	            (setq index (1+ index)))
+	          (eshell-flush)
+	          (setq handled t)))))
+       (path
+        (setq path (eshell-expand-multiple-dots path))))
+      (unless handled
+        (let ((curdir (eshell/pwd))
+	          (newdir (or path "~")))
+	      (unless (equal curdir newdir)
+	        (eshell-add-to-dir-ring curdir))
+	      (let ((result (cd newdir)))
+	        (and eshell-cd-shows-directory
+	             (eshell-printn result)))
+	      (run-hooks 'eshell-directory-change-hook)
+	      (if eshell-list-files-after-cd
+	          ;; Let-bind eshell-last-command around this?
+	          (eshell-plain-command "ls" (cdr args)))
+	      nil)))
+    ;; above is from its original function
+    (eshell/ls "-A")))
+#+end_src
+
+** Git - The Stupid Content Tracker
+:PROPERTIES:
+:CUSTOM_ID: h:0a94883e-e2e1-4853-bbbb-d30e6f7ceaa0
+:END:
+
+*** Magit
+:PROPERTIES:
+:CUSTOM_ID: h:a2917dbe-5084-4833-9628-da9eed65a77d
+:END:
+
+World's most powerful git interface.
+
+#+begin_src emacs-lisp
+(leaf magit
+  :straight t
+  ;; `index/magit-status-emacs' calls `magit-status' internally, so it
+  ;; should be fine to omit it here.
+  :commands (magit-status magit-edit-line-commit)
+  :config
+  (setq vc-follow-symlinks t)
+  (setq git-commit-summary-max-length 50)
+
+  (defvar index/magit-repository-directories
+    '("~/web/" "~/lin/" "~/wtn/" "~/rel/")
+    "Directories with a repository.")
+
+  (defun index/magit-status-emacs (&optional arg)
+    "Finds the Emacs repository.
+If called with the universal argument prompt for a repository
+from the variable `index/magit-repository-directories'."
+    (interactive "P")
+    (if arg
+        (magit-status
+         (completing-read
+          "Repository: "
+          index/magit-repository-directories))
+      (magit-status "~/dot/emacs/")))
+
+  ;; TODO : Move it outside this src block.
+  ;; This function is super convenient.  Have your point be on a line
+  ;; you want to change, then invoke this function, and then magit will
+  ;; then rebase to the commit that introduced that line.  Form there
+  ;; you can change the file and stage [S] them and extend the commit [c
+  ;; e] or amend the commit [c a].  After that you can continue the
+  ;; rebase and revert to master with the changes taking effect.  If you
+  ;; changed your mind you can always cancel the rebase [r c].
+  (put 'magit-edit-line-commit 'disabled nil)
+
+  :hook ((after-save-hook . magit-after-save-refresh-status))
+  :bind (("C-c g" . magit-status)
+         ("H-g" . index/magit-status-emacs)
+         ("C-M-g" . magit-edit-line-commit)))
+
+(leaf ediff
+  :commands magit-ediff-dwim
+  :config
+  (setq ediff-keep-variants nil)
+  (setq ediff-make-buffers-readonly-at-startup nil)
+  (setq ediff-merge-revisions-with-ancestor t)
+  (setq ediff-show-clashes-only t)
+  (setq ediff-split-window-function 'split-window-horizontally)
+  (setq ediff-window-setup-function 'ediff-setup-windows-plain)
+
+  :hook ((ediff-prepare-buffer-hook . org-show-all)))
+
+(leaf magit-todos
+  :straight t
+  :commands magit-status
+  :after magit
+  :config
+  (magit-todos-mode 1))
+#+end_src
+
+*** Diff-hl - A Git Diff Gutter
+:PROPERTIES:
+:CUSTOM_ID: h:0a563f0c-a5a0-43a6-8a6d-fbe63a37b564
+:END:
+
+Simple way of displaying the changes in a git directory.
+
+#+begin_src emacs-lisp
+(leaf diff-hl
+  :straight t
+  :config
+  (global-diff-hl-mode 1)
+  :hook ((magit-pre-refresh-hook . diff-hl-magit-pre-refresh)
+         (magit-post-refresh-hook . diff-hl-magit-post-refresh)))
+#+end_src
+
+** TODO Bongo
+:PROPERTIES:
+:CUSTOM_ID: h:3842c6df-a0a7-4498-807b-9d882568576f
+:END:
+
+#+begin_src emacs-lisp
+(leaf bongo
+  :straight t
+  :config
+  (setq bongo-insert-whole-directory-trees t)
+  (setq bongo-default-directory (expand-file-name "~/etc/music"))
+  (setq bongo-enabled-backends '(mpv))
+  (setq bongo-mpv-extra-arguments '("--no-config" "--vo=null"))
+  (setq bongo-header-line-mode nil)
+
+  (leaf bongo
+    :config
+    (defun index/bongo-add-dired-files ()
+      "Add marked files to Bongo library."
+      (interactive)
+      (let (file-point file (files nil))
+        (dired-map-over-marks
+         (setq file-point (dired-move-to-filename)
+               file (dired-get-filename)
+               files (append files (list file)))
+         nil t)
+        (save-excursion
+          ;; Is this always safe or can there be more than
+          ;; one Bongo buffer?
+          (set-buffer bongo-default-library-buffer-name)
+          (mapc 'bongo-insert-file files))
+        (if file
+            (message "File added: %s" file)
+          (message "Files added: %s" files))))
+    :bind (("<f8>" . index/bongo-add-dired-files))))
+#+end_src
 
 * Workspaces (Emacs 27 Tabs)
 :PROPERTIES:
@@ -3123,451 +3582,6 @@ http://danmidwood.com/content/2014/11/21/animated-paredit.html
 (leaf clj-refactor
   :straight t
   :hook ((clojure-mode-hook . clj-refactor-mode)))
-#+end_src
-
-* TODO Bongo
-:PROPERTIES:
-:CUSTOM_ID: h:3842c6df-a0a7-4498-807b-9d882568576f
-:END:
-
-#+begin_src emacs-lisp
-(leaf bongo
-  :straight t
-  :config
-  (setq bongo-insert-whole-directory-trees t)
-  (setq bongo-default-directory (expand-file-name "~/etc/music"))
-  (setq bongo-enabled-backends '(mpv))
-  (setq bongo-mpv-extra-arguments '("--no-config" "--vo=null"))
-  (setq bongo-header-line-mode nil)
-
-  (leaf bongo
-    :config
-    (defun index/bongo-add-dired-files ()
-      "Add marked files to Bongo library."
-      (interactive)
-      (let (file-point file (files nil))
-        (dired-map-over-marks
-         (setq file-point (dired-move-to-filename)
-               file (dired-get-filename)
-               files (append files (list file)))
-         nil t)
-        (save-excursion
-          ;; Is this always safe or can there be more than
-          ;; one Bongo buffer?
-          (set-buffer bongo-default-library-buffer-name)
-          (mapc 'bongo-insert-file files))
-        (if file
-            (message "File added: %s" file)
-          (message "Files added: %s" files))))
-    :bind (("<f8>" . index/bongo-add-dired-files))))
-#+end_src
-
-* (News)Feeds
-:PROPERTIES:
-:CUSTOM_ID: h:1475cbfc-56dc-4039-a88a-539b5e7672cb
-:END:
-** Gnus
-:PROPERTIES:
-:CUSTOM_ID: h:45b54719-5b5f-44f0-8fc1-88af5f1c25a2
-:END:
-
-#+begin_src emacs-lisp
-(leaf gnus
-  :config
-  (setq user-mail-address "public@finnsauer.xyz")
-  (setq user-full-name "Finn Sauer"))
-#+end_src
-
-** Elfeed
-:PROPERTIES:
-:CUSTOM_ID: h:ff4d5141-64fa-4edb-be39-7b1e3af87d50
-:END:
-*** Config
-:PROPERTIES:
-:CUSTOM_ID: h:b3c80b42-07a9-4732-ad53-f321fbeda72f
-:END:
-
-#+begin_src emacs-lisp
-(leaf elfeed
-  :straight t
-  :config
-
-  (setq elfeed-use-curl t)
-  (setq elfeed-curl-max-connections 16)
-  (setq elfeed-db-directory (concat user-emacs-directory "elfeed"))
-  (setq elfeed-enclosure-default-dir "~/www/")
-  (setq elfeed-search-filter "@6-months-ago -torrent")
-  (setq elfeed-sort-order 'descending)
-  (setq elfeed-search-clipboard-type 'CLIPBOARD)
-  (setq elfeed-search-title-max-width 72)
-  (setq elfeed-search-title-min-width 40)
-  (setq elfeed-search-trailing-width 25)
-  (setq elfeed-show-truncate-long-urls t)
-  (setq elfeed-show-unique-buffers t)
-
-  (defun index/elfeed-load-feeds ()
-    "Loads the encryped `feed.el.gpg' file.
-Used in combination with `elfeed-search-mode-hook', because it
-only gets loaded when it is needed and not on startup."
-    (let ((f (expand-file-name "gpg/feeds.el.gpg" user-emacs-directory)))
-      (when (file-readable-p f)
-        (load-file f))))
-
-  (defun index/elfeed-mpv-open-link ()
-    "Play entry link with external `mpv' program.
-This will launch `mpv' without any buffer."
-    (interactive)
-    (let* ((entry (if (eq major-mode 'elfeed-show-mode)
-                      elfeed-show-entry
-                    (elfeed-search-selected :ignore-region)))
-           (link (elfeed-entry-link entry)))
-      (start-process "mpv" nil "mpv_open" link)
-      (save-excursion
-        (elfeed-search-untag-all-unread))
-      (message
-       (concat "Launching MPV for " (propertize link 'face 'success)))))
-
-  (defun index/elfeed-toggle-read-unread ()
-    "Used to toggle between read and unread."
-    (interactive)
-    (let* ((entry (elfeed-search-selected :ignore-region))
-           (tags (elfeed-entry-tags entry)))
-      (if (member 'unread tags)
-          (elfeed-search-untag-all-unread)
-        (elfeed-search-tag-all-unread))))
-
-  (defun index/elfeed-toggle-read-unread-all ()
-    "Used to toggle all entrys between read and unread."
-    (interactive)
-    (let* ((entry (elfeed-search-selected :ignore-region))
-           (tags (elfeed-entry-tags entry)))
-      (if (member 'unread tags)
-          (progn
-            (save-excursion
-              (mark-whole-buffer)
-              (elfeed-search-untag-all-unread)))
-        (save-excursion
-          (mark-whole-buffer)
-          (elfeed-search-tag-all-unread)))))
-
-  (defun index/elfeed-new-entry-notification (entry)
-    "Spawns a notify-send shell process after `elfeed-new-entry'
-Meant to be used in combination with `add-hook' and
-`elfeed-new-entry-hook'"
-    (let* ((title (elfeed-entry-title entry))
-           (name (elfeed-feed-title (elfeed-entry-feed entry)))
-           (link (elfeed-entry-link entry)))
-      (unless (or (string-match "^magnet:" link)
-                  (string-match "\.torrent$" link))
-        (start-process "notify" nil "notify-send" "RSS"
-                       (concat "Title: " title "\nAuthor: " name "\nLink: " link)))))
-
-  (defvar index/elfeed-toggle-between-predef-tags 0
-    "Counter for the corresponding function.")
-
-  (defvar index/elfeed-toggle-between-predef-tags-default-filter-value elfeed-search-filter
-    "The default value of the `elfeed-search-filter' variable.")
-
-  (advice-add
-   'elfeed-search-clear-filter
-   :after (lambda ()
-            (setq index/elfeed-toggle-between-predef-tags
-                  0)))
-
-  (defun index/elfeed-toggle-between-predef-tags ()
-    "Toggle between predefined tags.
-This cycles through the following iterations:
-
-0. \"\"
-1. \"+unread\"
-2. \"+video\"
-3. \"-video\"
-
-After hitting the last iteration, it will wrap around to the
-first."
-    (interactive)
-    (if (eq 3 index/elfeed-toggle-between-predef-tags)
-        (setq index/elfeed-toggle-between-predef-tags 0)
-      (setq index/elfeed-toggle-between-predef-tags
-            (1+ index/elfeed-toggle-between-predef-tags)))
-    (cond
-     ((eq 0 index/elfeed-toggle-between-predef-tags)
-      (elfeed-search-set-filter nil))
-     ((eq 1 index/elfeed-toggle-between-predef-tags)
-      (setq elfeed-search-filter
-            (concat
-             index/elfeed-toggle-between-predef-tags-default-filter-value
-             " +unread"))
-      (elfeed-search-update :force))
-     ((eq 2 index/elfeed-toggle-between-predef-tags)
-      (setq elfeed-search-filter
-            (concat
-             index/elfeed-toggle-between-predef-tags-default-filter-value
-             " +video"))
-      (elfeed-search-update :force))
-     ((eq 3 index/elfeed-toggle-between-predef-tags)
-      (setq elfeed-search-filter
-            (concat
-             index/elfeed-toggle-between-predef-tags-default-filter-value
-             " -video"))
-      (elfeed-search-update :force))))
-
-  (defun index/elfeed-format-content (entry)
-    (let* ((original (elfeed-deref (elfeed-entry-content entry)))
-           (replace (with-temp-buffer
-                      (insert original)
-                      (mark-whole-buffer)
-                      (fill-paragraph)
-                      (buffer-string))))
-      (setf (elfeed-entry-content entry) (elfeed-ref replace))))
-
-  (defun index/elfeed-toggle-star ()
-    "Toggle between '*' on entry.
-This will add a '*' tag on the current entry."
-    (interactive)
-    (save-excursion
-      (apply 'elfeed-search-toggle-all '(*))))
-
-  :hook ((elfeed-search-mode-hook . index/elfeed-load-feeds)
-         (elfeed-new-entry-hook . index/elfeed-new-entry-notification)
-         (elfeed-show-mode-hook . olivetti-mode)
-         (elfeed-new-entry-hook . index/elfeed-format-content))
-
-  :bind (("C-c f" . elfeed)
-         (elfeed-show-mode-map
-          ("o" . index/elfeed-mpv-open-link)
-          ("TAB" . forward-button))
-         (elfeed-search-mode-map
-          ("o" . index/elfeed-mpv-open-link)
-          ("a" . index/elfeed-toggle-read-unread)
-          ("A" . index/elfeed-toggle-read-unread-all)
-          ("t" . index/elfeed-toggle-between-predef-tags)
-          ("m" . index/elfeed-toggle-star))))
-#+end_src
-
-*** Update
-:PROPERTIES:
-:CUSTOM_ID: h:57023cef-8d6b-4f48-bda9-e2be881b379b
-:END:
-
-Since elfeed updates are rather slow by default, I tweaked with them
-more or less.  Well actually I stole some code from Reddit User
-/github-alphapapa/.
-
-+ URL: https://github.com/skeeto/elfeed/issues/293.
-
-#+begin_src emacs-lisp
-(leaf elfeed
-  :config
-  (defvar tributi/elfeed-update-complete-hook nil
-    "Functions called with no arguments when `elfeed-update' is
-    finished.")
-
-  (defvar tributi/elfeed-updates-in-progress 0
-    "Number of feed updates in-progress.")
-
-  (defvar tributi/elfeed-search-update-filter nil
-    "The filter when `elfeed-update' is called.")
-
-  (defun tributi/elfeed-update-complete-hook (&rest _)
-    "When update queue is empty, run
-`tributi/elfeed-update-complete-hook' functions."
-    (when (= 0 tributi/elfeed-updates-in-progress)
-      (run-hooks 'tributi/elfeed-update-complete-hook)))
-
-  (add-hook 'elfeed-update-hooks
-            #'tributi/elfeed-update-complete-hook)
-
-  (defun tributi/elfeed-search-update-restore-filter (&rest _)
-    "Restore filter after feeds update."
-    (when tributi/elfeed-search-update-filter
-      (elfeed-search-set-filter tributi/elfeed-search-update-filter)
-      (setq tributi/elfeed-search-update-filter nil)))
-
-  (add-hook 'tributi/elfeed-update-complete-hook
-            #'tributi/elfeed-search-update-restore-filter)
-
-  (defun tributi/elfeed-search-update-save-filter (&rest _)
-    "Save and change the filter while updating."
-    (setq tributi/elfeed-search-update-filter elfeed-search-filter)
-    (setq elfeed-search-filter "#0"))
-
-  ;; NOTE: It would be better if this hook were run before starting the
-  ;; feed updates, but in `elfeed-update', it happens afterward.
-  (add-hook 'elfeed-update-init-hooks
-            #'tributi/elfeed-search-update-save-filter)
-
-  (defun tributi/elfeed-update-counter-inc (&rest _)
-    (cl-incf tributi/elfeed-updates-in-progress))
-
-  (advice-add
-   #'elfeed-update-feed
-   :before
-   #'tributi/elfeed-update-counter-inc)
-
-  (defun tributi/elfeed-update-counter-dec (&rest _)
-    (cl-decf tributi/elfeed-updates-in-progress)
-    (when (< tributi/elfeed-updates-in-progress 0)
-      ;; Just in case
-      (setq tributi/elfeed-updates-in-progress 0)))
-
-  (add-hook 'elfeed-update-hooks
-            #'tributi/elfeed-update-counter-dec)
-
-  ;; (run-at-time nil (* 10 60) #'elfeed-update)
-  )
-#+end_src
-
-** ERC
-:PROPERTIES:
-:CUSTOM_ID: h:d00581fc-84db-483a-9f05-14a9fd074077
-:END:
-
-#+begin_src emacs-lisp
-(leaf erc
-  :config
-  (setq erc-echo-notices-in-minibuffer-flag t)
-  (setq erc-rename-buffers t)
-  (setq erc-interpret-mirc-color t)
-  (setq erc-server-auto-reconnect t)
-  (setq erc-server-reconnect-timeout 15)
-  (setq erc-prompt-for-nickserv-password nil)
-  (setq erc-fill-function 'erc-fill-static)
-  (setq erc-fill-static-center 12)
-  (setq erc-track-switch-direction 'newest)
-
-  (defun index/erc-dwim ()
-    "Switch to `erc-mode' buffer(s) or log into IRC."
-    (interactive)
-    (let ((irc "irc.freenode.net")
-          (nick "xinjyz")
-          (pass (shell-command-to-string "pass irc.freenode.net/xinjyz"))
-          (buffers (erc-buffer-list)))
-      (cond ((eq 1 (length buffers))    ; switch to the only buffer
-             (switch-to-buffer
-              (nth
-               (cl-position
-                'erc-mode
-                (mapcar (lambda (buf)
-                          (with-current-buffer buf
-                            major-mode))
-                        (buffer-list)))
-               (buffer-list))))
-            (buffers
-             (erc-switch-to-buffer))
-            (t
-             (erc :server irc
-                  :nick nick
-                  :password pass
-                  :full-name nick)))))
-  :hook ((erc-mode-hook . erc-fill-enable)
-         (erc-mode-hook . erc-track-mode))
-  :bind (("C-c i" . index/erc-dwim)))
-#+end_src
-
-** Mu4e
-:PROPERTIES:
-:CUSTOM_ID: h:579700dd-5a9b-4197-b629-7225b39606d8
-:END:
-
-#+begin_src emacs-lisp
-(leaf mu4e
-  ;; This depends on the Arch package `mu'.
-  :load-path "/usr/share/emacs/site-lisp/mu4e/"
-  :require t
-  :config
-  (setq mu4e-maildir "~/etc/mail")
-  (setq mu4e-attachment-dir (expand-file-name "~/www"))
-
-  (setq mu4e-headers-advance-after-mark t)
-  (setq mu4e-headers-auto-update t)
-  (setq mu4e-headers-date-format "%F")
-  (setq mu4e-headers-time-format "%R")
-  (setq mu4e-headers-long-date-format "%F, %R")
-
-  (setq mu4e-contexts
-        `(,(make-mu4e-context
-            :name "Trash"
-            :match-func
-            (lambda (msg)
-              (when msg
-                (string-prefix-p "/fsauer@cock.li" (mu4e-message-field msg :maildir))))
-            :vars '((user-mail-address      . "fsauer@cock.li")
-                    (user-full-name         . "Finn Sauer")
-                    (smtpmail-smtp-server   . "mail.cock.li")
-                    (smtpmail-smtp-service  . 465)
-                    (smtpmail-stream-type   . ssl)
-                    (mu4e-sent-folder       . "/fsauer@cock.li/Sent")
-                    (mu4e-drafts-folder     . "/fsauer@cock.li/Drafts")
-                    (mu4e-trash-folder      . "/fsauer@cock.li/Trash")
-                    (mu4e-refile-folder     . "/fsauer@cock.li/Archive")
-                    (mu4e-compose-signature . "Finn Sauer\nfinnsauer.com\nDisposable Mail Address\n")))
-          ,(make-mu4e-context
-            :name "Gmail"
-            :match-func
-            (lambda (msg)
-              (when msg
-                (string-prefix-p "/indexfinn@gmail.com" (mu4e-message-field msg :maildir))))
-            :vars '((user-mail-address      . "indexfinn@gmail.com")
-                    (user-full-name         . "Finn Sauer")
-                    (smtpmail-smtp-server   . "smtp.gmail.com")
-                    (smtpmail-smtp-service  . 465)
-                    (smtpmail-stream-type   . ssl)
-                    (mu4e-sent-folder       . "/indexfinn@gmail.com/[Gmail]/Sent Mail")
-                    (mu4e-drafts-folder     . "/indexfinn@gmail.com/[Gmail]/Drafts")
-                    (mu4e-refile-folder     . "/indexfinn@gmail.com/[Gmail]/All Mail")
-                    (mu4e-trash-folder      . "/indexfinn@gmail.com/[Gmail]/Trash")
-                    (mu4e-compose-signature . "Finn Sauer\nfinnsauer.com\n")))))
-
-
-  (setq mu4e-headers-fields
-        '((:human-date . 12)
-          (:flags . 6)
-          (:mailing-list . 10)
-          (:from . 22)
-          (:subject)))
-
-  (setq mu4e-completing-read-function #'completing-read)
-  (setq mu4e-get-mail-command "mbsync -a")
-  (setq mu4e-display-update-status-in-modeline t)
-
-  (setq message-send-mail-function #'smtpmail-send-it)
-  ;; (setq mu4e-compose-format-flowed nil) ; TODO : Needs testing
-
-  (setq mml-secure-openpgp-signers '("3BB5A6686418275CC2598CCD84F1402B873B6B28"))
-
-  :hook ((message-send-hook . mml-secure-message-sign-pgpmime))
-
-  :bind (("C-c m" . mu4e)
-         (mu4e-headers-mode-map
-          ("M-p" . mu4e-headers-query-prev)
-          ("M-n" . mu4e-headers-query-next))))
-#+end_src
-
-*** Org Send Mail
-:PROPERTIES:
-:CUSTOM_ID: h:77d04907-80e5-4d76-9951-ce7f9d71c609
-:END:
-
-Nowadays one usually would send mail in html format.  This has some nice
-features such as bold text, headers, and inline images.  Since Org Mode
-is a markup language that can convert to html we can incorporate it into
-=mail-send=.
-
-#+begin_src emacs-lisp
-(leaf org-mime
-  :straight t
-  :config
-  (defun index/mu4e-org-mail ()
-    "Enter Org Mode for Mail."
-    (interactive)
-    (org-mime-edit-mail-in-org-mode)
-    (delete-window)
-    (switch-to-buffer (get-buffer "OrgMimeMailBody")))
-
-  :bind ((mu4e-compose-mode-map
-          ("C-c C-o C-o" . index/mu4e-org-mail)
-          ("C-c C-o C-f" . org-mime-htmlize))))
 #+end_src
 
 * Keyboard Enhancements / Movement
