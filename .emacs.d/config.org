@@ -2941,7 +2941,7 @@ I do minor web-development that just includes HTML/CSS and no other
 resources such as JAVASCRIPT.  As I only use those two, the packages are
 rather simple.
 
-** COMMENT Emmet
+** Emmet
 :PROPERTIES:
 :CUSTOM_ID: h:1e06fb01-0495-408e-b39f-87b5f2cd169e
 :END:
