@@ -1133,7 +1133,7 @@ TODO : Structure these sub headers more nicely.
 (leaf org
   :straight t
   :config
-  (setq org-directory (expand-file-name "~/wtn/org"))
+  (setq org-directory (expand-file-name "~/wtn"))
   (setq org-special-ctrl-a/e nil)
   (setq org-special-ctrl-k nil)
   (setq org-confirm-babel-evaluate nil)
