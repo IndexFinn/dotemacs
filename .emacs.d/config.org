@@ -2297,14 +2297,14 @@ Emacs and its text based interface.
   :config
 
   (setq elfeed-use-curl t)
-  (setq elfeed-curl-max-connections 16)
+  (setq elfeed-curl-max-connections 8)
   (setq elfeed-db-directory (concat user-emacs-directory "elfeed"))
   (setq elfeed-enclosure-default-dir "~/www/")
   (setq elfeed-search-filter "@6-months-ago -torrent")
   (setq elfeed-sort-order 'descending)
   (setq elfeed-search-clipboard-type 'CLIPBOARD)
-  (setq elfeed-search-title-max-width 72)
-  (setq elfeed-search-title-min-width 40)
+  (setq elfeed-search-title-max-width 50)
+  (setq elfeed-search-title-min-width 50)
   (setq elfeed-search-trailing-width 25)
   (setq elfeed-show-truncate-long-urls t)
   (setq elfeed-show-unique-buffers t)
