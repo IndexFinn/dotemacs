@@ -971,7 +971,7 @@ To stop edebugging, just re-evaluate the lisp s-expression.
 If the buffer is read-only, activate some extra keybindings that make
 life easy:
 
-| Keybinding | Name                             | Description                                                                     |
+| Keybinding | Function Name                    | Description                                                                     |
 |------------+----------------------------------+---------------------------------------------------------------------------------|
 | SPC        | View-scroll-page-forward         | Scroll "page size" or prefix LINES lines forward in View mode.                  |
 | S-SPC      | View-scroll-page-backward        | Scroll "page size" or prefix LINES lines backward in View mode.                 |
@@ -2214,7 +2214,7 @@ convention is, that you put the function's argument name in upper case.
 
 The keybinding for these are the following:
 
-| Keybinding | Name            | Description                                                          |
+| Keybinding | Function Name   | Description                                                          |
 |------------+-----------------+----------------------------------------------------------------------|
 | C-x C-l    | downcase-region | Convert the region to lower case.  In programs, wants two arguments. |
 | C-x C-u    | upcase-region   | Convert the region to upper case.  In programs, wants two arguments. |
@@ -2243,7 +2243,7 @@ these functions, we just need to bind them.
 
 Afterwards the table will look like this:
 
-| Keybinding | Name            | Description                                                                  |
+| Keybinding | Function Name   | Description                                                                  |
 |------------+-----------------+------------------------------------------------------------------------------|
 | C-x C-l    | nil             | nil                                                                          |
 | C-x C-u    | nil             | nil                                                                          |
@@ -4218,16 +4218,16 @@ $2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation
 You put this-- as I stated above-- under the table:
 
 #+begin_example ascii
-| Keybinding | Name | Description |
-|------------+------+-------------|
-| C-M-q      |      |             |
+| Keybinding | Function Name | Description |
+|------------+---------------+-------------|
+| C-M-q      |               |             |
 #+TBLFM: $2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation (key-binding (kbd $1))))))
 #+end_example
 
 And then execute the formula via =C-c C-c= while the point is above the formula:
 
 #+begin_example ascii
-| Keybinding | Name                 | Description                      |
+| Keybinding | Function Name        | Description                      |
 |------------+----------------------+----------------------------------|
 | C-M-q      | index/auto-fill-mode | Wrapper around ‘auto-fill-mode’. |
 #+TBLFM: $2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation (key-binding (kbd $1))))))
