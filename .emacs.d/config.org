@@ -1847,10 +1847,13 @@ Calls `index/focused-writing' when called with an argument.
          (custom-mode-hook . visual-line-mode)))
 #+end_src
 
-*** Functions
+*** DEPRECATED Functions
 :PROPERTIES:
 :CUSTOM_ID: h:7ccb5bef-d925-4ba7-b690-440dabd542c6
 :END:
+
+*The following has been DEPRECATED, as I never used these functions;
+again they where copied from [[https://protesilaos.com/][prot]] without thinking.*
 
 #+begin_src emacs-lisp
 (leaf emacs
