@@ -1842,18 +1842,7 @@ Calls `index/focused-writing' when called with an argument.
            (display-buffer-in-side-window)
            (window-height . 0.16)
            (side . bottom)
-           (slot . 2))
-          (".*\\*\\(Completions\\|Ido Completions\\)\\*.*"
-           (display-buffer-in-side-window)
-           (window-height . 0.16)
-           (side . bottom)
-           (slot . 0))
-          ;; ("^\\(\\*e?shell\\|vterm\\).*"
-          ;;  (display-buffer-in-side-window)
-          ;;  (window-height . 0.16)
-          ;;  (side . bottom)
-          ;;  (slot . -1))
-          ))
+           (slot . 2))))
   :hook ((help-mode-hook . visual-line-mode)
          (custom-mode-hook . visual-line-mode)))
 #+end_src
