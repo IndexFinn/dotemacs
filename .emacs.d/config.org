@@ -1913,7 +1913,7 @@ managers such as DWM, BSPWM refer to this state as 'monocle'."
          ("H-k" . tributi/kill-buffer-current)))
 #+end_src
 
-*** TODO Keybindings
+*** Keybindings
 :PROPERTIES:
 :CUSTOM_ID: h:e830c1c2-d8d5-4ba4-86ae-e86ff3161661
 :END:
@@ -2949,6 +2949,31 @@ Simple way of displaying the changes in a git directory.
   (global-diff-hl-mode 1)
   :hook ((magit-pre-refresh-hook . diff-hl-magit-pre-refresh)
          (magit-post-refresh-hook . diff-hl-magit-post-refresh)))
+#+end_src
+
+*** Dired Version Root Jump
+:PROPERTIES:
+:CUSTOM_ID: h:c4bc165a-8871-44d0-8760-4f18af2d4648
+:END:
+
+Refer to [[#h:80c2fb0a-f1d4-4219-a390-1308483fd28a][this]] section for the regular dired jump accessed via =H-j=.
+
+#+begin_src emacs-lisp
+(leaf emacs
+  :config
+  (defun index/dired-vc-root-jump ()
+    "Jump to root version control directory."
+    (interactive)
+    (let ((dir (vc-root-dir)))
+      (if dir
+          (dired (vc-root-dir))
+        (progn
+          (message "No VC root dir found.  You can use j to invoke `dired-jump'.")
+          (set-transient-map
+           (let ((map (make-sparse-keymap)))
+             (define-key map (kbd "j") #'dired-jump)
+             map))))))
+  :bind (("H-M-j" . index/dired-vc-root-jump)))
 #+end_src
 
 ** TODO Bongo
