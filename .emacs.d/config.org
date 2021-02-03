@@ -1,6 +1,6 @@
 #+TITLE: Extensive GNU Emacs Configuration File
 #+AUTHOR: Finn Sauer
-#+EMAIL: <finn@finnsauer.xyz>
+#+EMAIL: fsauer@cock.li
 #+OPTIONS: toc:nil
 
 #+begin_verse
