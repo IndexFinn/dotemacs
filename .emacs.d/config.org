@@ -3134,7 +3134,7 @@ World's most powerful git interface.
   :straight t
   ;; `index/magit-status-emacs' calls `magit-status' internally, so it
   ;; should be fine to omit it here.
-  :commands (magit-status magit-edit-line-commit)
+  :commands (magit-status magit-edit-line-commit index/find-config-file)
   :config
   (setq vc-follow-symlinks t)
   (setq git-commit-summary-max-length 50)
