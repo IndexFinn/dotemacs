@@ -4107,10 +4107,10 @@ line."
 #+begin_src emacs-lisp
 (leaf multiple-cursors
   :straight t
+  :commands (mc/mark-all-dwim mc/mark-next-like-this vr/mc-mark)
   :config
-  (eval-and-compile                     ; TODO : Not evaluating this
-    (setq mc/always-run-for-all t)
-    (setq mc/cmds-to-run-once '(describe-bindings)))
+  (setq mc/always-run-for-all t)
+  (setq mc/cmds-to-run-once '(describe-bindings))
   :bind (("H-M-SPC" . mc/mark-all-dwim)
          ("H-SPC" . mc/mark-next-like-this)
          ("C-<" . mc/mark-previous-like-this)
