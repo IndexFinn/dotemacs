@@ -1310,8 +1310,8 @@ different section.
   (defun index/org-save-buffer (&optional arg)
     "Saves buffer and invokes hook `index/org-save-buffer-hook'"
     (interactive "p")
-    (save-buffer arg)
-    (run-hooks 'index/org-save-buffer-hook))
+    (run-hooks 'index/org-save-buffer-hook)
+    (save-buffer arg))
 
   (org-defkey org-mode-map (kbd "C-x C-s") #'index/org-save-buffer)
 
