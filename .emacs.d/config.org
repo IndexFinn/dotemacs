@@ -1748,10 +1748,27 @@ Calls `index/focused-writing' when called with an argument.
         "-AGFhlv --group-directories-first --time-style=long-iso")
   (setq dired-dwim-target t)
   (setq trash-directory (expand-file-name "~/.trash"))
+
+  (defun index/dired-mpv-open ()
+    "Open file in `mpv_open'."
+    (interactive)
+    (index/call-process
+     `("mpv_open"
+       ,(dired-get-filename)))
+    (message
+     (concat
+      "Launching MPV for "
+      (propertize
+       (file-name-base
+        (dired-get-filename))
+       'face
+       'success))))
+
   :hook ((dired-mode-hook . dired-hide-details-mode))
 
   :bind ((dired-mode-map
-          ("<return>" . dired-find-alternate-file))))
+          ("<return>" . dired-find-alternate-file)
+          ("o" . index/dired-mpv-open))))
 
 (leaf dired-async
   :after (dired async)
