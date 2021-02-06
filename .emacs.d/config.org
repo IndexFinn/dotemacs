@@ -2675,12 +2675,14 @@ first."
 This will add a '*' tag on the current entry."
     (interactive)
     (save-excursion
-      (apply 'elfeed-search-toggle-all '(*))))
+      (elfeed-search-toggle-all '*)))
 
   :hook ((elfeed-search-mode-hook . index/elfeed-load-feeds)
          (elfeed-new-entry-hook . index/elfeed-new-entry-notification)
          (elfeed-show-mode-hook . olivetti-mode)
-         (elfeed-new-entry-hook . index/elfeed-format-content))
+         (elfeed-new-entry-hook . index/elfeed-format-content)
+         ;; to disable view-mode
+         (elfeed-search-mode-hook . view-mode))
 
   :bind (("C-c f" . elfeed)
          (elfeed-show-mode-map
