@@ -3454,9 +3454,18 @@ into the well documented man page of mpv."
         (index/exwm-floating-window-mode 'toggle))
       (switch-to-buffer (current-buffer)))
      (t
-      (if (string= (buffer-name (current-buffer)) "mpv")
-          (switch-to-buffer (other-buffer (current-buffer) t))
-        (switch-to-buffer (get-buffer "mpv"))))))
+      (let ((mpv-buf (get-buffer "mpv")))
+        (if (string= (buffer-name (current-buffer)) "mpv")
+            (if (progn
+                  (set-buffer mpv-buf)
+                  exwm--floating-frame)
+                (other-frame 1)
+              (switch-to-buffer (other-buffer (current-buffer) t)))
+          (if (progn
+                (set-buffer mpv-buf)
+                exwm--floating-frame)
+              (switch-to-buffer-other-frame mpv-buf)
+            (switch-to-buffer mpv-buf)))))))
 
   (define-minor-mode index/exwm-floating-window-mode
     "Enables EXWM floating window mode.
