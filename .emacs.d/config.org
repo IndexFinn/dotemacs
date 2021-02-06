@@ -1629,6 +1629,26 @@ Calls `index/focused-writing' when called with an argument.
 (leaf embark
   :straight t
   :bind (("H-e" . embark-act)))
+
+(leaf mini-frame
+  :straight t
+  :commands (selectrum-completing-read selectrum-read)
+  :config
+  (setq mini-frame-show-parameters
+        `((left . 0.5)
+          (top . 0.3)
+          (width . 0.7)
+          (height . 8)
+          (background-color . ,(face-attribute 'default :background))
+          (alpha . 92)
+          ;; This is for EXWM; without this the mini-frame would be drawn
+          ;; as a child frame-- which is actually better-- but EXWM draws
+          ;; X windows on top of Emacs.  If, then, the mini-frame is drawn
+          ;; it will be overlapped by the X window.  Comment the following
+          ;; s-expression out, if you don't use EXWM.
+          (parent-frame)))
+  (mini-frame-mode 1))
+
 #+end_src
 
 * Buffer, Directory, and Window Management
