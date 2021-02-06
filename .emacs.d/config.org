@@ -1600,6 +1600,7 @@ Calls `index/focused-writing' when called with an argument.
   :config
   (setq selectrum-num-candidates-displayed 7)
   (setq selectrum-fix-minibuffer-height 7)
+  (setq selectrum-max-window-height 7)
   (selectrum-mode 1))
 
 (leaf selectrum-prescient
