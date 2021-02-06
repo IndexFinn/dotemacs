@@ -1170,7 +1170,11 @@ TODO : Structure these sub headers more nicely.
                   (reverse temp)))))
       (when res
         (beginning-of-buffer)
-        (search-forward res))))
+        (search-forward-regexp
+         (concat
+          "^"
+          res
+          "$")))))
 
   :hook ((org-mode-hook . org-indent-mode))
   :bind ((org-mode-map
