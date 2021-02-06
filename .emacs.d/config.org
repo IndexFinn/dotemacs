@@ -3767,6 +3767,7 @@ like =#454545= will be shown with its corresponding background.
 (leaf ox-hugo
   :straight t
   :require t
+  :commands org-capture
   :config
   (setq org-hugo-front-matter-format 'yaml)
   (setq org-log-done-with-time nil)
@@ -3780,7 +3781,8 @@ See `org-capture-templates' for more information."
     (let* ((title (read-from-minibuffer "Post Title: "))
            (fname (org-hugo-slug title)))
       (mapconcat #'identity
-                 `(,(concat "* TODO " title " %^g")
+                 `("\n"
+                   ,(concat "* TODO " title " %^g")
                    ":PROPERTIES:"
                    ,(concat ":EXPORT_FILE_NAME: " fname)
                    ":END:\n"
