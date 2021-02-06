@@ -2286,6 +2286,217 @@ Afterwards the table will look like this:
 | M-c        | capitalize-dwim | Capitalize words in the region, if active; if not, capitalize word at point. |
 #+TBLFM: $2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation (key-binding (kbd $1))))))
 
+** Insert Date
+:PROPERTIES:
+:CUSTOM_ID: h:42c901fc-5447-488f-afd9-842c12abe6d6
+:END:
+
+#+begin_src emacs-lisp
+(leaf emacs
+  :config
+  (defun index/insert-date ()
+    (interactive "*")
+    (insert (format-time-string "%F")))
+  :bind ((index/keys-minor-mode-map
+          ("H-i" . index/insert-date))))
+#+end_src
+
+** Dummy Text
+:PROPERTIES:
+:CUSTOM_ID: h:bc3e27bd-15cd-440d-b6d8-31e9d58d1bc0
+:END:
+
+It is always nice to insert some dummy text into the current buffer.  As
+I want to have some text to play on-- be it a keyboard macro I'm
+currently writing or something else.
+
+There is a function in =emmet-mode= called =emmet-lorem-generate= and it
+works perfectly fine.  I had some problems requiring it, so in the end I
+wrote my own function as a little exercise.
+
++ Why Lorem Ipsum?
+
+Lorem Ipsum is simply dummy text of the printing and typesetting
+industry. Lorem Ipsum has been the industry's standard dummy text ever
+since the 1500s, when an unknown printer took a galley of type and
+scrambled it to make a type specimen book. It has survived not only five
+centuries, but also the leap into electronic typesetting, remaining
+essentially unchanged. It was popularised in the 1960s with the release
+of Letraset sheets containing Lorem Ipsum passages, and more recently
+with desktop publishing software like Aldus PageMaker including versions
+of Lorem Ipsum.
+
+More reading up can be found on [[https://lipsum.com/][here]].
+
+# TODO : DEPRECATED
+# It is always nice to have a way to insert dummy text into the buffer.
+# This will use the a function from =emmet-mode= since it is kinda useless
+# to redefine a preexisting function.  Some Linux enthusiasts will call
+# this Bloat Prevention-- but I call it recycling and laziness.
+
+#+begin_src emacs-lisp
+(leaf emacs
+  :config
+
+  (defvar index/lorem-words
+    '("Sed" "ut" "perspiciatis" "unde" "omnis"
+      "iste" "natus" "error" "sit" "voluptatem"
+      "accusantium" "doloremque" "laudantium" "totam" "rem"
+      "aperiam" "eaque" "ipsa" "quae" "ab"
+      "illo" "inventore" "veritatis" "et" "quasi"
+      "architecto" "beatae" "vitae" "dicta" "sunt"
+      "explicabo" "Nemo" "enim" "ipsam" "voluptatem"
+      "quia" "voluptas" "sit" "aspernatur" "aut"
+      "odit" "aut" "fugit" "sed" "quia"
+      "consequuntur" "magni" "dolores" "eos" "qui"
+      "ratione" "voluptatem" "sequi" "nesciunt" "Neque"
+      "porro" "quisquam" "est" "qui" "dolorem"
+      "ipsum" "quia" "dolor" "sit" "amet"
+      "consectetur" "adipisci" "velit" "sed" "quia"
+      "non" "numquam" "eius" "modi" "tempora"
+      "incidunt" "ut" "labore" "et" "dolore"
+      "magnam" "aliquam" "quaerat" "voluptatem" "Ut"
+      "enim" "ad" "minima" "veniam" "quis"
+      "nostrum" "exercitationem" "ullam" "corporis" "suscipit"
+      "laboriosam" "nisi" "ut" "aliquid" "ex"
+      "ea" "commodi" "consequatur" "Quis" "autem"
+      "vel" "eum" "iure" "reprehenderit" "qui"
+      "in" "ea" "voluptate" "velit" "esse"
+      "quam" "nihil" "molestiae" "consequatur" "vel"
+      "illum" "qui" "dolorem" "eum" "fugiat"
+      "quo" "voluptas" "nulla" "pariatur"
+      "At" "vero" "eos" "et" "accusamus"
+      "et" "iusto" "odio" "dignissimos" "ducimus"
+      "qui" "blanditiis" "praesentium" "voluptatum" "deleniti"
+      "atque" "corrupti" "quos" "dolores" "et"
+      "quas" "molestias" "excepturi" "sint" "occaecati"
+      "cupiditate" "non" "provident" "similique" "sunt"
+      "in" "culpa" "qui" "officia" "deserunt"
+      "mollitia" "animi" "id" "est" "laborum"
+      "et" "dolorum" "fuga" "Et" "harum"
+      "quidem" "rerum" "facilis" "est" "et"
+      "expedita" "distinctio" "Nam" "libero" "tempore"
+      "cum" "soluta" "nobis" "est" "eligendi"
+      "optio" "cumque" "nihil" "impedit" "quo"
+      "minus" "id" "quod" "maxime" "placeat"
+      "facere" "possimus" "omnis" "voluptas" "assumenda"
+      "est" "omnis" "dolor" "repellendus" "Temporibus"
+      "autem" "quibusdam" "et" "aut" "officiis"
+      "debitis" "aut" "rerum" "necessitatibus" "saepe"
+      "eveniet" "ut" "et" "voluptates" "repudiandae"
+      "sint" "et" "molestiae" "non" "recusandae"
+      "Itaque" "earum" "rerum" "hic" "tenetur"
+      "a" "sapiente" "delectus" "ut" "aut"
+      "reiciendis" "voluptatibus" "maiores" "alias" "consequatur"
+      "aut" "perferendis" "doloribus" "asperiores" "repellat"))
+
+  (defvar index/lorem-punctuation
+    '("." "." "?" "!"))
+
+  (defun tributi/lorem--choice-words (count &optional s)
+    (let* ((l (length index/lorem-words))
+           (s (random l))
+           (f (+ s count))
+           (e (if (< l f) l f)))
+      (append
+       (subseq index/lorem-words s e)
+       (if (= e l) (tributi/lorem--choice-words (- f l) 0)))))
+
+  (defun index/lorem--generator (count)
+    (let* ((lst (tributi/lorem--choice-words count))
+           (last (car (last lst)))
+           (rand (random (length index/lorem-punctuation)))
+           (dot (car (subseq index/lorem-punctuation rand (1+ rand))))
+           (str))
+      (setcar lst (capitalize (car lst)))
+      (s-append dot (mapconcat 'identity lst " "))))
+
+  (defun index/lorem-generate (&optional arg)
+    "Lorem Lipsum Generator.
+If call this function without any universal argument it will
+insert 10 words.  When an argument is provided use this word
+count instead.  When called repetitively-- so multiple
+invocations-- it will insert a double space ' ' before each dummy
+text after the second one.  This effectively creates sentences."
+    (interactive "P")
+    (when (eq last-command 'index/lorem-generate)
+      (insert "  "))
+    (if (listp arg)
+        (insert (index/lorem--generator 10))
+      (insert (index/lorem--generator arg))))
+  :bind ((index/keys-minor-mode-map
+          ("M-i" . index/lorem-generate))))
+#+end_src
+
+** Insert the GPLv3
+:PROPERTIES:
+:CUSTOM_ID: h:e3110cc0-b78b-4b08-b94d-034be60deb68
+:END:
+
+#+begin_src emacs-lisp
+(leaf emacs
+  :config
+  (defmacro index/insert-GPLv3--variable (var)
+    `(if (eq (getenv ,(upcase (symbol-name var))) nil)
+         (read-string
+          ,(concat
+            (capitalize (symbol-name var))
+            "? "))
+       (getenv ,(upcase (symbol-name var)))))
+
+  (index/insert-GPLv3--variable home)
+
+  (defun index/insert-GPLv3 (&optional arg)
+    "Insert the GPLv3 as a comment.
+This requires the NAME, SURNAME, and MAIL environmental variable
+to be set.  If they don't exist, it will prompt for it.  When
+called without a prefix, add newlines around the text block.  If
+a prefix is provided omit the newlines."
+    (interactive "P")
+    (let* ((GPLv3
+            (concat
+             "Copyright (C) "
+             (format-time-string "%Y ")
+             (index/insert-GPLv3--variable name)
+             " "
+             (index/insert-GPLv3--variable surname)
+             " <"
+             (index/insert-GPLv3--variable mail)
+             ">
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at
+your option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>."))
+           (old-point (point)))
+      (unless arg
+        (newline))
+      (insert GPLv3)
+      (comment-region old-point (point))
+      (unless arg
+        (newline))))
+  :bind ((index/keys-minor-mode-map
+          ("C-M-i" . index/insert-GPLv3))))
+#+end_src
+
+** Password Store (pass) Interface
+:PROPERTIES:
+:CUSTOM_ID: h:85a3107f-5e0d-4431-aa85-df106fa87de0
+:END:
+
+#+begin_src emacs-lisp
+(leaf password-store
+  :straight t)
+#+end_src
+
 * Utilities
 :PROPERTIES:
 :CUSTOM_ID: h:ed0a862a-6c16-4059-8e14-7fcdd3f6a2e6
@@ -3921,192 +4132,6 @@ If called with a prefix don't indent, otherwise indent."
   :bind ((index/keys-minor-mode-map
           ("C-M-m" . index/insert-line-below)
           ("C-M-o" . index/insert-line-above))))
-#+end_src
-
-** Dummy Text
-:PROPERTIES:
-:CUSTOM_ID: h:bc3e27bd-15cd-440d-b6d8-31e9d58d1bc0
-:END:
-
-It is always nice to insert some dummy text into the current buffer.  As
-I want to have some text to play on-- be it a keyboard macro I'm
-currently writing or something else.
-
-There is a function in =emmet-mode= called =emmet-lorem-generate= and it
-works perfectly fine.  I had some problems requiring it, so in the end I
-wrote my own function as a little exercise.
-
-+ Why Lorem Ipsum?
-
-Lorem Ipsum is simply dummy text of the printing and typesetting
-industry. Lorem Ipsum has been the industry's standard dummy text ever
-since the 1500s, when an unknown printer took a galley of type and
-scrambled it to make a type specimen book. It has survived not only five
-centuries, but also the leap into electronic typesetting, remaining
-essentially unchanged. It was popularised in the 1960s with the release
-of Letraset sheets containing Lorem Ipsum passages, and more recently
-with desktop publishing software like Aldus PageMaker including versions
-of Lorem Ipsum.
-
-More reading up can be found on [[https://lipsum.com/][here]].
-
-# TODO : DEPRECATED
-# It is always nice to have a way to insert dummy text into the buffer.
-# This will use the a function from =emmet-mode= since it is kinda useless
-# to redefine a preexisting function.  Some Linux enthusiasts will call
-# this Bloat Prevention-- but I call it recycling and laziness.
-
-#+begin_src emacs-lisp
-(leaf emacs
-  :config
-
-  (defvar index/lorem-words
-    '("Sed" "ut" "perspiciatis" "unde" "omnis"
-      "iste" "natus" "error" "sit" "voluptatem"
-      "accusantium" "doloremque" "laudantium" "totam" "rem"
-      "aperiam" "eaque" "ipsa" "quae" "ab"
-      "illo" "inventore" "veritatis" "et" "quasi"
-      "architecto" "beatae" "vitae" "dicta" "sunt"
-      "explicabo" "Nemo" "enim" "ipsam" "voluptatem"
-      "quia" "voluptas" "sit" "aspernatur" "aut"
-      "odit" "aut" "fugit" "sed" "quia"
-      "consequuntur" "magni" "dolores" "eos" "qui"
-      "ratione" "voluptatem" "sequi" "nesciunt" "Neque"
-      "porro" "quisquam" "est" "qui" "dolorem"
-      "ipsum" "quia" "dolor" "sit" "amet"
-      "consectetur" "adipisci" "velit" "sed" "quia"
-      "non" "numquam" "eius" "modi" "tempora"
-      "incidunt" "ut" "labore" "et" "dolore"
-      "magnam" "aliquam" "quaerat" "voluptatem" "Ut"
-      "enim" "ad" "minima" "veniam" "quis"
-      "nostrum" "exercitationem" "ullam" "corporis" "suscipit"
-      "laboriosam" "nisi" "ut" "aliquid" "ex"
-      "ea" "commodi" "consequatur" "Quis" "autem"
-      "vel" "eum" "iure" "reprehenderit" "qui"
-      "in" "ea" "voluptate" "velit" "esse"
-      "quam" "nihil" "molestiae" "consequatur" "vel"
-      "illum" "qui" "dolorem" "eum" "fugiat"
-      "quo" "voluptas" "nulla" "pariatur"
-      "At" "vero" "eos" "et" "accusamus"
-      "et" "iusto" "odio" "dignissimos" "ducimus"
-      "qui" "blanditiis" "praesentium" "voluptatum" "deleniti"
-      "atque" "corrupti" "quos" "dolores" "et"
-      "quas" "molestias" "excepturi" "sint" "occaecati"
-      "cupiditate" "non" "provident" "similique" "sunt"
-      "in" "culpa" "qui" "officia" "deserunt"
-      "mollitia" "animi" "id" "est" "laborum"
-      "et" "dolorum" "fuga" "Et" "harum"
-      "quidem" "rerum" "facilis" "est" "et"
-      "expedita" "distinctio" "Nam" "libero" "tempore"
-      "cum" "soluta" "nobis" "est" "eligendi"
-      "optio" "cumque" "nihil" "impedit" "quo"
-      "minus" "id" "quod" "maxime" "placeat"
-      "facere" "possimus" "omnis" "voluptas" "assumenda"
-      "est" "omnis" "dolor" "repellendus" "Temporibus"
-      "autem" "quibusdam" "et" "aut" "officiis"
-      "debitis" "aut" "rerum" "necessitatibus" "saepe"
-      "eveniet" "ut" "et" "voluptates" "repudiandae"
-      "sint" "et" "molestiae" "non" "recusandae"
-      "Itaque" "earum" "rerum" "hic" "tenetur"
-      "a" "sapiente" "delectus" "ut" "aut"
-      "reiciendis" "voluptatibus" "maiores" "alias" "consequatur"
-      "aut" "perferendis" "doloribus" "asperiores" "repellat"))
-
-  (defvar index/lorem-punctuation
-    '("." "." "?" "!"))
-
-  (defun tributi/lorem--choice-words (count &optional s)
-    (let* ((l (length index/lorem-words))
-           (s (random l))
-           (f (+ s count))
-           (e (if (< l f) l f)))
-      (append
-       (subseq index/lorem-words s e)
-       (if (= e l) (tributi/lorem--choice-words (- f l) 0)))))
-
-  (defun index/lorem--generator (count)
-    (let* ((lst (tributi/lorem--choice-words count))
-           (last (car (last lst)))
-           (rand (random (length index/lorem-punctuation)))
-           (dot (car (subseq index/lorem-punctuation rand (1+ rand))))
-           (str))
-      (setcar lst (capitalize (car lst)))
-      (s-append dot (mapconcat 'identity lst " "))))
-
-  (defun index/lorem-generate (&optional arg)
-    "Lorem Lipsum Generator.
-If call this function without any universal argument it will
-insert 10 words.  When an argument is provided use this word
-count instead.  When called repetitively-- so multiple
-invocations-- it will insert a double space ' ' before each dummy
-text after the second one.  This effectively creates sentences."
-    (interactive "P")
-    (when (eq last-command 'index/lorem-generate)
-      (insert "  "))
-    (if (listp arg)
-        (insert (index/lorem--generator 10))
-      (insert (index/lorem--generator arg))))
-  :bind ((index/keys-minor-mode-map
-          ("M-i" . index/lorem-generate))))
-#+end_src
-
-** Insert the GPLv3
-:PROPERTIES:
-:CUSTOM_ID: h:e3110cc0-b78b-4b08-b94d-034be60deb68
-:END:
-
-#+begin_src emacs-lisp
-(leaf emacs
-  :config
-  (defmacro index/insert-GPLv3--variable (var)
-    `(if (eq (getenv ,(upcase (symbol-name var))) nil)
-         (read-string
-          ,(concat
-            (capitalize (symbol-name var))
-            "? "))
-       (getenv ,(upcase (symbol-name var)))))
-
-  (index/insert-GPLv3--variable home)
-
-  (defun index/insert-GPLv3 (&optional arg)
-    "Insert the GPLv3 as a comment.
-This requires the NAME, SURNAME, and MAIL environmental variable
-to be set.  If they don't exist, it will prompt for it.  When
-called without a prefix, add newlines around the text block.  If
-a prefix is provided omit the newlines."
-    (interactive "P")
-    (let* ((GPLv3
-            (concat
-             "Copyright (C) "
-             (format-time-string "%Y ")
-             (index/insert-GPLv3--variable name)
-             " "
-             (index/insert-GPLv3--variable surname)
-             " <"
-             (index/insert-GPLv3--variable mail)
-             ">
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or (at
-your option) any later version.
-
-This program is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>."))
-           (old-point (point)))
-      (unless arg
-        (newline))
-      (insert GPLv3)
-      (comment-region old-point (point))
-      (unless arg
-        (newline))))
-  :bind ((index/keys-minor-mode-map
-          ("C-M-i" . index/insert-GPLv3))))
 #+end_src
 
 ** Big Font
