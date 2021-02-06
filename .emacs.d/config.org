@@ -3200,6 +3200,10 @@ Simple way of displaying the changes in a git directory.
 #+begin_src emacs-lisp
 (leaf diff-hl
   :straight t
+  ;; The following will allow this block to load when the command is
+  ;; issued; `find-file' is used in `index/find-config-file' for
+  ;; example.
+  :commands find-file
   :config
   (global-diff-hl-mode 1)
   :hook ((magit-pre-refresh-hook . diff-hl-magit-pre-refresh)
