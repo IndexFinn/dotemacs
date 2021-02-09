@@ -3798,23 +3798,24 @@ like =#454545= will be shown with its corresponding background.
                            "config.org"
                            user-emacs-directory))
       (org-export-to-file 'html (expand-file-name
-                                 "~/web/layouts/dotemacs/list.html")
+                                 "~/web/layouts/partials/dotemacs.html")
         nil nil nil t nil)
       (with-current-buffer (find-file-noselect
                             (expand-file-name
-                             "~/web/layouts/dotemacs/list.html"))
-        (beginning-of-buffer)
-        (insert "{{ define \"content\" }}\n")
-        (end-of-buffer)
-        (insert "{{ end }}")
+                             "~/web/layouts/partials/dotemacs.html"))
         (save-buffer)
         (kill-buffer (current-buffer)))))
-  :bind (("C-c M-e M-e" . index/ox-html)))
+
+  (defun index/website-sync ()
+    "Syncs the website with '~/web/'."
+    (interactive)
+    (shell-command "~/web/sync.sh"))
+  :bind (("C-c M-e M-e" . index/ox-html)
+         ("C-c M-e M-s" . index/website-sync)))
 
 (leaf ox-hugo
   :straight t
   :require t
-  :commands org-capture
   :config
   (setq org-hugo-front-matter-format 'yaml)
   (setq org-log-done-with-time nil)
