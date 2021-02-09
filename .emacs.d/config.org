@@ -2571,7 +2571,7 @@ Emacs and its text based interface.
   (setq elfeed-search-filter "@6-months-ago -torrent")
   (setq elfeed-sort-order 'descending)
   (setq elfeed-search-clipboard-type 'CLIPBOARD)
-  (setq elfeed-search-title-max-width 50)
+  (setq elfeed-search-title-max-width 72)
   (setq elfeed-search-title-min-width 50)
   (setq elfeed-search-trailing-width 25)
   (setq elfeed-show-truncate-long-urls t)
