@@ -3319,6 +3319,42 @@ Refer to [[#h:80c2fb0a-f1d4-4219-a390-1308483fd28a][this]] section for the regul
     :bind (("<f8>" . index/bongo-add-dired-files))))
 #+end_src
 
+** TODO Transmission
+:PROPERTIES:
+:CUSTOM_ID: h:010216bf-f118-4428-a3d5-87867020b088
+:END:
+
+This is a substitute for the program /tremc/.
+
+#+begin_src emacs-lisp
+(leaf transmission
+  :straight t
+  :config
+  (defun index/transmission-mpv-open ()
+    "Open a torrent file via `mpv_open'"
+    (interactive)
+    (cond
+     ((eq major-mode 'transmission-mode)
+      (save-excursion
+        (transmission-files)
+        (index/call-process
+         `("mpv_open"
+           ,(expand-file-name
+             (transmission-files-file-at-point))))
+        (quit-window)))
+     ((eq major-mode 'transmission-files-mode)
+      (index/call-process
+       `("mpv_open"
+         ,(expand-file-name
+           (transmission-files-file-at-point)))))
+     (t (error "Not in `transmission-mode'."))))
+
+  :bind ((transmission-mode-map
+          ("o" . index/transmission-mpv-open))
+         (transmission-files-mode-map
+          ("o" . index/transmission-mpv-open))))
+#+end_src
+
 * Workspaces (Emacs 27 Tabs)
 :PROPERTIES:
 :CUSTOM_ID: h:c7ad9c08-7f81-4c99-bcd7-75bfe4f9ccbc
@@ -3694,42 +3730,6 @@ This function is auto generated via `index/exwm--raise-or-spawn'."
          ("s-=" . exwm-outer-gaps-increment)
          ("s-+" . exwm-outer-gaps-increment)
          ("s--" . exwm-outer-gaps-decrement)))
-#+end_src
-
-** Transmission
-:PROPERTIES:
-:CUSTOM_ID: h:010216bf-f118-4428-a3d5-87867020b088
-:END:
-
-This is a substitute for the program /tremc/.
-
-#+begin_src emacs-lisp
-(leaf transmission
-  :straight t
-  :config
-  (defun index/transmission-mpv-open ()
-    "Open a torrent file via `mpv_open'"
-    (interactive)
-    (cond
-     ((eq major-mode 'transmission-mode)
-      (save-excursion
-        (transmission-files)
-        (index/call-process
-         `("mpv_open"
-           ,(expand-file-name
-             (transmission-files-file-at-point))))
-        (quit-window)))
-     ((eq major-mode 'transmission-files-mode)
-      (index/call-process
-       `("mpv_open"
-         ,(expand-file-name
-           (transmission-files-file-at-point)))))
-     (t (error "Not in `transmission-mode'."))))
-
-  :bind ((transmission-mode-map
-          ("o" . index/transmission-mpv-open))
-         (transmission-files-mode-map
-          ("o" . index/transmission-mpv-open))))
 #+end_src
 
 * Web Development
