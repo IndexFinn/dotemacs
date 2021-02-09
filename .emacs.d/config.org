@@ -2859,6 +2859,27 @@ more or less.  Well actually I stole some code from Reddit User
   (setq mu4e-headers-time-format "%R")
   (setq mu4e-headers-long-date-format "%F, %R")
 
+  (defmacro index/mu4e-make-context (name email-address)
+    "NAME is context name; EMAIL-ADDRESS self explanatory.
+This uses my own mail server.  I just wrote this, as I saw I was
+repeating myself."
+    `(make-mu4e-context
+      :name ,name
+      :match-func
+      (lambda (msg)
+        (when msg
+          (string-prefix-p ,(concat "/" email-address) (mu4e-message-field msg :maildir))))
+      :vars '((user-mail-address      . ,email-address)
+              (user-full-name         . "Finn Sauer")
+              (smtpmail-smtp-server   . "mail.finnsauer.com")
+              (smtpmail-smtp-service  . 465)
+              (smtpmail-stream-type   . ssl)
+              (mu4e-sent-folder       . ,(concat "/" email-address "/Sent"))
+              (mu4e-drafts-folder     . ,(concat "/" email-address "/Drafts"))
+              (mu4e-trash-folder      . ,(concat "/" email-address "/Trash"))
+              (mu4e-refile-folder     . ,(concat "/" email-address "/Archive"))
+              (mu4e-compose-signature . "Finn Sauer\nfinnsauer.com\n"))))
+
   (setq mu4e-contexts
         `(,(make-mu4e-context
             :name "Trash"
@@ -2891,7 +2912,10 @@ more or less.  Well actually I stole some code from Reddit User
                     (mu4e-drafts-folder     . "/indexfinn@gmail.com/[Gmail]/Drafts")
                     (mu4e-refile-folder     . "/indexfinn@gmail.com/[Gmail]/All Mail")
                     (mu4e-trash-folder      . "/indexfinn@gmail.com/[Gmail]/Trash")
-                    (mu4e-compose-signature . "Finn Sauer\nfinnsauer.com\n")))))
+                    (mu4e-compose-signature . "Finn Sauer\nfinnsauer.com\n")))
+          ,(index/mu4e-make-context "Main" "public@finnsauer.com")
+          ,(index/mu4e-make-context "Info" "info@finnsauer.com")
+          ,(index/mu4e-make-context "Private" "private@finnsauer.com")))
 
 
   (setq mu4e-headers-fields
