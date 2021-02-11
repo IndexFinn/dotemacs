@@ -1149,6 +1149,17 @@ occasions I like to keep vterm around; just to be save.
   :straight t)
 #+end_src
 
+** Obscure File Syntax Highlighting
+:PROPERTIES:
+:CUSTOM_ID: h:631af4a8-9c6f-4764-ae6f-6d83b9ab1505
+:END:
+
+For example highlighting in =/etc/passwd= and alike.
+
+#+begin_src emacs-lisp
+(require 'generic-x)
+#+end_src
+
 * Writing
 :PROPERTIES:
 :CUSTOM_ID: h:10bd21be-8499-45e7-be2c-8fdea817684a
