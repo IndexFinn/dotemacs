@@ -3134,7 +3134,7 @@ thus you can define custom made functions easily.
 	        (error "Path substring `%s' not found" path))))
        ((and path (string-match "^-\\([0-9]*\\)$" path))
         (let ((index (match-string 1 path)))
-p	      (setq path
+ 	      (setq path
 	            (ring-remove eshell-last-dir-ring
 			                 (if index
 			                     (string-to-number index)
@@ -3172,7 +3172,25 @@ p	      (setq path
 	          (eshell-plain-command "ls" (cdr args)))
 	      nil)))
     ;; above is from its original function
-    (eshell/ls "-A")))
+    (eshell/ls "-A"))
+
+  (defun eshell/tcd (&optional directory)
+    "Like regular 'cd' but don't jump out of a tramp directory."
+    (if (file-remote-p default-directory)
+        (with-parsed-tramp-file-name default-directory nil
+          (eshell/cd
+           (tramp-make-tramp-file-name
+            method user nil host nil (or directory "") hop)))
+      (eshell/cd directory)))
+
+  (defun eshell/root ()
+    "Upgrade to root."
+    (let* ((pwd-lst (s-split "\\(:\\||\\)" (eshell/pwd)))
+           (host (cadr pwd-lst))
+           (pwd (car (last pwd-lst))))
+      (if host
+          (eshell/cd (concat "/ssh:" host "|sudo:" host ":" pwd))
+        (eshell/cd (concat "/sudo:root@localhost:" pwd))))))
 #+end_src
 
 ** Git - The Stupid Content Tracker
