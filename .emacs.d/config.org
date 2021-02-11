@@ -24,7 +24,7 @@ SRC-Blocks:    *src_elisp{(length
 This  document is  my  own personal  configuration  for the  extensible,
 customizable,  self-documenting real-time  display editor  called Emacs.
 This configuration file is written in the so called [[https://en.wikipedia.org/wiki/Literate_programming][Literate Programming]]
-paradigm; the focus lies more on the text than the actual code, and they
+paradigm; the focus lies more on the  text than the actual code, as they
 both go  hand-in-hand.  This  is made  possible via  [[https://orgmode.org/][Org Mode]]:  the best
 [[https://daringfireball.net/projects/markdown/][Markdown]] out there.
 #+end_abstract
@@ -1001,6 +1001,8 @@ life easy:
 | n          | View-search-last-regexp-forward  | Search forward for first (or prefix Nth) instance of last regexp in View mode.  |
 | p          | View-search-last-regexp-backward | Search backward for first (or prefix Nth) instance of last regexp in View mode. |
 #+TBLFM: $2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation (key-binding (kbd $1))))))
+
+(The name and description where automatically generated; see [[#h:80d39c8d-709d-4a27-9008-89cfed7d87e7][how]].)
 
 Of course you can allways look at all the possible keybindings with =C-h
 m=.  When =view-mode= is active, search for /View/.
@@ -2281,7 +2283,7 @@ The keybinding for these are the following:
 | M-c        | capitalize-word | Capitalize from point to the end of word, moving over.               |
 #+TBLFM: $2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation (key-binding (kbd $1))))))
 
-(I generated the Name and Description automatically; see [[#h:80d39c8d-709d-4a27-9008-89cfed7d87e7][how]].)
+(The name and description where automatically generated; see [[#h:80d39c8d-709d-4a27-9008-89cfed7d87e7][how]].)
 
 But why are there no DO WHAT I MEAN versions?  It seems to be a perfect
 fit.  When I have a region active operate on that else operate on word.
