@@ -507,29 +507,6 @@ you know where it is.  This includes changing the window.
   (setq doom-modeline-buffer-eppncoding nil))
 #+end_src
 
-# #+begin_src emacs-lisp
-#   (leaf emacs
-#     :config
-#     (defconst index/mode-line-format
-#       (list
-#        "--"
-#        mode-line-modified
-#        mode-line-remote
-#        '(:eval (if (string= "%n" " Narrow")))
-#        "-"
-#        '(:eval (propertize "%m" 'face 'font-lock-string-face))
-#        " "
-#        '(:eval (propertize "%b" 'face 'bold))
-#        " "
-#        "%p %l"
-#        ":%c"
-#        '(:eval (propertize "%n" 'face 'font-lock-warning-face))
-#        "%-"))
-#
-#     (setq-default mode-line-format index/mode-line-format)
-#     (setq mode-line-format index/mode-line-format))
-# #+end_src
-
 *** Line and Column Number
 :PROPERTIES:
 :CUSTOM_ID: h:1c69692e-d7a8-44f9-986f-9aa3ab8b8e34
