@@ -3814,6 +3814,33 @@ See `org-capture-templates' for more information."
                  entry
                  (file+olp "~/web/website.org" "Blog Posts")
                  (function index/org-capture-website)))
+
+  (defvar index/org-hugo-auto-export-mode-sections '("About")
+    "Sections for `index/org-hugo-export-sections' and
+  `index/org-hugo-auto-export-mode'")
+
+  (defun index/org-hugo-export-sections ()
+    "Export all sections in
+  `index/org-hugo-auto-export-mode-sections'"
+    (dolist (str index/org-hugo-auto-export-mode-sections)
+      (save-excursion
+        (beginning-of-buffer)
+        (search-forward-regexp
+         (concat "^" outline-regexp str "$"))
+        (org-hugo-export-wim-to-md))))
+
+  (define-minor-mode index/org-hugo-auto-export-mode
+    "Same as `org-hugo-auto-export-mode' but always export sections
+  in `index/org-hugo-auto-export-mode-sections'"
+    :global nil
+    :lighter ""
+    (if index/org-hugo-auto-export-mode
+        (progn
+          (add-hook 'after-save-hook #'index/org-hugo-export-sections :append :local)
+          (org-hugo-auto-export-mode 1))
+      (org-hugo-auto-export-mode -1)
+      (remove-hook 'after-save-hook #'index/org-hugo-export-sections :local)))
+
   :bind (("C-c M-e M-b" . org-capture)))
 #+end_src
 
