@@ -1172,7 +1172,8 @@ TODO : Structure these sub headers more nicely.
           ("E" . "src emacs-lisp")
           ("q" . "quote")
           ("s" . "src")
-          ("v" . "verse")))
+          ("v" . "verse")
+          ("?" . "question")))
   (and
    (setcar (nthcdr 4 org-emphasis-regexp-components) 5)
    (org-set-emph-re 'org-emphasis-regexp-components org-emphasis-regexp-components))
