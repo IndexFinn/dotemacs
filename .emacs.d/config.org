@@ -2320,9 +2320,11 @@ Afterwards the table will look like this:
 #+begin_src emacs-lisp
 (leaf emacs
   :config
-  (defun index/insert-date ()
-    (interactive "*")
-    (insert (format-time-string "%F")))
+  (defun index/insert-date (&optional arg)
+    (interactive "*P")
+    (insert (format-time-string (if arg
+                                    "%F %R %z"
+                                  "%F"))))
   :bind ((index/keys-minor-mode-map
           ("H-i" . index/insert-date))))
 #+end_src
