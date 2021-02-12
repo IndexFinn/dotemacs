@@ -2492,12 +2492,13 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>."))
            (old-point (point)))
-      (unless arg
-        (newline))
-      (insert GPLv3)
-      (comment-region old-point (point))
-      (unless arg
-        (newline))))
+      (save-excursion
+        (unless arg
+          (newline))
+        (insert GPLv3)
+        (comment-region old-point (point))
+        (unless arg
+          (newline)))))
   :bind ((index/keys-minor-mode-map
           ("C-M-i" . index/insert-GPLv3))))
 #+end_src
