@@ -2509,6 +2509,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>."))
 :CUSTOM_ID: h:85a3107f-5e0d-4431-aa85-df106fa87de0
 :END:
 
+/Pass/ or alternatively known as password store is a great utility for
+storing passwords.  /Pass/ is a simple bash script that hacks multiple
+programs together to create a password manager.  =gpg= being the main
+entry point of encryption.
+
+#+begin_question
+What is the benefit of a small bash script?
+#+end_question
+
+At any time you can look at the source code with =$EDITOR $(which
+pass)=-- EDITOR being Emacs of course.
+
+#+begin_question
+Why not /KeePassXC/?
+#+end_question
+
+This is a great password manager if you like GUIs.  I highly recommend
+it instead of pass if you prefer a GUI.  /Pass/ is great if you want the
+ability to script it.  Thus this Emacs package even exist because of
+that.
+
 #+begin_src emacs-lisp
 (leaf password-store
   :straight t)
