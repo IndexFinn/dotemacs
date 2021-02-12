@@ -1290,8 +1290,8 @@ TODO : Structure these sub headers more nicely.
 :CUSTOM_ID: h:add88826-1fc5-42dc-8957-3514ad87fd7c
 :END:
 
-This will prevent the situation described at this [[https://writequit.org/articles/emacs-org-mode-generate-ids.html][blog posts]].  Also the
-entire code is stolen from there.
+This will prevent the situation described at this [[https://writequit.org/articles/emacs-org-mode-generate-ids.html][blog posts]].  The
+entire code is stolen from there, too.
 
 You can use, by default, =C-c C-l= for inserting a link.  The command is
 very intuitive: once hitting the keybinding it will ask for a link.
