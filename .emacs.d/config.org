@@ -3895,7 +3895,7 @@ http://danmidwood.com/content/2014/11/21/animated-paredit.html
   (setq geiser-active-implementations '(guile)))
 #+end_src
 
-** Closure
+** Clojure
 :PROPERTIES:
 :CUSTOM_ID: h:5fefc3b5-d879-4f56-9ea3-6d226bb1bd6b
 :END:
