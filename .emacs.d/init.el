@@ -1,6 +1,6 @@
-;; init.el --- initialization file
+;;; init.el --- initialization file
 
-;; Copyright (C) 2020-2021 Finn Sauer <finn@finnsauer.xyz>
+;; Copyright (C) 2020-2021 Finn Sauer <info@finnsauer.com>
 ;;
 ;; This file is part of my `config.org' ecosystem.
 ;;
