@@ -3,22 +3,20 @@
 #+EMAIL: public@finnsauer.com
 #+OPTIONS: toc:nil
 
-#+begin_verse
-Updated:       *src_elisp{(format-time-string "%F %R %z")}*.
-Emacs Version: *src_elisp{emacs-version}*.
-Org Version:   *src_elisp{org-version}*
-File Size:     *src_elisp{(file-size-human-readable
-                           (file-attribute-size
-                            (file-attributes
-                             (file-truename
-                              (expand-file-name
-                               "config.org"
-                               user-emacs-directory)))))}*.
-SRC-Blocks:    *src_elisp{(length
-                           (s-match-strings-all
-                            "#\\+begin_src emacs-lisp"
-                            (buffer-string)))}*.
-#+end_verse
++ Updated:       *src_elisp{(format-time-string "%F %R %z")}*.
++ Emacs Version: *src_elisp{emacs-version}*.
++ Org Version:   *src_elisp{org-version}*
++ File Size:     *src_elisp{(file-size-human-readable
+                             (file-attribute-size
+                              (file-attributes
+                               (file-truename
+                                (expand-file-name
+                                 "config.org"
+                                 user-emacs-directory)))))}*.
++ SRC-Blocks:    *src_elisp{(length
+                             (s-match-strings-all
+                              "#\\+begin_src emacs-lisp"
+                              (buffer-string)))}*.
 
 #+begin_abstract
 This  document is  my  own personal  configuration  for the  extensible,
@@ -2343,7 +2341,9 @@ There is a function in =emmet-mode= called =emmet-lorem-generate= and it
 works perfectly fine.  I had some problems requiring it, so in the end I
 wrote my own function as a little exercise.
 
-+ Why Lorem Ipsum?
+#+begin_question
+Why Lorem Ipsum?
+#+end_question
 
 #+begin_quote
 Lorem Ipsum is simply dummy text of the printing and typesetting
