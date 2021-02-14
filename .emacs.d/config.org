@@ -2745,7 +2745,7 @@ Since elfeed updates are rather slow by default, I tweaked with them
 more or less.  Well actually I stole some code from Reddit User
 /github-alphapapa/.
 
-+ URL: https://github.com/skeeto/elfeed/issues/293.
++ URL: <https://github.com/skeeto/elfeed/issues/293>.
 
 #+begin_src emacs-lisp
 (leaf elfeed
