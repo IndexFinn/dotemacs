@@ -1369,6 +1369,85 @@ will be run each time after saving the buffer, so C-x C-s."
   :hook ((index/org-save-buffer-hook . index/org-display-inline-images)))
 #+end_src
 
+*** To Do Keywords
+:PROPERTIES:
+:CUSTOM_ID: h:2834a622-0ceb-411c-844d-a17927445b7b
+:END:
+
+#+begin_src emacs-lisp
+(leaf org
+  :config
+  (setq org-todo-keywords
+        (quote ((sequence "TODO(t)" "REVIEW(r)" "|" "DONE(d)")
+                (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)"))))
+  (setq org-log-into-drawer "LOGBOOK")
+  (setq org-log-note-headings
+        (quote ((done . "CLOSING NOTE %t")
+                (state . "State: %S => %s %t")
+                (note . "Note taken on %t")
+                (refile . "Refiled on %t")
+                (reschedule  . "Schedule changed: %t %S => %s")
+                (delschedule . "Not scheduled, was %S on %t")
+                (redeadline  . "Deadline changed: %t %S => %s")
+                (deldeadline . "Removed deadline, was %S on %t")
+                (clock-out . ""))))
+
+  (defun index/find-todo-file ()
+    "Opens `~/TDO' file."
+    (interactive)
+    (let ((enable-local-variables :all)
+          (enable-local-eval t))
+      (find-file
+       (expand-file-name
+        "~/TDO"))))
+
+  (defun index/org-todo-archive ()
+    "Move all the sections with DONE/CANCELED to Archive section."
+    (interactive)
+    (ignore-errors
+      (save-excursion
+        (beginning-of-buffer)
+        (search-forward-regexp
+         (concat
+          "^"
+          outline-regexp
+          "Checklist"))
+        (org-mark-subtree)
+        (let* ((beg (region-beginning))
+               (end (region-end))
+               (lb (line-number-at-pos beg))
+               (le (line-number-at-pos end))
+               (diff (- le lb)))
+          (deactivate-mark)
+          ;; Might overflow; when removing a section and, lets say it had
+          ;; 5 lines, those 5 lines will still be continued.
+          (dotimes (_ diff)
+            (when (s-match
+                   (concat
+                    "^"
+                    outline-regexp
+                    "\\(DONE\\|CANCELLED\\)")
+                   (thing-at-point 'line t))
+              (org-archive-subtree))
+            (next-line 1))))))
+
+  (define-minor-mode index/org-todo-archive-mode
+    "Upon save archive the `Checklist' section."
+    :global t
+    (if index/org-todo-archive-mode
+        (progn
+          (add-hook 'index/org-save-buffer-hook
+                    #'index/org-todo-archive)
+          (remove-hook 'index/org-save-buffer-hook
+                       #'tributi/org-add-ids-to-headlines-in-file))
+      (remove-hook 'index/org-save-buffer-hook
+                   #'index/org-todo-archive)
+      (add-hook 'index/org-save-buffer-hook
+                #'tributi/org-add-ids-to-headlines-in-file)))
+
+  :bind (("C-c t" . index/find-todo-file)))
+#+end_src
+
 ** COMMENT LaTeX
 :PROPERTIES:
 :CUSTOM_ID: h:736694ba-d59f-4a44-8b68-32ba7a7ef1cd
@@ -1496,7 +1575,7 @@ Calls `index/focused-writing' when called with an argument.
       (flyspell-buffer)
       (message "Flyspell: changed dictionary from %s to %s." dic change)))
 
-  :bind (("C-c t d" . index/flyspell-switch-dictionary)))
+  :bind (("C-c c d" . index/flyspell-switch-dictionary)))
 #+end_src
 
 ** Writing Mode
