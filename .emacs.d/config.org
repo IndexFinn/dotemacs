@@ -1978,6 +1978,16 @@ Calls `index/focused-writing' when called with an argument.
            (window-height . 0.20)
            (side . left)
            (slot . -1))
+          ("\\*undo-tree\\*"
+           (display-buffer-in-side-window)
+           (window-height . 0.20)
+           (side . right)
+           (slot . -1))
+          ("\\*Kill Ring\\*"
+           (display-buffer-in-side-window)
+           (window-height . 0.20)
+           (side . right)
+           (slot . 0))
           ("\\*Messages.*"
            (display-buffer-in-side-window)
            (window-height . 0.16)
