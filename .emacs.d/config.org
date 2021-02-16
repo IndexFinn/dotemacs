@@ -3804,7 +3804,15 @@ like =#454545= will be shown with its corresponding background.
 #+begin_src emacs-lisp
 (leaf org
   :config
-  (defun index/ox-html ()
+  (defvar index/website-hook nil
+    "Accumilation of procedures")
+
+  (defun index/website-dwim ()
+    "Run hook `index/website-hook'"
+    (interactive)
+    (run-hooks 'index/website-hook))
+
+  (defun index/website-config-htmlize ()
     "Export `config.org' into the website."
     (interactive)
     (with-current-buffer (find-file-noselect
@@ -3823,9 +3831,14 @@ like =#454545= will be shown with its corresponding background.
   (defun index/website-sync ()
     "Syncs the website with '~/web/'."
     (interactive)
-    (shell-command "~/web/sync.sh"))
-  :bind (("C-c M-e M-e" . index/ox-html)
-         ("C-c M-e M-s" . index/website-sync)))
+    (call-process "~/web/sync.sh"))
+
+  :hook ((index/website-hook . index/website-sync) ; before htmlize
+         (index/website-hook . index/website-config-htmlize))
+
+  :bind (("C-c M-e M-c" . index/website-config-htmlize)
+         ("C-c M-e M-s" . index/website-sync)
+         ("C-c M-e M-e" . index/website-dwim)))
 
 (leaf ox-hugo
   :straight t
