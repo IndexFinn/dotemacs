@@ -25,27 +25,28 @@
   ;; implies runs a command at startup.  The command is quite slow.
   (setq straight-check-for-modifications '(check-on-save))
 
-  ;; Bootstrap code for `straight.el'.
-  (defvar bootstrap-version)
-  (let ((bootstrap-file
-         (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+  ;; Bootstrap code for `straight.el'.  This has been slightly modified.
+  (let ((bootstrap-file (expand-file-name
+                         "straight/repos/straight.el/bootstrap.el"
+                         user-emacs-directory))
         (bootstrap-version 5))
     (unless (file-exists-p bootstrap-file)
-      (with-current-buffer
-          (url-retrieve-synchronously
-           "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-           'silent 'inhibit-cookies)
+      (with-current-buffer (url-retrieve-synchronously
+                            (concat
+                             "https://raw.githubusercontent.com/"
+                             "raxod502/straight.el/develop/install.el")
+                            'silent 'inhibit-cookies)
         (goto-char (point-max))
         (eval-print-last-sexp)))
     (load bootstrap-file nil 'nomessage))
 
-  ;; Install `leaf' and `leaf-keywords.'
-  (unless (and (ignore-errors (require 'leaf))
-               (ignore-errors (require 'leaf-keywords))
-               (ignore-errors (require 'org)))
-    (straight-use-package 'leaf)
-    (straight-use-package 'leaf-keywords)
-    (straight-use-package 'org))
+  ;; Install various essential packages such as `leaf' and
+  ;; `leaf-keywords'.  The `cl-lib' package is already required in
+  ;; straight's `bootstrap.el'.  I require it here again for completion
+  ;; sake.
+  (dolist (p '(leaf leaf-keywords org cl-lib dash))
+    (unless (ignore-errors (require p))
+      (straight-use-package p)))
 
   ;; Uses a different file for `custom' in order to not clutter the
   ;; `init.el' file with automatic settings made by custom.
@@ -61,9 +62,9 @@
         (c (expand-file-name "config.elc" user-emacs-directory)))
     (leaf-keywords-init)
     (cond
-     ((file-readable-p c) (load-file c))
-     ((file-readable-p e) (load-file e))
-     ((file-readable-p o) (org-babel-load-file o))
+     ((file-readable-p c) (load-file c))           ; Load `config.elc'
+     ((file-readable-p e) (load-file e))           ; Load `config.el'
+     ((file-readable-p o) (org-babel-load-file o)) ; Load `config.org'
      (t (error "Found no init file in `user-emacs-directory'")))))
 
 ;;; init.el ends here
