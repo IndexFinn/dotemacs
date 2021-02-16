@@ -254,48 +254,6 @@ Luckily we are here in lisp, so that's a rather trivial task:
       elem)))
 #+end_src
 
-* DEPRECATED Common Stuff
-:PROPERTIES:
-:CUSTOM_ID: h:39e38a6a-07dc-4c05-9db9-574396b93730
-:END:
-
-*The following has been DEPRECATED, as I want to move away from these
-macros-- even though they are super nice*
-
-#+begin_src emacs-lisp
-(defmacro ->> (&rest body)
-  "Clojure threading macro.
-The thread-last macro:
-
-  (->> 2
-      (< 3))
-
-Will expand to this:
-
-  (< 3 2) ;; => nil"
-  (let ((result (pop body)))
-    (dolist (form body result)
-      (setq result (append form (list result))))))
-
-(defmacro -> (&rest body)
-  "Clojure threading macro.
-The thread-first macro:
-
-  (-> 2
-      (< 3))
-
-Will expand to this:
-
-  (< 2 3) ;; => t"
-  (let ((result (pop body)))
-    (dolist (form body result)
-      (setq result (append (list (car form) result)
-                           (cdr form))))))
-
-(-> 2
-    (< 3))
-#+end_src
-
 * Garbage Collection
 :PROPERTIES:
 :CUSTOM_ID: h:bad4e190-e76c-434a-bda1-b1317695fbc1
