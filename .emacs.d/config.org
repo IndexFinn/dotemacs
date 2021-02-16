@@ -2695,58 +2695,45 @@ Meant to be used in combination with `add-hook' and
            (link (elfeed-entry-link entry)))
       (unless (or (string-match "^magnet:" link)
                   (string-match "\.torrent$" link))
-        (start-process "notify" nil "notify-send" "RSS"
-                       (concat "Title: " title "\nAuthor: " name "\nLink: " link)))))
+        (index/call-process
+         `("notify-send" "RSS"
+           ,(concat "Title: " title "\nAuthor: " name "\nLink: " link))))))
 
-  (defvar index/elfeed-toggle-between-predef-tags 0
-    "Counter for the corresponding function.")
+  (let ((state 0)
+        (filter elfeed-search-filter))
 
-  (defvar index/elfeed-toggle-between-predef-tags-default-filter-value elfeed-search-filter
-    "The default value of the `elfeed-search-filter' variable.")
+    (advice-add 'elfeed-search-clear-filter
+                :after (lambda () (setq state 0)))
 
-  (advice-add
-   'elfeed-search-clear-filter
-   :after (lambda ()
-            (setq index/elfeed-toggle-between-predef-tags
-                  0)))
-
-  (defun index/elfeed-toggle-between-predef-tags ()
-    "Toggle between predefined tags.
+    (defun index/elfeed-toggle-between-predef-tags ()
+      "Toggle between predefined tags.
 This cycles through the following iterations:
 
 0. \"\"
 1. \"+unread\"
 2. \"+video\"
 3. \"-video\"
+4. \"+torrent\"
 
 After hitting the last iteration, it will wrap around to the
 first."
-    (interactive)
-    (if (eq 3 index/elfeed-toggle-between-predef-tags)
-        (setq index/elfeed-toggle-between-predef-tags 0)
-      (setq index/elfeed-toggle-between-predef-tags
-            (1+ index/elfeed-toggle-between-predef-tags)))
-    (cond
-     ((eq 0 index/elfeed-toggle-between-predef-tags)
-      (elfeed-search-set-filter nil))
-     ((eq 1 index/elfeed-toggle-between-predef-tags)
-      (setq elfeed-search-filter
-            (concat
-             index/elfeed-toggle-between-predef-tags-default-filter-value
-             " +unread"))
-      (elfeed-search-update :force))
-     ((eq 2 index/elfeed-toggle-between-predef-tags)
-      (setq elfeed-search-filter
-            (concat
-             index/elfeed-toggle-between-predef-tags-default-filter-value
-             " +video"))
-      (elfeed-search-update :force))
-     ((eq 3 index/elfeed-toggle-between-predef-tags)
-      (setq elfeed-search-filter
-            (concat
-             index/elfeed-toggle-between-predef-tags-default-filter-value
-             " -video"))
-      (elfeed-search-update :force))))
+      (interactive)
+      (if (= 4 state)
+          (setq state 0)
+        (incf state))
+      (pcase state
+        (0 (elfeed-search-set-filter nil))
+        (1 (setq elfeed-search-filter (concat filter " +unread"))
+           (elfeed-search-update :force))
+        (2 (setq elfeed-search-filter (concat filter " +video"))
+           (elfeed-search-update :force))
+        (3 (setq elfeed-search-filter (concat filter " -video"))
+           (elfeed-search-update :force))
+        (4 (setq elfeed-search-filter (s-join
+                                       " "
+                                       `(,(car (s-split " " filter))
+                                         "+torrent")))
+           (elfeed-search-update :force)))))
 
   (defun index/elfeed-format-content (entry)
     (let* ((original (elfeed-deref (elfeed-entry-content entry)))
@@ -2763,6 +2750,10 @@ This will add a '*' tag on the current entry."
     (interactive)
     (save-excursion
       (elfeed-search-toggle-all '*)))
+
+  (add-hook 'elfeed-new-entry-hook
+            (elfeed-make-tagger :before "2 weeks ago"
+                                :remove 'unread))
 
   :hook ((elfeed-search-mode-hook . index/elfeed-load-feeds)
          (elfeed-new-entry-hook . index/elfeed-new-entry-notification)
