@@ -1403,6 +1403,23 @@ will be run each time after saving the buffer, so C-x C-s."
       (add-hook 'index/org-save-buffer-hook
                 #'tributi/org-add-ids-to-headlines-in-file)))
 
+  (defun index/org-capture-todo ()
+    "Returns `org-capture' template string for new Hugo post.
+See `org-capture-templates' for more information."
+    (mapconcat
+     #'identity
+     `("\n"
+       ,(concat "* TODO " (read-from-minibuffer "Post Title: "))
+       "\n%i%?\n")
+     "\n"))
+
+  (add-to-list 'org-capture-templates
+               '("t"
+                 "Todo entry"
+                 entry
+                 (file+olp "~/TDO" "Checklist")
+                 (function index/org-capture-todo)))
+
   :bind (("C-c t" . index/find-todo-file)))
 #+end_src
 
