@@ -3843,6 +3843,7 @@ like =#454545= will be shown with its corresponding background.
 (leaf ox-hugo
   :straight t
   :require t
+  :commands org-capture
   :config
   (setq org-hugo-front-matter-format 'yaml)
   (setq org-log-done-with-time nil)
@@ -3868,7 +3869,7 @@ See `org-capture-templates' for more information."
                '("b"
                  "Blog post"
                  entry
-                 (file+olp "~/web/website.org" "Blog Posts")
+                 (file+olp "~/web/website.org" "NO-HUGO Blog Posts")
                  (function index/org-capture-website)))
 
   (defvar index/org-hugo-auto-export-mode-sections '("About")
