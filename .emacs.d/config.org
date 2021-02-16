@@ -3835,7 +3835,8 @@ like =#454545= will be shown with its corresponding background.
     (with-current-buffer (find-file-noselect
                           (expand-file-name
                            "config.org"
-                           user-emacs-directory))
+                           user-emacs-directory)
+                          t)
       (org-export-to-file 'html (expand-file-name
                                  "~/web/layouts/partials/dotemacs.html")
         nil nil nil t nil)
