@@ -3443,7 +3443,6 @@ strings with no white space in the strings."
 
   (define-minor-mode index/exwm-polybar-mode
     "Toggle between polybar enabled and disabled."
-    :init-value nil
     :global t
     :lighter ""
     (if index/exwm-polybar-mode
@@ -3712,7 +3711,7 @@ This function is auto generated via `index/exwm--raise-or-spawn'."
       (index/exwm--raise-or-spawn "qutebrowser" "s-g")
       (index/exwm--raise-or-spawn "arandr" "s-a")
       (index/exwm--raise-or-spawn "pulseeffects" "s-p")
-      (index/exwm--raise-or-spawn "icecat" "s-C-g")
+      (index/exwm--raise-or-spawn "nyxt" "s-n")
 
       (index/exwm-modifier-passthrough "H")
       (index/exwm-modifier-passthrough "s")))
