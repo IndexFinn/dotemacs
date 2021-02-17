@@ -177,8 +177,6 @@ associated with =index/keys-minor-mode=.  After that it will re enable
 the keys.  This hook will only get fired when =index/keys-minor-mode= is
 not at the top of the =minor-mode-map-alist=.
 
-# DEPRECATED : Is not required anymore with the
-# `emulation-mode-map-alist'.
 #+begin_example emacs-lisp
 (leaf emacs
   :config
