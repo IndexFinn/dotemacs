@@ -1137,12 +1137,12 @@ TODO : Structure these sub headers more nicely.
   (setq org-babel-default-header-args
         (cons '(:noweb . "yes")
               (assq-delete-all :noweb org-babel-default-header-args)))
-  (setq org-babel-default-header-args
-        (cons '(:exports . "both")
-              (assq-delete-all :exports org-babel-default-header-args)))
-  (setq org-babel-default-header-args
-        (cons '(:results . "output verbatim replace")
-              (assq-delete-all :results org-babel-default-header-args)))
+  ;; (setq org-babel-default-header-args
+  ;;       (cons '(:exports . "both")
+  ;;             (assq-delete-all :exports org-babel-default-header-args)))
+  ;; (setq org-babel-default-header-args
+  ;;       (cons '(:results . "output verbatim replace")
+  ;;             (assq-delete-all :results org-babel-default-header-args)))
 
   (org-babel-do-load-languages
    'org-babel-load-languages
