@@ -1134,6 +1134,23 @@ TODO : Structure these sub headers more nicely.
    (setcar (nthcdr 4 org-emphasis-regexp-components) 5)
    (org-set-emph-re 'org-emphasis-regexp-components org-emphasis-regexp-components))
 
+  (setq org-babel-default-header-args
+        (cons '(:noweb . "yes")
+              (assq-delete-all :noweb org-babel-default-header-args)))
+  (setq org-babel-default-header-args
+        (cons '(:exports . "both")
+              (assq-delete-all :exports org-babel-default-header-args)))
+  (setq org-babel-default-header-args
+        (cons '(:results . "output verbatim replace")
+              (assq-delete-all :results org-babel-default-header-args)))
+
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (shell . t)
+     (C . t)
+     (scheme . t)))
+
   (defun index/org-goto-header ()
     "Jump to Org Mode header."
     (interactive)
