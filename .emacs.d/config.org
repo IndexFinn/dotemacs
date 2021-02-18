@@ -1860,7 +1860,9 @@ Calls `index/focused-writing' when called with an argument.
 
   :bind ((dired-mode-map
           ("<return>" . dired-find-alternate-file)
-          ("o" . index/dired-mpv-open))))
+          ("o" . index/dired-mpv-open)
+          ("<tab>" . dired-subtree-toggle)
+          ("<C-tab>" . dired-subtree-cycle))))
 
 (leaf dired-async
   :after (dired async)
@@ -1878,10 +1880,7 @@ Calls `index/focused-writing' when called with an argument.
   :after dired
   :commands dired
   :config
-  (setq dired-subtree-use-backgrounds nil)
-  :bind ((dired-mode-map
-          ("<tab>" . dired-subtree-toggle)
-          ("<C-tab>" . dired-subtree-cycle))))
+  (setq dired-subtree-use-backgrounds nil))
 
 (leaf dired-x
   :after dired
