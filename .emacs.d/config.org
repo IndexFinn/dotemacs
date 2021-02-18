@@ -1436,7 +1436,7 @@ See `org-capture-templates' for more information."
   :bind (("C-c t" . index/find-todo-file)))
 #+end_src
 
-** COMMENT LaTeX
+** COMMENT DEPRECATED LaTeX
 :PROPERTIES:
 :CUSTOM_ID: h:736694ba-d59f-4a44-8b68-32ba7a7ef1cd
 :END:
