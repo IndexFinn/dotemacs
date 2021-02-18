@@ -3901,12 +3901,17 @@ See `org-capture-templates' for more information."
   (defun index/org-hugo-export-sections ()
     "Export all sections in
   `index/org-hugo-auto-export-mode-sections'"
-    (dolist (str index/org-hugo-auto-export-mode-sections)
-      (save-excursion
-        (beginning-of-buffer)
-        (search-forward-regexp
-         (concat "^" outline-regexp str "$"))
-        (org-hugo-export-wim-to-md))))
+
+    (with-current-buffer (find-file-noselect
+                          (expand-file-name
+                           "~/web/website.org")
+                          t)
+      (dolist (str index/org-hugo-auto-export-mode-sections)
+        (save-excursion
+          (beginning-of-buffer)
+          (search-forward-regexp
+           (concat "^" outline-regexp str "$"))
+          (org-hugo-export-wim-to-md)))))
 
   (define-minor-mode index/org-hugo-auto-export-mode
     "Same as `org-hugo-auto-export-mode' but always export sections
