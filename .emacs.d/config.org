@@ -216,7 +216,7 @@ authinfo.*
         (user-error "No entry in auth sources")))))
 #+end_src
 
-** COMMENT Scheme Conventions
+** COMMENT DEPRECATED Scheme Conventions
 :PROPERTIES:
 :CUSTOM_ID: h:9886bb4f-2f5f-4831-8f52-6ffbd9d7e3e4
 :END:
