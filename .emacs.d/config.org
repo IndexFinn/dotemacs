@@ -3566,8 +3566,14 @@ into the well documented man page of mpv."
                    index/exwm-launch-mpv-file-ending-regex
                    nil nil t)
                   index/exwm-launch-mpv-dirs))))))
-      (shell-command "sleep .1 ; echo script-binding uosc/next | socat - $MPV_SOCKET")
-      (switch-to-buffer (get-buffer "mpv")))
+      (--when-let (get-buffer "mpv")
+        (shell-command (concat
+                        "sleep .1 "
+                        "&& "
+                        "echo script-binding uosc/next "
+                        "| "
+                        "socat - $MPV_SOCKET"))
+        (switch-to-buffer (get-buffer "mpv"))))
      ((equal arg '(16))
       (with-current-buffer (get-buffer "mpv")
         (index/exwm-floating-window-mode 'toggle))
