@@ -1861,11 +1861,21 @@ Calls `index/focused-writing' when called with an argument.
        'face
        'success))))
 
+  (defun index/dired-hide-dot-files ()
+    "Hides all files/directories staring with a dot.
+This operation can be refreshed with the key g.  Alternatively
+this function can be called to do the same."
+    (interactive)
+    (if (dired-mark-files-regexp "^\\.")
+        (dired-do-kill-lines)
+      (revert-buffer)))
+
   :hook ((dired-mode-hook . dired-hide-details-mode))
 
   :bind ((dired-mode-map
           ("<return>" . dired-find-alternate-file)
           ("o" . index/dired-mpv-open)
+          ("h" . index/dired-hide-dot-files)
           ("<tab>" . dired-subtree-toggle)
           ("<C-tab>" . dired-subtree-cycle))))
 
