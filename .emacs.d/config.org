@@ -565,14 +565,19 @@ you know where it is.  This includes changing the window.
 (leaf emacs
   :config
   (set-face-attribute 'default nil
-                      :font "Roboto Mono"
-                      :height 120)
+                      :family "Iosevka"
+                      :height 120
+                      :weight 'normal
+                      :width 'expanded)
   (set-face-attribute 'fixed-pitch nil
-                      :font "Roboto Mono"
-                      :height 120)
+                      :family "Iosevka"
+                      :height 120
+                      :weight 'normal
+                      :width 'expanded)
   (set-face-attribute 'variable-pitch nil
-                      :font "Noto Serif"
-                      :height 120))
+                      :family "Roboto"
+                      :height 120
+                      :weight 'normal))
 #+end_src
 
 ** Blinking Cursor
