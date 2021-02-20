@@ -1026,10 +1026,17 @@ package provides this functionality.
 :CUSTOM_ID: h:802fccbf-ae6e-47cc-bf8c-dbf1c7146a47
 :END:
 
-As the author of this package states: "Are you tired of using the
-endless keystrokes of =C-y M-y M-y M-y ...= to get at that bit of text you
-killed thirty-seven kills ago?" ([[https://github.com/browse-kill-ring/browse-kill-ring][Synopsis on README]]).  This is indeed
-one of my biggest problems with the kill ring.
+As the author of this package states:
+
+#+begin_quote
+Are you tired of using the endless keystrokes of =C-y M-y M-y M-y ...=
+to get at that bit of text you killed thirty-seven kills ago? ---
+[[https://github.com/browse-kill-ring/browse-kill-ring][Synopsis on README]]
+#+end_quote
+
+This is-- indeed-- one of my biggest problems with the kill ring.  Being
+able to browse the kill ring is way better, as you can see the previous
+kills in another buffer.
 
 #+begin_src emacs-lisp
 (leaf browse-kill-ring
