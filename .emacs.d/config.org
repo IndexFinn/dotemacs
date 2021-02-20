@@ -624,7 +624,7 @@ better in my opinion.
 (global-hl-line-mode t)
 #+end_src
 
-** Diminish
+** COMMENT DEPRECATED Diminish
 :PROPERTIES:
 :CUSTOM_ID: h:da52ed87-9aae-4b86-bc90-3410041c7eed
 :END:
@@ -645,10 +645,12 @@ called with leaf/use-package.
 (global-prettify-symbols-mode 1)
 #+end_src
 
-** Bell
+** TODO Bell
 :PROPERTIES:
 :CUSTOM_ID: h:459c46a1-fb4e-4191-9b9c-f6b6691d4798
 :END:
+
+*Currently not working*
 
 I don't really like the bell.  Since it, by default makes sounds.  I
 find this more irretating than useful.  Though the idea of the bell is,
@@ -1681,7 +1683,7 @@ Calls `index/focused-writing' when called with an argument.
   :bind (("H-h" . index/describe-symbol-dwim)))
 #+end_src
 
-** COMMENT Ivy
+** COMMENT DEPRECATED Ivy
 :PROPERTIES:
 :CUSTOM_ID: h:341b2d29-d4da-4399-9c39-907793945884
 :END:
@@ -2676,10 +2678,14 @@ Emacs and its text based interface.
 :CUSTOM_ID: h:1475cbfc-56dc-4039-a88a-539b5e7672cb
 :END:
 
-*** TODO Gnus
+*** DEPRECATED Gnus
 :PROPERTIES:
 :CUSTOM_ID: h:45b54719-5b5f-44f0-8fc1-88af5f1c25a2
 :END:
+
+*As of 2021-02-20 this section is deprecated; I haven't really gone
+around and tried Gnus-- you can see that since my old email address is
+still here.  I will again try it in the future.*
 
 #+begin_src emacs-lisp
 (leaf gnus
@@ -3916,7 +3922,7 @@ like =#454545= will be shown with its corresponding background.
 (leaf ox-hugo
   :straight t
   :require t
-  :commands org-capture
+  :commands (org-capture index/org-hugo-auto-export-mode)
   :config
   (setq org-hugo-front-matter-format 'yaml)
   (setq org-log-done-with-time nil)
@@ -4369,10 +4375,13 @@ If called with a prefix don't indent, otherwise indent."
   :bind (("C-c C-=" . index/big-font-mode)))
 #+end_src
 
-** Small Font
+** DEPRECATED Small Font
 :PROPERTIES:
 :CUSTOM_ID: h:e3856980-ba71-4ec2-96dc-3d667afc06b4
 :END:
+
+*As of 2021-02-20 this section is deprecated; didn't really need a
+small font version, though it might be cool to have.*
 
 #+begin_src emacs-lisp
 (leaf emacs
