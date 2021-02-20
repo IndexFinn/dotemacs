@@ -4315,22 +4315,22 @@ line."
   :config
   (defun index/insert-line-below (&optional arg)
     "Insert an empty line below the current line.
-If called with a prefix don't indent, otherwise indent."
+If called with a prefix indent, otherwise don't indent."
     (interactive "P")
     (end-of-line)
     (open-line 1)
     (next-line)
-    (unless arg
+    (when arg
       (indent-for-tab-command)))
 
   (defun index/insert-line-above (&optional arg)
     "Insert an empty line above the current line.
-If called with a prefix don't indent, otherwise indent."
+If called with a prefix indent, otherwise don't indent."
     (interactive "P")
     (end-of-line 0)
     (open-line 1)
     (next-line)
-    (unless arg
+    (when arg
       (indent-for-tab-command)))
 
   :bind ((index/keys-minor-mode-map
