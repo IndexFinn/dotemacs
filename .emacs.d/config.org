@@ -6,17 +6,22 @@
 + Updated:       *src_elisp{(format-time-string "%F %R %z")}*.
 + Emacs Version: *src_elisp{emacs-version}*.
 + Org Version:   *src_elisp{org-version}*.
-+ File Size:     *src_elisp{(file-size-human-readable
-                             (file-attribute-size
-                              (file-attributes
-                               (file-truename
-                                (expand-file-name
-                                 "config.org"
-                                 user-emacs-directory)))))}*.
++ File Size:     *src_elisp{
+   (->> (expand-file-name "config.org" user-emacs-directory)
+        file-truename
+        file-attributes
+        file-attribute-size
+        file-size-human-readable)}*.
 + SRC-Blocks:    *src_elisp{(length
                              (s-match-strings-all
                               "#\\+begin_src emacs-lisp"
                               (buffer-string)))}*.
++ Document Lines: *src_elisp{
+   (with-temp-buffer
+     (insert-file-contents (expand-file-name
+                            "config.org"
+                            user-emacs-directory))
+     (count-lines (point-min) (point-max)))}*.
 
 #+begin_abstract
 This  document is  my  own personal  configuration  for the  extensible,
