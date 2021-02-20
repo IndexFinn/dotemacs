@@ -3,19 +3,19 @@
 #+EMAIL: public@finnsauer.com
 #+OPTIONS: toc:nil
 
-+ Updated:       *src_elisp{(format-time-string "%F %R %z")}*.
++ Updated: *src_elisp{(format-time-string "%F %R %z")}*.
 + Emacs Version: *src_elisp{emacs-version}*.
-+ Org Version:   *src_elisp{org-version}*.
-+ File Size:     *src_elisp{
++ Org Version: *src_elisp{org-version}*.
++ File Size: *src_elisp{
    (->> (expand-file-name "config.org" user-emacs-directory)
         file-truename
         file-attributes
         file-attribute-size
         file-size-human-readable)}*.
-+ SRC-Blocks:    *src_elisp{(length
-                             (s-match-strings-all
-                              "#\\+begin_src emacs-lisp"
-                              (buffer-string)))}*.
++ SRC-Blocks: *src_elisp{(length
+                          (s-match-strings-all
+                           "#\\+begin_src emacs-lisp"
+                           (buffer-string)))}*.
 + Document Lines: *src_elisp{
    (with-temp-buffer
      (insert-file-contents (expand-file-name
