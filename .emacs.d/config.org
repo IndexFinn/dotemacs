@@ -382,10 +382,9 @@ that way-- only the people I addressed earlier would.
 :END:
 
 This package will, as the name implies, automatically dim down other
-buffers.  This means that when you're in a buffer and other buffers are
-displayed in a window it will lower the background color of said
-buffers.  This even works when accessing the minibuffer-- this option
-can of course be turned off.
+buffers.  When you have another buffer open inside a window, that
+buffer's background will be dimmed down.  This even works when accessing
+the minibuffer-- this option can, of course, be turned off.
 
 #+begin_src emacs-lisp
 (leaf auto-dim-other-buffers
