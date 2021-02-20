@@ -4470,6 +4470,8 @@ $2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation
 You put this-- as I stated above-- under the table:
 
 #+begin_example ascii
+#+CAPTION: The function name and description where automatically generated;
+#+CAPTION: see [[#h:80d39c8d-709d-4a27-9008-89cfed7d87e7][how]].
 | Keybinding | Function Name | Description |
 |------------+---------------+-------------|
 | C-M-q      |               |             |
@@ -4479,6 +4481,8 @@ You put this-- as I stated above-- under the table:
 And then execute the formula via =C-c C-c= while the point is above the formula:
 
 #+begin_example ascii
+#+CAPTION: The function name and description where automatically generated;
+#+CAPTION: see [[#h:80d39c8d-709d-4a27-9008-89cfed7d87e7][how]].
 | Keybinding | Function Name        | Description                      |
 |------------+----------------------+----------------------------------|
 | C-M-q      | index/auto-fill-mode | Wrapper around ‘auto-fill-mode’. |
