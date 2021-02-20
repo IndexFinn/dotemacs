@@ -457,6 +457,18 @@ you know where it is.  This includes changing the window.
 :CUSTOM_ID: h:19aca65c-acf0-4812-862b-b1962f573172
 :END:
 
+Doom Emacs gained a lot of popularity.  Even though I encourage people
+to craft their own configuration, it is nice for the lazy one.  But with
+a lot of people working on it and great work by Hlsinger, there has been
+an influx of new packages.  One of them is called: /Doom Modeline/.
+
+This adds a quite nice looking modeline-- you would say “modern”
+modeline, but the word modern kinda lost its meaning as everything is
+modern these days.
+
+Even though I am not opposed of the default modeline, this one looks
+better in my opinion.
+
 #+begin_src emacs-lisp
 (leaf doom-modeline
   :straight t
