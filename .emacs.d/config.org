@@ -1494,7 +1494,9 @@ This package is used to center the entire frame.
   :config
   (setq olivetti-body-width 0.61803)
   (setq olivetti-minimum-body-width 72)
-  (setq olivetti-recall-visual-line-mode-entry-state t))
+  (setq olivetti-recall-visual-line-mode-entry-state t)
+
+  :hook ((org-mode-hook . olivetti-mode)))
 #+end_src
 
 *** Focus
