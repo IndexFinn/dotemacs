@@ -257,10 +257,12 @@ Luckily we are here in lisp, so that's a rather trivial task:
       elem)))
 #+end_src
 
-* Garbage Collection
+* REVIEW Garbage Collection
 :PROPERTIES:
 :CUSTOM_ID: h:bad4e190-e76c-434a-bda1-b1317695fbc1
 :END:
+
+*As of 2021-02-20 this section is under review.*
 
 # TODO : Rewrite this parahraph with the macros.
 
