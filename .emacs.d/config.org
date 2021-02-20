@@ -4255,6 +4255,12 @@ line."
 :CUSTOM_ID: h:d6f1c6ea-9ba5-4f6c-97b0-c9813f227fe7
 :END:
 
+To be able to use =s-u= or =H-u= as a universal argument is great, since
+if for example a keybinding is mapped to =H-i= and that function can be
+called with a universal argument to change some aspects of it, it's hard
+to press =C-u H-i=.  With =H-u H-i= you don't have to move your finger
+away from the modifier key.
+
 #+begin_src emacs-lisp
 (leaf emacs
   :bind (("H-u" . universal-argument)
