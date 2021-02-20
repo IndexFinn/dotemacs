@@ -399,10 +399,13 @@ the minibuffer-- this option can, of course, be turned off.
 With this, I can always tell in what window I'm currently in-- without
 seeing the cursor.
 
-** Pulse
+** DEPRECATED Pulse
 :PROPERTIES:
 :CUSTOM_ID: h:2a5f089e-dcd1-4f20-a880-ace76a1110c8
 :END:
+
+*As of 2021-02-20 this section is deprecated.  I didn't really use it
+that much.  Though it could be nice for presentation purposes.*
 
 This package will enable us to highlight a line with a pulse signal.
 
