@@ -3928,7 +3928,7 @@ like =#454545= will be shown with its corresponding background.
   :commands (org-capture index/org-hugo-auto-export-mode)
   :config
   (setq org-hugo-front-matter-format 'yaml)
-  (setq org-log-done-with-time nil)
+  (setq org-log-done-with-time t)
   (setq org-tag-alist
         '(("emacs")
           ("org")))
