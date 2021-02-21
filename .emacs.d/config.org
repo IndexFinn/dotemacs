@@ -3148,7 +3148,10 @@ code of the process and OUTPUT is its stdout output."
   (defun index/eshell-time-command (&optional end)
     (if end
         (if index/eshell-time-command
-            (format " %.03fs" (float-time (time-since index/eshell-time-command)))
+            (format " %s" (seconds-to-string
+                           (float-time
+                            (time-since
+                             index/eshell-time-command))))
           " 0s")
       (setq index/eshell-time-command (current-time))))
 
