@@ -1367,10 +1367,10 @@ different section.
 This is added to the hook `index/org-save-buffer-hook'.  The hook
 will be run each time after saving the buffer, so C-x C-s."
     (interactive)
-    ;; The inline image width; times 5 here means 50% whereas times 10
+    ;; The inline image width; times 2.5 here means 25% whereas times 10
     ;; would mean 100%.
     (setq org-image-actual-width
-          (* 5 (frame-parameter (selected-frame) 'width)))
+          (* 2.5 (frame-parameter (selected-frame) 'width)))
     (org-redisplay-inline-images)
     (org-display-inline-images t t (point-min) (point-max)))
   :hook ((index/org-save-buffer-hook . index/org-display-inline-images)))
