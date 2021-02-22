@@ -3595,7 +3595,7 @@ process."
     "Directories where to look at.")
 
   (defconst index/exwm-launch-mpv-file-ending-regex
-    "\\.\\(mkv\\|webm\\|mp4\\)$")
+    "\\.\\(mkv\\|webm\\|mp4\\|opus\\|flac\\|wav\\)$")
 
   (defun index/exwm-launch-mpv (&optional arg)
     "Launch mpv via `mpv_open'.
@@ -3611,16 +3611,15 @@ into the well documented man page of mpv."
     (cond
      ((equal arg '(4))
       (index/call-process
-       (concat
-        "mpv_open "
-        (expand-file-name
-         (completing-read
-          "Launch MPV: "
-          (flatten-tree
-           (--map (directory-files-recursively it
-                   index/exwm-launch-mpv-file-ending-regex
-                   nil nil t)
-                  index/exwm-launch-mpv-dirs))))))
+       `("mpv_open"
+         ,(->> index/exwm-launch-mpv-dirs
+               (--map (directory-files-recursively
+                       it index/exwm-launch-mpv-file-ending-regex
+                       nil nil t))
+               flatten-tree
+               (completing-read "Launch MPV: ")
+               expand-file-name
+               )))
       (--when-let (get-buffer "mpv")
         (shell-command (concat
                         "sleep .1 "
@@ -3628,7 +3627,7 @@ into the well documented man page of mpv."
                         "echo script-binding uosc/next "
                         "| "
                         "socat - $MPV_SOCKET"))
-        (switch-to-buffer (get-buffer "mpv"))))
+        (switch-to-buffer it)))
      ((equal arg '(16))
       (with-current-buffer (get-buffer "mpv")
         (index/exwm-floating-window-mode 'toggle))
@@ -3665,6 +3664,7 @@ This adds removing the mode line locally."
         (exwm-floating--unset-floating exwm--id)
         (kill-local-variable 'mode-line-format))))
 
+  ;; TODO: Sometimes it works and sometimes it doesn't
   (defmacro index/exwm--raise-or-spawn (command keybinding)
     (let* ((name-str (concat "index/exwm-spawn-or-raise--" command))
            (name (intern name-str)))
