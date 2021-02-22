@@ -2492,6 +2492,7 @@ More reading up can be found on [[https://lipsum.com/][here]].
 
 #+begin_src emacs-lisp
 (leaf emacs
+  :require cl
   :config
 
   (defvar index/lorem-words
