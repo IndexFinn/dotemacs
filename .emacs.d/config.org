@@ -1385,7 +1385,7 @@ will be run each time after saving the buffer, so C-x C-s."
 (leaf org
   :config
   (setq org-todo-keywords
-        (quote ((sequence "TODO(t)" "REVIEW(r)" "|" "DONE(d)")
+        (quote ((sequence "TODO(t)" "NEXT(n)" "REVIEW(r)" "|" "DONE(d)")
                 (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)"))))
   (setq org-log-into-drawer "LOGBOOK")
   (setq org-log-note-headings
