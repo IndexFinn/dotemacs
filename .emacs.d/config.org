@@ -1099,10 +1099,13 @@ and then look back.  This will negate it.
   (eros-mode 1))
 #+end_src
 
-** Vterm
+** DEPRECATED Vterm
 :PROPERTIES:
 :CUSTOM_ID: h:18fe3b27-7ab2-4bba-a18f-0c83e8d1e103
 :END:
+
+*As of 2021-02-23 this section is deprecated; there is no need for it if
+I can spawn URxvt, frankly the best terminal emulator out there.*
 
 I barely use this one as I use eshell-- covered in [[#h:6877d266-5821-4d09-baa1-734e1393b68b][this section]]-- but
 when I need to go into a native terminal, be it that I need to run an
