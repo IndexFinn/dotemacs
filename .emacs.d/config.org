@@ -1841,6 +1841,7 @@ Calls `index/focused-writing' when called with an argument.
   (setq comment-style 'multi-line)
 
   (defun index/comment-line ()
+    (interactive)
     "A modified version of `comment-line'."
     (if (region-active-p)
         (comment-or-uncomment-region
