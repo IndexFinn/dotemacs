@@ -1134,6 +1134,18 @@ For example highlighting in =/etc/passwd= and alike.
 (require 'generic-x)
 #+end_src
 
+** Tramp
+:PROPERTIES:
+:CUSTOM_ID: h:78cbf3db-6ab5-4d61-9408-a0483da96479
+:END:
+
+#+begin_src emacs-lisp
+(leaf tramp
+  :commands eshell
+  :config
+  (setq tramp-backup-directory-alist backup-directory-alist))
+#+end_src
+
 * Writing
 :PROPERTIES:
 :CUSTOM_ID: h:10bd21be-8499-45e7-be2c-8fdea817684a
