@@ -835,10 +835,13 @@ This will call `beacon-blink' after `goto-last-change'."
   :bind (("C-z" . index/goto-last-change)))
 #+end_src
 
-** Delete Trailing White Spaces
+** REVIEW Delete Trailing White Spaces
 :PROPERTIES:
 :CUSTOM_ID: h:cf4afc30-821a-43b1-aa88-15ee1e6f173b
 :END:
+
+*As of 2021-02-23 this section is under review; reword this section,
+it's horrible.*
 
 Before I save a buffer I want to clean up all trailing white spaces.
 Disclaimer that this function will also delete newlines at the end of
