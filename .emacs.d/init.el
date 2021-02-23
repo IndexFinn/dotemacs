@@ -39,6 +39,7 @@
         (goto-char (point-max))
         (eval-print-last-sexp)))
     (load bootstrap-file nil 'nomessage))
+  ;; Bootstrap ends here
 
   ;; Install various essential packages such as `leaf' and
   ;; `leaf-keywords'.  The `cl-lib' package is already required in
