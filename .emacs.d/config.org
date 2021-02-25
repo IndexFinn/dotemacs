@@ -708,6 +708,20 @@ Highlight Code Via Depth Level.
          (sh-mode-hook . prism-whitespace-mode)))
 #+end_src
 
+** Highlight S-Expressions
+:PROPERTIES:
+:CUSTOM_ID: h:30c3f344-4dbd-4ef3-86d2-3014180250d7
+:END:
+
+It's nice to know in what current AST-- abstract syntax tree-- level you
+currently in.
+
+#+begin_src emacs-lisp
+(leaf highlight-sexp
+  :straight t
+  :hook ((prog-mode-hook . highlight-sexp-mode)))
+#+end_src
+
 * TODO Generic Settings
 :PROPERTIES:
 :CUSTOM_ID: h:832f56b8-3a3a-4b2d-8b3e-f5e917aafdb2
