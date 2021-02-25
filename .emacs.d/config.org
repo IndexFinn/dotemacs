@@ -722,6 +722,21 @@ currently in.
   :hook ((prog-mode-hook . highlight-sexp-mode)))
 #+end_src
 
+** Highlight Symbol at Point
+:PROPERTIES:
+:CUSTOM_ID: h:f74a662e-77c3-4b40-b920-5918fbc0f706
+:END:
+
+Highlight every symbol that is the same as the symbol at point.
+
+#+begin_src emacs-lisp
+(leaf highlight-symbol
+  :straight t
+  :config
+  (setq highlight-symbol-idle-delay 0.1)
+  :hook ((prog-mode-hook . highlight-symbol-mode)))
+#+end_src
+
 * TODO Generic Settings
 :PROPERTIES:
 :CUSTOM_ID: h:832f56b8-3a3a-4b2d-8b3e-f5e917aafdb2
