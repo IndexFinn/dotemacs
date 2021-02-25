@@ -85,7 +85,7 @@ described in [[#h:bad4e190-e76c-434a-bda1-b1317695fbc1][this section]].
      `("notify-send"
        "Emacs"
        ,(format
-         "Started in %.3fs with %d garbage collections.\n"
+         "Started in %.3fs with %d garbage collections."
          (float-time
           (time-subtract after-init-time before-init-time))
          gcs-done))))
