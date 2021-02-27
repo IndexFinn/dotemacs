@@ -737,7 +737,7 @@ Highlight every symbol that is the same as the symbol at point.
   :hook ((prog-mode-hook . highlight-symbol-mode)))
 #+end_src
 
-* TODO Generic Settings
+* REVIEW Generic Settings
 :PROPERTIES:
 :CUSTOM_ID: h:832f56b8-3a3a-4b2d-8b3e-f5e917aafdb2
 :END:
@@ -2181,7 +2181,7 @@ wish to undo that particular deletion process.
          ("<C-H-backspace>" . winner-redo)))
 #+end_src
 
-* TODO Miscellaneous
+* REVIEW Miscellaneous
 :PROPERTIES:
 :CUSTOM_ID: h:bd0507c8-82c4-48d3-af74-b8f629303685
 :END:
@@ -4037,10 +4037,13 @@ See `org-capture-templates' for more information."
   :bind (("C-c M-e M-b" . org-capture)))
 #+end_src
 
-* Lisp
+* REVIEW Lisp
 :PROPERTIES:
 :CUSTOM_ID: h:be2802e1-fd14-4bc0-b50c-62f3e7d58479
 :END:
+
+*As of 2021-02-27 this section is under REVIEW; I feel like this section
+is out of place and should be integrated elsewhere.*
 
 Working with LISP inside Emacs is not hard at all.  It only requires
 =slime= for Common Lisp and =geiser= for Scheme.  Now we can use =C-x
