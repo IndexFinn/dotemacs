@@ -1115,7 +1115,7 @@ functionality.
 :CUSTOM_ID: h:c7ec613d-2dcc-4f70-bf33-304a1de189b0
 :END:
 
-One of the coolest features about [[#h:5fefc3b5-d879-4f56-9ea3-6d226bb1bd6b][CIDER]]; virtual text.  This package
+One of the coolest features about [[#h:5fefc3b5-d879-4f56-9ea3-6d226bb1bd6b][CIDER]]: virtual text.  This package
 will overwrite =C-x C-e= and =C-M-x= with its own versions.  These will
 print the output in the minibuffer (default) and next to the evaluated
 s-expression.
