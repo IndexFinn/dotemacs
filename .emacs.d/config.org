@@ -1124,12 +1124,28 @@ It seems like a redundant feature, but I think it forces the user to
 stop the Lisp experience of trial and error to look at the minibuffer
 and then look back.  This will negate it.
 
+#+CAPTION: The function name and description where automatically generated;
+#+CAPTION: see [[#h:80d39c8d-709d-4a27-9008-89cfed7d87e7][how]].
+| Keybinding | Function Name  | Description                                               |
+|------------+----------------+-----------------------------------------------------------|
+| C-x C-e    | eval-last-sexp | Evaluate sexp before point; print value in the echo area. |
+| C-M-x      | eval-defun     | This function has :override advice: ‘edebug-eval-defun’.  |
+#+TBLFM: $2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation (key-binding (kbd $1))))))
+
 #+begin_src emacs-lisp
 (leaf eros
   :straight t
   :config
   (eros-mode 1))
 #+end_src
+
+#+CAPTION: The function name and description where automatically generated;
+#+CAPTION: see [[#h:80d39c8d-709d-4a27-9008-89cfed7d87e7][how]].
+| Keybinding | Function Name       | Description                                         |
+|------------+---------------------+-----------------------------------------------------|
+| C-x C-e    | eros-eval-last-sexp | Wrapper for ‘eval-last-sexp’ that overlays results. |
+| C-M-x      | eros-eval-defun     | Wrapper for ‘eval-defun’ that overlays results.     |
+#+TBLFM: $2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation (key-binding (kbd $1))))))
 
 ** DEPRECATED Vterm
 :PROPERTIES:
