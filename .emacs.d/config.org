@@ -1574,7 +1574,7 @@ This package is used to center the entire frame.
 (leaf olivetti
   :straight t
   :config
-  (setq olivetti-body-width 0.61803)
+  (setq olivetti-body-width (1- (/ (1+ (sqrt 5)) 2)))
   (setq olivetti-minimum-body-width 80) ; instead of 72; extra leeway
   (setq olivetti-recall-visual-line-mode-entry-state t)
 
