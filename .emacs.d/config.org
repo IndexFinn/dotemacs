@@ -3856,8 +3856,9 @@ This function is auto generated via `index/exwm--raise-or-spawn'."
 
       (index/exwm--raise-or-spawn "qutebrowser" "s-g")
       (index/exwm--raise-or-spawn "arandr" "s-a")
-      (index/exwm--raise-or-spawn "pulseeffects" "s-p")
+      ;; (index/exwm--raise-or-spawn "pulseeffects" "s-p")
       (index/exwm--raise-or-spawn "nyxt" "s-n")
+      (index/exwm--raise-or-spawn "palemoon" "s-p")
 
       (index/exwm-modifier-passthrough "H")
       (index/exwm-modifier-passthrough "s")))
