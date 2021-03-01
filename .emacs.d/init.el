@@ -51,8 +51,11 @@
 
   ;; Uses a different file for `custom' in order to not clutter the
   ;; `init.el' file with automatic settings made by custom.
-  (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-  (load custom-file 'noerror 'nomessage)
+  (and
+   (setq custom-file (expand-file-name
+                      "custom.el"
+                      user-emacs-directory))
+   (load custom-file 'noerror 'nomessage))
 
   ;; This is the actual configuration file.  This will try to load three
   ;; files: `config.elc', `config.el', and `config.org'.  If none are
