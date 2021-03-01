@@ -42,6 +42,42 @@ link to the repository can be found [[https://gitlab.com/indexfinn/dotemacs/-/co
 :PROPERTIES:
 :CUSTOM_ID: h:1c8c97ea-f5a1-4e3c-b574-e4d2cb934421
 :END:
+** Auxiliary Tools
+:PROPERTIES:
+:CUSTOM_ID: h:7941a36f-0443-44ba-a9d8-1612310d03a6
+:END:
+
+#+begin_src emacs-lisp
+(defun file->string (file)
+  "Convert FILE to string; return nil if file doesn't exists."
+  (when (and (file-readable-p file)
+             (file-writable-p file))
+    (with-temp-buffer
+      (insert-file-contents-literally (expand-file-name file))
+      (buffer-substring-no-properties (point-min) (point-max)))))
+
+(defun file->list (file)
+  "Convert FILE to list of strings separated via new-line; return
+nil if file doesn't exists."
+  (when (and (file-readable-p file)
+             (file-writable-p file))
+    (s-split
+     "\n"
+     (with-temp-buffer
+       (insert-file-contents-literally (expand-file-name file))
+       (buffer-substring-no-properties (point-min) (point-max))))))
+
+(defun index/call-process (command)
+  "Call a process of COMMAND.
+COMMAND must be a string separated via white space or a list of
+strings with no white space in the strings."
+  (when (stringp command)
+    (setq command (s-split "[ ]+" command)))
+  (apply
+   #'call-process
+   `(,(car command) nil 0 nil ,@(cdr command))))
+#+end_src
+
 ** Recompile this document
 :PROPERTIES:
 :CUSTOM_ID: h:4f188f72-2abe-47f7-b303-cfe12d7e7e3e
@@ -3575,16 +3611,6 @@ questions.  Else use completion to select the tab to switch to."
   (setq exwm-workspace-switch-create-limit 2)
 
   (exwm-randr-enable)
-
-  (defun index/call-process (command)
-    "Call a process of COMMAND.
-COMMAND must be a string separated via white space or a list of
-strings with no white space in the strings."
-    (when (stringp command)
-      (setq command (s-split "[ ]+" command)))
-    (apply
-     #'call-process
-     `(,(car command) nil 0 nil ,@(cdr command))))
 
   (defvar index/exwm-polybar-mode-process nil
     "The process of polybar")
