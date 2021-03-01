@@ -92,10 +92,14 @@ to a newer version every time Emacs closes.
   :config
   (defun index/rebuild-emacs-init ()
     "Compile the ORG configuration file to ELC."
-    (let ((o (expand-file-name "config.org" user-emacs-directory))
-          (e (expand-file-name "config.el" user-emacs-directory))
-          (c (expand-file-name "config.elc" user-emacs-directory)))
-      (prog1 t
+    (let* ((b (expand-file-name "config" user-emacs-directory))
+           (o (s-append ".org" b))
+           (s (s-append ".org.sha" b))
+           (e (s-append ".el" b))
+           (c (s-append ".elc" b)))
+      ;; Don't compile if `config.org' hasn't changed since last
+      ;; session.
+      (unless (s-equals? (sha1 (file->string o)) (file->string s))
         (when (file-readable-p c)
           (delete-file c))
         (org-babel-tangle-file o e)
@@ -104,7 +108,10 @@ to a newer version every time Emacs closes.
         ;; it.  This is so that we can source it in `init.el' when the
         ;; compilation didn't work.  This is solely a safety measure.
         (when (file-readable-p c)
-          (delete-file e)))))
+          (delete-file e)))
+      ;; Write current `config.org' sha1 to `config.org.sha'.
+      (with-temp-file s
+        (insert (sha1 (file->string o))))))
   :hook ((kill-emacs-hook . index/rebuild-emacs-init)))
 #+end_src
 
