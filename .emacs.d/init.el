@@ -45,7 +45,7 @@
   ;; `leaf-keywords'.  The `cl-lib' package is already required in
   ;; straight's `bootstrap.el'.  I require it here again for completion
   ;; sake.
-  (dolist (p '(leaf leaf-keywords org cl-lib dash))
+  (dolist (p '(leaf leaf-keywords org cl-lib dash s))
     (unless (ignore-errors (require p))
       (straight-use-package p)))
 
