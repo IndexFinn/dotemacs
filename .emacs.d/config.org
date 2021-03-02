@@ -751,7 +751,7 @@ Highlight Code Via Depth Level.
          (sh-mode-hook . prism-whitespace-mode)))
 #+end_src
 
-** Highlight S-Expressions
+** COMMENT DEPRECATED Highlight S-Expressions
 :PROPERTIES:
 :CUSTOM_ID: h:30c3f344-4dbd-4ef3-86d2-3014180250d7
 :END:
@@ -765,7 +765,7 @@ currently in.
   :hook ((prog-mode-hook . highlight-sexp-mode)))
 #+end_src
 
-** Highlight Symbol at Point
+** COMMENT DEPRECATED Highlight Symbol at Point
 :PROPERTIES:
 :CUSTOM_ID: h:f74a662e-77c3-4b40-b920-5918fbc0f706
 :END:
