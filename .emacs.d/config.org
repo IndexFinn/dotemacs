@@ -54,7 +54,7 @@ link to the repository can be found [[https://gitlab.com/indexfinn/dotemacs/-/co
   (when (and (file-readable-p file)
              (file-writable-p file))
     (with-temp-buffer
-      (insert-file-contents-literally (expand-file-name file))
+      (insert-file-contents-literally file)
       (buffer-substring-no-properties (point-min) (point-max)))))
 
 (defun file->list (file)
@@ -65,7 +65,7 @@ nil if file doesn't exists."
     (s-split
      "\n"
      (with-temp-buffer
-       (insert-file-contents-literally (expand-file-name file))
+       (insert-file-contents-literally file)
        (buffer-substring-no-properties (point-min) (point-max))))))
 
 (defun index/call-process (command)
