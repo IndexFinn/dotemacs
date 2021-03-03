@@ -3718,8 +3718,7 @@ into the well documented man page of mpv."
                        nil nil t))
                flatten-tree
                (completing-read "Launch MPV: ")
-               expand-file-name
-               )))
+               expand-file-name)))
       (--when-let (get-buffer "mpv")
         (shell-command (concat
                         "sleep .1 "
