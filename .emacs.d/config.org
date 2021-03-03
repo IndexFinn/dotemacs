@@ -7,11 +7,12 @@
 + Emacs Version: *src_elisp{emacs-version}*.
 + Org Version: *src_elisp{org-version}*.
 + File Size: *src_elisp{
-   (->> (expand-file-name "config.org" user-emacs-directory)
-        file-truename
-        file-attributes
-        file-attribute-size
-        file-size-human-readable)}*.
+   (-> "config.org"
+       (expand-file-name user-emacs-directory)
+       file-truename
+       file-attributes
+       file-attribute-size
+       file-size-human-readable)}*.
 + SRC-Blocks: *src_elisp{(length
                           (s-match-strings-all
                            "#\\+begin_src emacs-lisp"
