@@ -3720,12 +3720,13 @@ into the well documented man page of mpv."
                (completing-read "Launch MPV: ")
                expand-file-name)))
       (--when-let (get-buffer "mpv")
-        (shell-command (concat
-                        "sleep .1 "
-                        "&& "
-                        "echo script-binding uosc/next "
-                        "| "
-                        "socat - $MPV_SOCKET"))
+        (shell-command (s-join
+                        " "
+                        '("sleep .1"
+                          "&&"
+                          "echo script-binding uosc/next"
+                          "|"
+                          "socat - $MPV_SOCKET")))
         (switch-to-buffer it)))
      ((equal arg '(16))
       (with-current-buffer (get-buffer "mpv")
