@@ -2769,6 +2769,47 @@ that.
   :straight t)
 #+end_src
 
+** Workspaces (Emacs 27 Tabs)
+:PROPERTIES:
+:CUSTOM_ID: h:c7ad9c08-7f81-4c99-bcd7-75bfe4f9ccbc
+:END:
+
+#+begin_src emacs-lisp
+(leaf tab-bar
+  :config
+  (setq tab-bar-close-button-show nil)
+  (setq tab-bar-close-last-tab-choice 'tab-bar-mode-disable)
+  (setq tab-bar-close-tab-select 'recent)
+  (setq tab-bar-new-tab-choice t)
+  (setq tab-bar-new-tab-to 'right)
+  (setq tab-bar-position nil)
+  (setq tab-bar-show nil)
+  (setq tab-bar-tab-hints nil)
+  (setq tab-bar-tab-name-function 'tab-bar-tab-name-all)
+
+  (tab-bar-mode -1)
+  (tab-bar-history-mode -1)
+
+  (defun tributi/tab-bar-select-tab-dwim ()
+    "Do-What-I-Mean function for getting to a `tab-bar-mode' tab.
+If no other tab exists, create one and switch to it.  If there is
+one other tab (so two in total) switch to it without further
+questions.  Else use completion to select the tab to switch to."
+    (interactive)
+    (let ((tabs (--map (alist-get 'name it)
+                       (tab-bar--tabs-recent))))
+      (cond ((eq tabs nil)
+             (tab-new))
+            ((eq (length tabs) 1)
+             (tab-next))
+            (t
+             (tab-bar-switch-to-tab
+              (completing-read "Select tab: " tabs nil t))))))
+
+  :bind (("H-t" . tributi/tab-bar-select-tab-dwim)
+         ("C-x t s" . tab-switcher)))
+#+end_src
+
 * Utilities
 :PROPERTIES:
 :CUSTOM_ID: h:ed0a862a-6c16-4059-8e14-7fcdd3f6a2e6
@@ -3559,47 +3600,6 @@ This is a substitute for the program /tremc/.
           ("o" . index/transmission-mpv-open))
          (transmission-files-mode-map
           ("o" . index/transmission-mpv-open))))
-#+end_src
-
-* Workspaces (Emacs 27 Tabs)
-:PROPERTIES:
-:CUSTOM_ID: h:c7ad9c08-7f81-4c99-bcd7-75bfe4f9ccbc
-:END:
-
-#+begin_src emacs-lisp
-(leaf tab-bar
-  :config
-  (setq tab-bar-close-button-show nil)
-  (setq tab-bar-close-last-tab-choice 'tab-bar-mode-disable)
-  (setq tab-bar-close-tab-select 'recent)
-  (setq tab-bar-new-tab-choice t)
-  (setq tab-bar-new-tab-to 'right)
-  (setq tab-bar-position nil)
-  (setq tab-bar-show nil)
-  (setq tab-bar-tab-hints nil)
-  (setq tab-bar-tab-name-function 'tab-bar-tab-name-all)
-
-  (tab-bar-mode -1)
-  (tab-bar-history-mode -1)
-
-  (defun tributi/tab-bar-select-tab-dwim ()
-    "Do-What-I-Mean function for getting to a `tab-bar-mode' tab.
-If no other tab exists, create one and switch to it.  If there is
-one other tab (so two in total) switch to it without further
-questions.  Else use completion to select the tab to switch to."
-    (interactive)
-    (let ((tabs (--map (alist-get 'name it)
-                       (tab-bar--tabs-recent))))
-      (cond ((eq tabs nil)
-             (tab-new))
-            ((eq (length tabs) 1)
-             (tab-next))
-            (t
-             (tab-bar-switch-to-tab
-              (completing-read "Select tab: " tabs nil t))))))
-
-  :bind (("H-t" . tributi/tab-bar-select-tab-dwim)
-         ("C-x t s" . tab-switcher)))
 #+end_src
 
 * EXWM - Emacs X Window Manager
