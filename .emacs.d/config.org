@@ -906,19 +906,25 @@ This will call `beacon-blink' after `goto-last-change'."
   :bind (("C-z" . index/goto-last-change)))
 #+end_src
 
-** REVIEW Delete Trailing White Spaces
+** Delete Trailing White Spaces
 :PROPERTIES:
 :CUSTOM_ID: h:cf4afc30-821a-43b1-aa88-15ee1e6f173b
 :END:
 
-*As of 2021-02-23 this section is under review; reword this section,
-it's horrible.*
+After each save the =delete-trailing-whitespace= function will-- as the
+name implies-- remove all trailing white spaces.
 
-Before I save a buffer I want to clean up all trailing white spaces.
-Disclaimer that this function will also delete newlines at the end of
-the buffer too, as they are also white spaces.  This has the negative
-effect when you want to space out your file at the end and on save that
-will be removed.
+A trailing white space is a Tab or Space at the end of a line without
+any other character preceding it, making it useless.  In a way they take
+up storage on the file system which-- with this function-- we can easily
+mitigate it.  I know it's only a few bytes but still: a few bytes that
+need to be stored and send over the network.
+
+Disclaimer: by that nature it will delete the trailing new lines =\n= at
+the end of the document too.  It makes sense if you think about it, but
+can be rather annoying when you want to add a few new lines at the end
+for coding purposes.  My best advice for escaping that: don't save the
+buffer when adding new lines at the end of the document.
 
 #+begin_src emacs-lisp
 (leaf emacs
