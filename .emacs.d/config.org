@@ -2017,7 +2017,8 @@ this function can be called to do the same."
           ("o" . index/dired-mpv-open)
           ("h" . index/dired-hide-dot-files)
           ("<tab>" . dired-subtree-toggle)
-          ("<C-tab>" . dired-subtree-cycle))))
+          ("<C-tab>" . dired-subtree-cycle)
+          ("P" . peep-dired))))
 
 (leaf dired-async
   :after (dired async)
@@ -2088,7 +2089,6 @@ this function can be called to do the same."
     (peep-dired-next-file))
 
   :bind ((dired-mode-map
-          ("P" . peep-dired)
           ("T" . tributi/toggle-window-split))
          (peep-dired-mode-map
           ("n" . peep-dired-next-file)
