@@ -22,7 +22,7 @@
                                  length
                                  1-)}*.
 
-*As of 2021-03-04 this abstract is under REVIEW; I still don't like it
+*As of 2021-03-04 this abstract is under REVIEW: I still don't like it
 and the wording feels off after the half of the paragraph.  Though I
 will stick to the first half of it and only change the other half.*
 
@@ -308,7 +308,8 @@ Luckily we are here in lisp, so that's a rather trivial task:
 :CUSTOM_ID: h:bad4e190-e76c-434a-bda1-b1317695fbc1
 :END:
 
-*As of 2021-02-20 this section is under review.*
+*As of 2021-02-20 this section is under REVIEW: make it more
+descriptive.*
 
 # TODO : Rewrite this parahraph with the macros.
 
@@ -788,7 +789,7 @@ Highlight every symbol that is the same as the symbol at point.
 :CUSTOM_ID: h:832f56b8-3a3a-4b2d-8b3e-f5e917aafdb2
 :END:
 
-*As of 2021-01-31 this section is under REVIEW; merge this section with
+*As of 2021-01-31 this section is under REVIEW: merge this section with
 the [[#h:bd0507c8-82c4-48d3-af74-b8f629303685][Miscellaneous]] section.*
 
 ** No backup files cluttering
@@ -2256,7 +2257,7 @@ wish to undo that particular deletion process.
 :CUSTOM_ID: h:bd0507c8-82c4-48d3-af74-b8f629303685
 :END:
 
-*As of 2021-01-31 this section is under REVIEW; merge this section with
+*As of 2021-01-31 this section is under REVIEW: merge this section with
 the [[#h:832f56b8-3a3a-4b2d-8b3e-f5e917aafdb2][Generic Settings]] section.*
 
 ** Scratch Buffer for Current Major Mode
@@ -4103,7 +4104,7 @@ See `org-capture-templates' for more information."
 :CUSTOM_ID: h:be2802e1-fd14-4bc0-b50c-62f3e7d58479
 :END:
 
-*As of 2021-02-27 this section is under REVIEW; I feel like this section
+*As of 2021-02-27 this section is under REVIEW: I feel like this section
 is out of place and should be integrated elsewhere.*
 
 Working with LISP inside Emacs is not hard at all.  It only requires
