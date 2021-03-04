@@ -22,6 +22,10 @@
                                  length
                                  1-)}*.
 
+*As of 2021-03-04 this abstract is under REVIEW; I still don't like it
+and the wording feels off after the half of the paragraph.  Though I
+will stick to the first half of it and only change the other half.*
+
 #+begin_abstract
 This  document is  my  own personal  configuration  for the  extensible,
 customizable,  self-documenting real-time  display editor  called Emacs.
