@@ -52,7 +52,7 @@ link to the repository can be found [[https://gitlab.com/indexfinn/dotemacs/-/co
 
 #+begin_src emacs-lisp
 (defun file->string (file)
-  "Convert FILE to string; return nil if file doesn't exists."
+  "Convert FILE to string."
   (when (and (file-readable-p file)
              (file-writable-p file))
     (with-temp-buffer
@@ -60,8 +60,7 @@ link to the repository can be found [[https://gitlab.com/indexfinn/dotemacs/-/co
       (buffer-substring-no-properties (point-min) (point-max)))))
 
 (defun file->list (file)
-  "Convert FILE to list of strings separated via new-line; return
-nil if file doesn't exists."
+  "Convert FILE to list of strings separated via new-line."
   (when (and (file-readable-p file)
              (file-writable-p file))
     (s-split
