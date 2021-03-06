@@ -61,9 +61,10 @@
   ;; files: `config.elc', `config.el', and `config.org'.  If none are
   ;; found throw an error.  Both `config.elc' and `config.el' are
   ;; recompiled on exit with `index/rebuild-emacs-init'.
-  (let ((o (expand-file-name "config.org" user-emacs-directory))
-        (e (expand-file-name "config.el" user-emacs-directory))
-        (c (expand-file-name "config.elc" user-emacs-directory)))
+  (let* ((b (expand-file-name "config" user-emacs-directory))
+         (o (s-append ".org" b))
+         (e (s-append ".el" b))
+         (c (s-append ".elc" b)))
     (leaf-keywords-init)
     (cond
      ((file-readable-p c) (load-file c))           ; Load `config.elc'
