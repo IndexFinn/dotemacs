@@ -2939,8 +2939,8 @@ Meant to be used in combination with `add-hook' and
          `("notify-send" "RSS"
            ,(concat "Title: " title "\nAuthor: " name "\nLink: " link))))))
 
-  (let ((state 0)
-        (filter elfeed-search-filter))
+  (lexical-let ((state 0)
+                (filter elfeed-search-filter))
 
     (advice-add 'elfeed-search-clear-filter
                 :after (lambda () (setq state 0)))
