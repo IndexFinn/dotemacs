@@ -39,7 +39,7 @@ Refer to  the section [[#h:e5803f69-1ef3-4d25-a619-2ef6b2f44756][This Document]]
 file and  its conventions.  This file  is source controlled with  [[http://www.git-scm.com/][Git]], a
 link to the repository can be found [[https://gitlab.com/indexfinn/dotemacs/-/commits/master][here]].
 
-#+TOC: headlines 8 insert TOC here, with eight headline levels
+#+TOC: headlines insert TOC here with infinite headline levels
 
 * Essentials
 :PROPERTIES:
