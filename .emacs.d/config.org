@@ -2600,7 +2600,7 @@ with desktop publishing software like Aldus PageMaker including versions
 of Lorem Ipsum.
 #+end_quote
 
-More reading up can be found on [[https://lipsum.com/][here]].
+You can read up more about it on [[https://lipsum.com/][here]].
 
 # TODO : DEPRECATED
 # It is always nice to have a way to insert dummy text into the buffer.
