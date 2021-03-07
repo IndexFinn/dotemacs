@@ -93,23 +93,29 @@ to a newer version every time Emacs closes.
 (leaf emacs
   :config
   (defun index/rebuild-emacs-init ()
-    "Compile the ORG configuration file to ELC."
+    "Compile the ORG configuration file to ELC/ELN."
     (let* ((b (expand-file-name "config" user-emacs-directory))
            (o (s-append ".org" b))
            (s (s-append ".org.sha" b))
            (e (s-append ".el" b))
-           (c (s-append ".elc" b)))
+           (c (s-append ".elc" b))
+           (n (s-append ".eln" b)))
       ;; Don't compile if `config.org' hasn't changed since last
       ;; session.
       (unless (s-equals? (sha1 (file->string o)) (file->string s))
         (when (file-readable-p c)
           (delete-file c))
         (org-babel-tangle-file o e)
-        (byte-compile-file e)
-        ;; If the `config.elc' file has not been created do not remove
-        ;; it.  This is so that we can source it in `init.el' when the
-        ;; compilation didn't work.  This is solely a safety measure.
-        (when (file-readable-p c)
+        ;; Compile to `config.eln' when native-comp is available.
+        (if (ignore-errors (native-comp-available-p))
+            (native-compile e n)
+          (byte-compile-file e))
+        ;; If the `config.elc' file or `config.eln' file has not been
+        ;; created do not remove it.  This is so that we can source it
+        ;; in `init.el' when the compilation didn't work.  This is
+        ;; solely a safety measure.
+        (when (or (file-readable-p c)
+                  (file-readable-p n))
           (delete-file e))
         ;; Write current `config.org' sha1 to `config.org.sha'.
         (with-temp-file s

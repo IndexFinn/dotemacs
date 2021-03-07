@@ -20,6 +20,10 @@
 ;;; Code :
 
 (eval-and-compile
+  ;; If `native-comp' is available use `gcc -O3' instead of `gcc -O2'.
+  (when (ignore-errors (native-comp-available-p))
+    (setq comp-speed 3))
+
   ;; This is for deferring the check for modifications mechanism to
   ;; `check-on-save' instead of `find-at-startup'-- which as the name
   ;; implies runs a command at startup.  The command is quite slow.
@@ -64,9 +68,11 @@
   (let* ((b (expand-file-name "config" user-emacs-directory))
          (o (s-append ".org" b))
          (e (s-append ".el" b))
-         (c (s-append ".elc" b)))
+         (c (s-append ".elc" b))
+         (n (s-append ".eln" b)))
     (leaf-keywords-init)
     (cond
+     ((file-readable-p n) (load-file n))           ; Load `config.eln'
      ((file-readable-p c) (load-file c))           ; Load `config.elc'
      ((file-readable-p e) (load-file e))           ; Load `config.el'
      ((file-readable-p o) (org-babel-load-file o)) ; Load `config.org'
