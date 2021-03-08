@@ -3916,6 +3916,8 @@ This function is auto generated via `index/exwm--raise-or-spawn'."
   (set-frame-parameter (selected-frame) 'alpha 92)
   (add-to-list 'default-frame-alist '(alpha . 92))
 
+  (add-to-list 'exwm-input-global-keys `(,(kbd "s-<f11>") . exwm-reset))
+
   :hook ((exwm-init-hook . index/exwm-init-functions)
          (exwm-update-class-hook . tributi/exwm-update-class))
   :bind (("s-b" . index/exwm-polybar-mode)
@@ -3925,6 +3927,7 @@ This function is auto generated via `index/exwm--raise-or-spawn'."
          ("s-q" . index/ewxm-clear-gpg-password)
          ("s-w" . index/exwm-wallpaper)
          ("s-s" . index/exwm-scratchpad)
+         ("s-<f11>" . exwm-reset)
          ("<XF86AudioLowerVolume>" . index/exwm-volume-down)
          ("<XF86AudioRaiseVolume>" . index/exwm-volume-up)
          ("<XF86AudioMute>" . index/exwm-volume-mute)))
