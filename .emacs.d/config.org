@@ -103,8 +103,9 @@ to a newer version every time Emacs closes.
       ;; Don't compile if `config.org' hasn't changed since last
       ;; session.
       (unless (s-equals? (sha1 (file->string o)) (file->string s))
-        (when (file-readable-p c)
-          (delete-file c))
+        (dolist (f (list c n))
+          (when (file-readable-p f)
+            (delete-file f)))
         (org-babel-tangle-file o e)
         ;; Compile to `config.eln' when native-comp is available.
         (if (ignore-errors (native-comp-available-p))
