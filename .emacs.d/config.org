@@ -5,7 +5,7 @@
 
 + Updated: *src_elisp{(format-time-string "%F %R %z")}*.
 + Emacs Version: *src_elisp{emacs-version}*.
-+ Org Version: *src_elisp{org-version}*.
++ Org Version: *src_elisp{(org-version)}*.
 + File Size: *src_elisp{(-> "config.org"
                             (expand-file-name user-emacs-directory)
                             file-truename
