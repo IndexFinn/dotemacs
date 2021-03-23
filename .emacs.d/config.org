@@ -3947,7 +3947,11 @@ This function is auto generated via `index/exwm--raise-or-spawn'."
          ("s--" . exwm-outer-gaps-decrement)))
 #+end_src
 
-* Web Development
+* Software Development
+:PROPERTIES:
+:CUSTOM_ID: h:0fed1b2a-5933-4146-a2cc-482cc6c0d2f6
+:END:
+** Web Development
 :PROPERTIES:
 :CUSTOM_ID: h:b2ee76c8-8799-4e5c-9f7f-15b0c7a2b94e
 :END:
@@ -3956,7 +3960,7 @@ I do minor web-development that just includes HTML/CSS and no other
 resources such as JAVASCRIPT.  As I only use those two, the packages are
 rather simple.
 
-** Emmet
+*** Emmet
 :PROPERTIES:
 :CUSTOM_ID: h:1e06fb01-0495-408e-b39f-87b5f2cd169e
 :END:
@@ -3983,7 +3987,7 @@ This is a very quick and less annoying way to write HTML.
   :hook ((html-mode-hook . emmet-mode)))
 #+end_src
 
-** Rainbow
+*** Rainbow
 :PROPERTIES:
 :CUSTOM_ID: h:cb5fc3c4-f1ae-4312-ab7b-61e5a6441478
 :END:
@@ -3997,7 +4001,7 @@ like =#454545= will be shown with its corresponding background.
   :hook (((html-mode-hook css-mode-hook) . rainbow-mode)))
 #+end_src
 
-** Website
+*** Website
 :PROPERTIES:
 :CUSTOM_ID: h:94e138ec-eed4-42b3-a810-580aa7c6ac7e
 :END:
@@ -4108,7 +4112,7 @@ See `org-capture-templates' for more information."
   :bind (("C-c M-e M-b" . org-capture)))
 #+end_src
 
-* REVIEW Lisp
+** REVIEW Lisp
 :PROPERTIES:
 :CUSTOM_ID: h:be2802e1-fd14-4bc0-b50c-62f3e7d58479
 :END:
@@ -4123,11 +4127,11 @@ This makes for a smooth REPL-- read-eval-print loop-- experience, which
 supersedes LISP above other programming languages: easily act on the
 code.
 
-** Elisp
+*** Elisp
 :PROPERTIES:
 :CUSTOM_ID: h:f53ec8f1-e054-4ef5-b046-deccfb950c43
 :END:
-*** TODO Lispy - Tree-like Lisp
+**** TODO Lispy - Tree-like Lisp
 :PROPERTIES:
 :CUSTOM_ID: h:60cb0dca-5506-4f84-a01f-75f6a04c4f57
 :END:
@@ -4153,7 +4157,7 @@ http://danmidwood.com/content/2014/11/21/animated-paredit.html
 ;;          (clojure-mode-hook . paredit-mode)))
 #+end_src
 
-** COMMENT DEPRECATED Common Lisp
+*** COMMENT DEPRECATED Common Lisp
 :PROPERTIES:
 :CUSTOM_ID: h:7c6b3758-9583-42ee-a49b-03f96d49a27b
 :END:
@@ -4169,7 +4173,7 @@ http://danmidwood.com/content/2014/11/21/animated-paredit.html
   :straight t)
 #+end_src
 
-** Scheme
+*** Scheme
 :PROPERTIES:
 :CUSTOM_ID: h:0b0e4e18-7923-4655-876d-b7e98265af12
 :END:
@@ -4181,7 +4185,7 @@ http://danmidwood.com/content/2014/11/21/animated-paredit.html
   (setq geiser-active-implementations '(guile)))
 #+end_src
 
-** Clojure
+*** Clojure
 :PROPERTIES:
 :CUSTOM_ID: h:5fefc3b5-d879-4f56-9ea3-6d226bb1bd6b
 :END:
