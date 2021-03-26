@@ -102,7 +102,9 @@ to a newer version every time Emacs closes.
            (n (s-append ".eln" b)))
       ;; Don't compile if `config.org' hasn't changed since last
       ;; session.
-      (unless (s-equals? (sha1 (file->string o)) (file->string s))
+      (unless (s-equals?
+               (secure-hash 'sha256 (file->string o))
+               (file->string s))
         (dolist (f (list c n))
           (when (file-readable-p f)
             (delete-file f)))
@@ -118,9 +120,9 @@ to a newer version every time Emacs closes.
         (when (or (file-readable-p c)
                   (file-readable-p n))
           (delete-file e))
-        ;; Write current `config.org' sha1 to `config.org.sha'.
+        ;; Write current `config.org' SHA-256 to `config.org.sha'.
         (with-temp-file s
-          (insert (sha1 (file->string o)))))))
+          (insert (secure-hash 'sha256 (file->string o)))))))
   :hook ((kill-emacs-hook . index/rebuild-emacs-init)))
 #+end_src
 
