@@ -2834,6 +2834,23 @@ questions.  Else use completion to select the tab to switch to."
          ("C-x t s" . tab-switcher)))
 #+end_src
 
+** Make Screenshot
+
+#+begin_src emacs-lisp
+(defun index/make-screenshot (&optional desktop?)
+  "Make a screenshot of the current Emacs frame.
+If DESKTOP? is provided, make an image with PNG format and
+capture the whole desktop instead of SVG and only Emacs."
+  (if desktop?
+      (prog1 "/tmp/emacs-screenshot.png"
+        (shell-command "import -window root /tmp/emacs-screenshot.png"))
+    (prog1 "/tmp/emacs-screenshot.svg"
+      (write-region
+       (x-export-frames nil 'svg)
+       nil
+       "/tmp/emacs-screenshot.svg"))))
+#+end_src
+
 * Utilities
 :PROPERTIES:
 :CUSTOM_ID: h:ed0a862a-6c16-4059-8e14-7fcdd3f6a2e6
