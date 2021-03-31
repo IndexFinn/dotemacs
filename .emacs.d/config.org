@@ -2940,18 +2940,18 @@ This will launch `mpv' without any buffer."
           (mark-whole-buffer)
           (elfeed-search-tag-all-unread)))))
 
-  (defun index/elfeed-new-entry-notification (entry)
-    "Spawns a notify-send shell process after `elfeed-new-entry'
-Meant to be used in combination with `add-hook' and
-`elfeed-new-entry-hook'"
-    (let* ((title (elfeed-entry-title entry))
-           (name (elfeed-feed-title (elfeed-entry-feed entry)))
-           (link (elfeed-entry-link entry)))
-      (unless (or (string-match "^magnet:" link)
-                  (string-match "\.torrent$" link))
-        (index/call-process
-         `("notify-send" "RSS"
-           ,(concat "Title: " title "\nAuthor: " name "\nLink: " link))))))
+;;   (defun index/elfeed-new-entry-notification (entry)
+;;     "Spawns a notify-send shell process after `elfeed-new-entry'
+;; Meant to be used in combination with `add-hook' and
+;; `elfeed-new-entry-hook'"
+;;     (let* ((title (elfeed-entry-title entry))
+;;            (name (elfeed-feed-title (elfeed-entry-feed entry)))
+;;            (link (elfeed-entry-link entry)))
+;;       (unless (or (string-match "^magnet:" link)
+;;                   (string-match "\.torrent$" link))
+;;         (index/call-process
+;;          `("notify-send" "RSS"
+;;            ,(concat "Title: " title "\nAuthor: " name "\nLink: " link))))))
 
   (lexical-let ((state 0)
                 (filter elfeed-search-filter))
