@@ -1886,6 +1886,11 @@ Calls `index/focused-writing' when called with an argument.
   :straight t
   :bind (("H-e" . embark-act)))
 
+(leaf orderless
+  :straight t
+  :config
+  (setq completion-styles '(orderless)))
+
 (leaf mini-frame
   :straight t
   :commands (selectrum-completing-read selectrum-read)
@@ -1904,7 +1909,6 @@ Calls `index/focused-writing' when called with an argument.
           ;; s-expression out, if you don't use EXWM.
           (parent-frame)))
   (mini-frame-mode 1))
-
 #+end_src
 
 * Buffer, Directory, and Window Management
