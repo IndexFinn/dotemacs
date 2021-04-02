@@ -1891,6 +1891,16 @@ Calls `index/focused-writing' when called with an argument.
   :config
   (setq completion-styles '(orderless)))
 
+(leaf counsel
+  :straight t
+  :config
+  (setq counsel-rg-base-command
+        '("rg" "-M" "240" "--with-filename" "--no-heading"
+          "--line-number" "--color" "never" "--hidden" "--follow"
+          "--glob" "!{.git}" "%s"))
+  :bind (("C-x C-r" . counsel-recentf)
+         ("C-M-s" . counsel-rg)))
+
 (leaf mini-frame
   :straight t
   :commands (selectrum-completing-read selectrum-read)
