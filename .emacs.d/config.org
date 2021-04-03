@@ -2637,7 +2637,7 @@ You can read up more about it on [[https://lipsum.com/][here]].
   :require cl
   :config
 
-  (defvar index/lorem-words
+  (defvar +index/lorem-words
     '("Sed" "ut" "perspiciatis" "unde" "omnis" "iste" "natus" "error"
       "sit" "voluptatem" "accusantium" "doloremque" "laudantium" "totam"
       "rem" "aperiam" "eaque" "ipsa" "quae" "ab" "illo" "inventore"
@@ -2675,23 +2675,23 @@ You can read up more about it on [[https://lipsum.com/][here]].
       "voluptatibus" "maiores" "alias" "consequatur" "aut"
       "perferendis" "doloribus" "asperiores" "repellat"))
 
-  (defvar index/lorem-punctuation
+  (defvar +index/lorem-punctuation
     '("." "." "?" "!"))
 
-  (defun tributi/lorem--choice-words (count &optional s)
-    (let* ((l (length index/lorem-words))
+  (defun +tributi/lorem-choice-words (count &optional s)
+    (let* ((l (length +index/lorem-words))
            (s (random l))
            (f (+ s count))
            (e (if (< l f) l f)))
       (append
-       (subseq index/lorem-words s e)
-       (if (= e l) (tributi/lorem--choice-words (- f l) 0)))))
+       (subseq +index/lorem-words s e)
+       (if (= e l) (+tributi/lorem-choice-words (- f l) 0)))))
 
-  (defun index/lorem--generator (count)
-    (let* ((lst (tributi/lorem--choice-words count))
+  (defun +index/lorem-generator (count)
+    (let* ((lst (+tributi/lorem-choice-words count))
            (last (car (last lst)))
-           (rand (random (length index/lorem-punctuation)))
-           (dot (car (subseq index/lorem-punctuation rand (1+ rand)))))
+           (rand (random (length +index/lorem-punctuation)))
+           (dot (car (subseq +index/lorem-punctuation rand (1+ rand)))))
       (setf (car lst) (capitalize (car lst)))
       (s-append dot (s-join " " lst))))
 
@@ -2706,8 +2706,8 @@ text after the second one."
     (when (eq last-command 'index/lorem-insert)
       (insert "  "))
     (if (listp arg)
-        (insert (index/lorem--generator 10))
-      (insert (index/lorem--generator arg))))
+        (insert (+index/lorem-generator 10))
+      (insert (+index/lorem-generator arg))))
   :bind ((index/keys-minor-mode-map
           ("M-i" . index/lorem-insert))))
 #+end_src
