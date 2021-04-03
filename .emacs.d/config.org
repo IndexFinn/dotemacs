@@ -1598,6 +1598,22 @@ See `org-capture-templates' for more information."
   :bind (("C-c t" . index/find-todo-file)))
 #+end_src
 
+*** Appear
+
+*As of 2021-04-03 this section is under review; add more wording to this
+section.*
+
+When hovering over emphasis markers such as =*= or =/= it will display them,
+otherwise hide them.
+
+#+begin_src emacs-lisp
+(leaf org-appear
+  :straight (org-appear :host github :repo "awth13/org-appear")
+  :config
+  (setq org-hide-emphasis-markers t)
+  :hook ((org-mode-hook . org-appear-mode)))
+#+end_src
+
 ** COMMENT DEPRECATED LaTeX
 :PROPERTIES:
 :CUSTOM_ID: h:736694ba-d59f-4a44-8b68-32ba7a7ef1cd
