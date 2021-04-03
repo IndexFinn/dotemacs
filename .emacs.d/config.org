@@ -4519,11 +4519,10 @@ If called with a prefix indent, otherwise don't indent."
   (defvar index/big-font-value 4
     "The amount to raise the font size by. In `pt'.")
 
-  (defmacro index/big-font--builder (font sign)
+  (defmacro +index/big-font-builder (font sign)
     `(->> (* 10 index/big-font-value)
           (,sign (face-attribute ,font :height))
           (set-face-attribute ,font nil :height)))
-
   (define-minor-mode index/big-font-mode
     "Enlarges the global font by `index/big-font-value'."
     :init-value nil
@@ -4534,56 +4533,15 @@ If called with a prefix indent, otherwise don't indent."
      (index/small-font-mode
       (ignore))
      (index/big-font-mode
-      (index/big-font--builder 'default +)
-      (index/big-font--builder 'variable-pitch +)
-      (index/big-font--builder 'fixed-pitch +))
+      (+index/big-font-builder 'default +)
+      (+index/big-font-builder 'variable-pitch +)
+      (+index/big-font-builder 'fixed-pitch +))
      (t
-      (index/big-font--builder 'default -)
-      (index/big-font--builder 'variable-pitch -)
-      (index/big-font--builder 'fixed-pitch -))))
+      (+index/big-font-builder 'default -)
+      (+index/big-font-builder 'variable-pitch -)
+      (+index/big-font-builder 'fixed-pitch -))))
 
   :bind (("C-c C-=" . index/big-font-mode)))
-#+end_src
-
-** DEPRECATED Small Font
-:PROPERTIES:
-:CUSTOM_ID: h:e3856980-ba71-4ec2-96dc-3d667afc06b4
-:END:
-
-*As of 2021-02-20 this section is deprecated; didn't really need a
-small font version, though it might be cool to have.*
-
-#+begin_src emacs-lisp
-(leaf emacs
-  :config
-  (defvar index/small-font-value 4
-    "The amount to raise the font size by. In `pt'.")
-
-  (defmacro index/small-font--builder (font sign)
-    `(->> (* 10 index/small-font-value)
-          (,sign (face-attribute ,font :height))
-          (set-face-attribute ,font nil :height)))
-
-  (define-minor-mode index/small-font-mode
-    "Enlarges the global font by `index/small-font-value'."
-    :init-value nil
-    :global t
-    :lighter " SmallFont"
-    (cond
-     ;; ignore when `index/big-font-mode' is enabled
-     (index/big-font-mode
-      (ignore))
-     (index/small-font-mode
-      (index/small-font--builder 'default -)
-      (index/small-font--builder 'variable-pitch -)
-      (index/small-font--builder 'fixed-pitch -))
-     (t
-      (index/small-font--builder 'default +)
-      (index/small-font--builder 'variable-pitch +)
-      (index/small-font--builder 'fixed-pitch +))))
-
-  :bind ((index/keys-minor-mode-map
-          ("C-c =" . index/small-font-mode))))
 #+end_src
 
 ** Buffer
