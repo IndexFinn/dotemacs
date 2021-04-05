@@ -3,24 +3,24 @@
 #+email: public@finnsauer.com
 #+options: toc:nil
 
-+ Updated: src_elisp{(format-time-string "%F %R %z")}.
-+ Emacs Version: src_elisp{emacs-version}.
-+ Org Version: src_elisp{(org-version)}.
-+ File Size: src_elisp{(-> "config.org"
++ Updated: *src_elisp{(format-time-string "%F %R %z")}*.
++ Emacs Version: *src_elisp{emacs-version}*.
++ Org Version: *src_elisp{(org-version)}*.
++ File Size: *src_elisp{(-> "config.org"
                             (expand-file-name user-emacs-directory)
                             file-truename
                             file-attributes
                             file-attribute-size
-                            file-size-human-readable)}.
-+ SRC-Blocks: src_elisp{(length
+                            file-size-human-readable)}*.
++ SRC-Blocks: *src_elisp{(length
                           (s-match-strings-all
                            "#\\+begin_src emacs-lisp"
-                           (buffer-string)))}.
-+ Document Lines: src_elisp{(-> "config.org"
+                           (buffer-string)))}*.
++ Document Lines: *src_elisp{(-> "config.org"
                                  (expand-file-name user-emacs-directory)
                                  file->list
                                  length
-                                 1-)}.
+                                 1-)}*.
 
 *As of 2021-03-04 this abstract is under REVIEW: I still don't like it
 and the wording feels off after the half of the paragraph.  Though I
