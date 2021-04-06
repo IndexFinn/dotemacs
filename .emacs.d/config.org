@@ -1609,6 +1609,9 @@ See `org-capture-templates' for more information."
 #+end_src
 
 *** Appear
+:PROPERTIES:
+:CUSTOM_ID: h:ebc978c3-42eb-4073-91e4-3ff0cda87be2
+:END:
 
 *As of 2021-04-03 this section is under review; add more wording to this
 section.*
