@@ -78,6 +78,16 @@ strings with no white space in the strings."
   (apply
    #'call-process
    `(,(car command) nil 0 nil ,@(cdr command))))
+
+(defmacro test (&rest body)
+  "Run a test of BODY.
+Repeat it 10000 times and return the time it took in human
+readable form."
+  (declare (indent 0) (debug t))
+  `(->> (benchmark-run 10000
+          ,@body)
+        car
+        seconds-to-string))
 #+end_src
 
 ** Recompile this document
