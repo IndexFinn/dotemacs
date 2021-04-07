@@ -4471,7 +4471,8 @@ away from the modifier key.
 #+begin_src emacs-lisp
 (leaf avy
   :straight t
-  :bind (("M-s" . avy-goto-char-timer)))
+  :bind ((index/keys-minor-mode-map
+          ("M-s" . avy-goto-char-timer))))
 #+end_src
 
 ** Expand Region
