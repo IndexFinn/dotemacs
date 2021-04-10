@@ -1301,7 +1301,7 @@ TODO : Structure these sub headers more nicely.
           ("v" . "verse")
           ("?" . "question")))
   (and
-   (setf (nthcdr 4 org-emphasis-regexp-components) 5)
+   (setf (nthcdr 4 org-emphasis-regexp-components) '(5))
    (org-set-emph-re 'org-emphasis-regexp-components org-emphasis-regexp-components))
 
   (setq org-babel-default-header-args
