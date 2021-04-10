@@ -2874,6 +2874,9 @@ questions.  Else use completion to select the tab to switch to."
 #+end_src
 
 ** Make Screenshot
+:PROPERTIES:
+:CUSTOM_ID: h:3021258e-22dc-42d0-9fec-b164a32b25fb
+:END:
 
 #+begin_src emacs-lisp
 (defun index/make-screenshot (&optional desktop?)
