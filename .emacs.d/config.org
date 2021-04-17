@@ -3707,6 +3707,7 @@ This is a substitute for the program /tremc/.
   (define-minor-mode index/exwm-polybar-mode
     "Toggle between polybar enabled and disabled."
     :global t
+    :init-value t
     :lighter ""
     (if index/exwm-polybar-mode
         (setq
@@ -3969,7 +3970,6 @@ This function is auto generated via `index/exwm--raise-or-spawn'."
       (index/call-process "picom")
       (index/call-process "bwp")
       (index/call-process "xsetroot -cursor_name left_ptr")
-      (index/call-process "polybar exwm")
 
       (index/exwm--raise-or-spawn "qutebrowser" "s-g")
       (index/exwm--raise-or-spawn "arandr" "s-a")
