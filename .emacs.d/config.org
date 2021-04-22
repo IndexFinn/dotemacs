@@ -257,30 +257,6 @@ priority over other minor modes.  Called via the
   :hook ((after-load-functions . index/keys-have-priority)))
 #+end_example
 
-** COMMENT DEPRECATED Authinfo
-:PROPERTIES:
-:CUSTOM_ID: h:e12f564e-36f9-40eb-8795-088cc90d9d33
-:END:
-
-*The following has been DEPRECATED, as /.authinfo.gpg/ will get replaced
-via the program =pass= or also called =password-store=.  This was stolen
-from [[https://protesilaos.com/][prot]] anyways where at the moment I didn't quite understand
-authinfo.*
-
-#+begin_src emacs-lisp
-(leaf auth-info
-  :config
-  (setq auth-sources '("~/.authinfo.gpg"))
-
-  (defun index/common-auth-get-field (host prop)
-    "Find PROP in `auth-sources' for HOST entry."
-    (let* ((source (auth-source-search :host host))
-           (field (plist-get (flatten-list source) prop)))
-      (if source
-          field
-        (user-error "No entry in auth sources")))))
-#+end_src
-
 ** COMMENT DEPRECATED Scheme Conventions
 :PROPERTIES:
 :CUSTOM_ID: h:9886bb4f-2f5f-4831-8f52-6ffbd9d7e3e4
@@ -1259,6 +1235,21 @@ Better have the backups local; you can never know.
   :commands eshell
   :config
   (setq tramp-backup-directory-alist backup-directory-alist))
+#+end_src
+
+** Authinfo
+:PROPERTIES:
+:CUSTOM_ID: h:e12f564e-36f9-40eb-8795-088cc90d9d33
+:END:
+
+Setting the =auth-sources= to a /.gpg/ file is mandatory for obvious
+reasons.  If you are ever asked to store a password, you can safely say
+yes.
+
+#+begin_src emacs-lisp
+(leaf auth-info
+  :config
+  (setq auth-sources '("~/.authinfo.gpg")))
 #+end_src
 
 * Writing
