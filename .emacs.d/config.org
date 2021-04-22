@@ -257,42 +257,6 @@ priority over other minor modes.  Called via the
   :hook ((after-load-functions . index/keys-have-priority)))
 #+end_example
 
-** COMMENT DEPRECATED Scheme Conventions
-:PROPERTIES:
-:CUSTOM_ID: h:9886bb4f-2f5f-4831-8f52-6ffbd9d7e3e4
-:END:
-
-I love how Scheme does its whole thing; Scheme truly is an amazing Lisp
-dialect.  Sadly I can't port the brackets functionality to Emacs Lisp
-but I certainly can port Schemes naming on boolean questions; is that
-true or false.
-
-In Scheme you append the function with a question mark =?=.  It would
-look something like this:
-
-| Emacs Lisp         | Scheme            |
-|--------------------+-------------------|
-| =bound-and-true-p= | =bound-and-true?= |
-| =region-active-p=  | =region-active?=  |
-| =file-readable-p=  | =file-readable?=  |
-
-Just to name a few.  To write this completely yourself would be insane,
-as there are a lot of those functions.
-
-Luckily we are here in lisp, so that's a rather trivial task:
-
-#+begin_src emacs-lisp
-(leaf emacs
-  :config
-  (dolist (elem (apropos-internal "^[a-zA-z].+-p$"))
-    (defalias
-      (intern (s-replace-regexp
-               "-p$"
-               "?"
-               (symbol-name elem)))
-      elem)))
-#+end_src
-
 * REVIEW Garbage Collection
 :PROPERTIES:
 :CUSTOM_ID: h:bad4e190-e76c-434a-bda1-b1317695fbc1
