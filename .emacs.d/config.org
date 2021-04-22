@@ -2651,12 +2651,6 @@ of Lorem Ipsum.
 
 You can read up more about it on [[https://lipsum.com/][here]].
 
-# TODO : DEPRECATED
-# It is always nice to have a way to insert dummy text into the buffer.
-# This will use the a function from =emmet-mode= since it is kinda useless
-# to redefine a preexisting function.  Some Linux enthusiasts will call
-# this Bloat Prevention-- but I call it recycling and laziness.
-
 #+begin_src emacs-lisp
 (leaf emacs
   :require cl
