@@ -22,17 +22,13 @@
                                  length
                                  1-)}*.
 
-*As of 2021-03-04 this abstract is under REVIEW: I still don't like it
-and the wording feels off after the half of the paragraph.  Though I
-will stick to the first half of it and only change the other half.*
-
 #+begin_abstract
 This  document is  my  own personal  configuration  for the  extensible,
 customizable,  self-documenting real-time  display editor  called Emacs.
 This configuration file is written in the so called [[https://en.wikipedia.org/wiki/Literate_programming][Literate Programming]]
-paradigm; the focus lies more on the  text than the actual code, as they
-both go  hand-in-hand.  This  is made  possible via  [[https://orgmode.org/][Org Mode]]:  the best
-[[https://daringfireball.net/projects/markdown/][Markdown]] out there.
+paradigm: the  focus lies  upon the  text.  The actual  code is  just an
+addition to the  text and should merely underline the  thought.  This is
+made possible via [[https://orgmode.org/][Org Mode]]-- the best [[https://daringfireball.net/projects/markdown/][Markdown]] out there.
 #+end_abstract
 
 Refer to  the section [[#h:e5803f69-1ef3-4d25-a619-2ef6b2f44756][This Document]]  to get more information  about this
