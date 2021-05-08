@@ -2024,12 +2024,24 @@ this function can be called to do the same."
         (dired-do-kill-lines)
       (revert-buffer)))
 
+  (defun index/dired-call-process ()
+    "Run `index/call-process' with command on file."
+    (interactive)
+    (index/call-process
+     `(,(completing-read
+         "Launch in $PATH: "
+         (flatten-tree
+          (--map (directory-files-recursively it ".")
+                 (s-split ":" (getenv "PATH")))))
+       ,(dired-get-filename))))
+
   :hook ((dired-mode-hook . dired-hide-details-mode))
 
   :bind ((dired-mode-map
           ("<return>" . dired-find-alternate-file)
           ("o" . index/dired-mpv-open)
           ("h" . index/dired-hide-dot-files)
+          ("e" . index/dired-call-process)
           ("<tab>" . dired-subtree-toggle)
           ("<C-tab>" . dired-subtree-cycle)
           ("P" . peep-dired))))
