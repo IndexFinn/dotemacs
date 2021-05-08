@@ -4557,6 +4557,17 @@ If called with a prefix indent, otherwise don't indent."
   :bind (("C-x C-b" . ibuffer)))
 #+end_src
 
+** God Mode
+:PROPERTIES:
+:CUSTOM_ID: h:7da76747-6bbd-4381-917c-777a8cd244d1
+:END:
+
+#+begin_src emacs-lisp
+(leaf god-mode
+  :straight t
+  :bind (("M-SPC" . god-mode)))
+#+end_src
+
 * This Document
 :PROPERTIES:
 :CUSTOM_ID: h:e5803f69-1ef3-4d25-a619-2ef6b2f44756
