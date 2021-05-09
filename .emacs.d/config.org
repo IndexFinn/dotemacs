@@ -4568,7 +4568,11 @@ If called with a prefix indent, otherwise don't indent."
 #+begin_src emacs-lisp
 (leaf god-mode
   :straight t
-  :bind (("M-SPC" . god-mode)))
+  :config
+  (require 'god-mode-isearch)
+  (define-key isearch-mode-map (kbd "M-SPC") #'god-mode-isearch-activate)
+  (define-key god-mode-isearch-map (kbd "M-SPC") #'god-mode-isearch-disable)
+  :bind (("M-SPC" . god-mode-all)))
 #+end_src
 
 * This Document
