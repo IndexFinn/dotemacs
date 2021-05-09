@@ -4577,6 +4577,8 @@ If called with a prefix indent, otherwise don't indent."
   (global-set-key (kbd "C-x C-2") #'split-window-below)
   (global-set-key (kbd "C-x C-3") #'split-window-right)
   (global-set-key (kbd "C-x C-0") #'delete-window)
+
+  (add-to-list 'god-exempt-major-modes 'elfeed-search-mode)
   :bind (("M-SPC" . god-mode-all)))
 #+end_src
 
