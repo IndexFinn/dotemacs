@@ -267,8 +267,8 @@ descriptive.*
 
 # TODO : Rewrite this parahraph with the macros.
 
-#+MACRO: most-positive-fixnum (eval most-positive-fixnum)
-#+MARCO: most-positive-fixnum-in-bit (eval (truncate (log most-positive-fixnum 2)))
+#+macro: most-positive-fixnum (eval most-positive-fixnum)
+#+marco: most-positive-fixnum-in-bit (eval (truncate (log most-positive-fixnum 2)))
 
 I tweaked with the garbage collection system, so emacs starts up faster.
 I set the `threshold' variable to a high value.  Effectively shut down
@@ -1006,8 +1006,8 @@ To stop edebugging, just re-evaluate the lisp s-expression.
 If the buffer is read-only, activate some extra keybindings that make
 life easy:
 
-#+CAPTION: The function name and description where automatically generated;
-#+CAPTION: see [[#h:80d39c8d-709d-4a27-9008-89cfed7d87e7][how]].
+#+caption: The function name and description where automatically generated;
+#+caption: see [[#h:80d39c8d-709d-4a27-9008-89cfed7d87e7][how]].
 | Keybinding | Function Name                    | Description                                                                     |
 |------------+----------------------------------+---------------------------------------------------------------------------------|
 | SPC        | View-scroll-page-forward         | Scroll "page size" or prefix LINES lines forward in View mode.                  |
@@ -1024,7 +1024,7 @@ life easy:
 | '          | register-to-point                | Move point to location stored in a register.                                    |
 | n          | View-search-last-regexp-forward  | Search forward for first (or prefix Nth) instance of last regexp in View mode.  |
 | p          | View-search-last-regexp-backward | Search backward for first (or prefix Nth) instance of last regexp in View mode. |
-#+TBLFM: $2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation (key-binding (kbd $1))))))
+#+tblfm: $2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation (key-binding (kbd $1))))))
 
 Of course you can allways look at all the possible keybindings with =C-h
 m=.  When =view-mode= is active, search for /View/.
@@ -1132,13 +1132,13 @@ It seems like a redundant feature, but I think it forces the user to
 stop the Lisp experience of trial and error to look at the minibuffer
 and then look back.  This will negate it.
 
-#+CAPTION: The function name and description where automatically generated;
-#+CAPTION: see [[#h:80d39c8d-709d-4a27-9008-89cfed7d87e7][how]].
+#+caption: The function name and description where automatically generated;
+#+caption: see [[#h:80d39c8d-709d-4a27-9008-89cfed7d87e7][how]].
 | Keybinding | Function Name  | Description                                               |
 |------------+----------------+-----------------------------------------------------------|
 | C-x C-e    | eval-last-sexp | Evaluate sexp before point; print value in the echo area. |
 | C-M-x      | eval-defun     | This function has :override advice: ‘edebug-eval-defun’.  |
-#+TBLFM: $2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation (key-binding (kbd $1))))))
+#+tblfm: $2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation (key-binding (kbd $1))))))
 
 #+begin_src emacs-lisp
 (leaf eros
@@ -1147,13 +1147,13 @@ and then look back.  This will negate it.
   (eros-mode 1))
 #+end_src
 
-#+CAPTION: The function name and description where automatically generated;
-#+CAPTION: see [[#h:80d39c8d-709d-4a27-9008-89cfed7d87e7][how]].
+#+caption: The function name and description where automatically generated;
+#+caption: see [[#h:80d39c8d-709d-4a27-9008-89cfed7d87e7][how]].
 | Keybinding | Function Name       | Description                                         |
 |------------+---------------------+-----------------------------------------------------|
 | C-x C-e    | eros-eval-last-sexp | Wrapper for ‘eval-last-sexp’ that overlays results. |
 | C-M-x      | eros-eval-defun     | Wrapper for ‘eval-defun’ that overlays results.     |
-#+TBLFM: $2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation (key-binding (kbd $1))))))
+#+tblfm: $2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation (key-binding (kbd $1))))))
 
 ** DEPRECATED Vterm
 :PROPERTIES:
@@ -2530,8 +2530,8 @@ convention is, that you put the function's argument name in upper case.
 
 The keybinding for these are the following:
 
-#+CAPTION: The function name and description where automatically generated;
-#+CAPTION: see [[#h:80d39c8d-709d-4a27-9008-89cfed7d87e7][how]].
+#+caption: The function name and description where automatically generated;
+#+caption: see [[#h:80d39c8d-709d-4a27-9008-89cfed7d87e7][how]].
 | Keybinding | Function Name   | Description                                                          |
 |------------+-----------------+----------------------------------------------------------------------|
 | C-x C-l    | downcase-region | Convert the region to lower case.  In programs, wants two arguments. |
@@ -2539,7 +2539,7 @@ The keybinding for these are the following:
 | M-l        | downcase-word   | Convert to lower case from point to end of word, moving over.        |
 | M-u        | upcase-word     | Convert to upper case from point to end of word, moving over.        |
 | M-c        | capitalize-word | Capitalize from point to the end of word, moving over.               |
-#+TBLFM: $2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation (key-binding (kbd $1))))))
+#+tblfm: $2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation (key-binding (kbd $1))))))
 
 But why are there no DO WHAT I MEAN versions?  It seems to be a perfect
 fit.  When I have a region active operate on that else operate on word.
@@ -2559,8 +2559,8 @@ these functions, we just need to bind them.
 
 Afterwards the table will look like this:
 
-#+CAPTION: The function name and description where automatically generated;
-#+CAPTION: see [[#h:80d39c8d-709d-4a27-9008-89cfed7d87e7][how]].
+#+caption: The function name and description where automatically generated;
+#+caption: see [[#h:80d39c8d-709d-4a27-9008-89cfed7d87e7][how]].
 | Keybinding | Function Name   | Description                                                                  |
 |------------+-----------------+------------------------------------------------------------------------------|
 | C-x C-l    | nil             | nil                                                                          |
@@ -2568,7 +2568,7 @@ Afterwards the table will look like this:
 | M-l        | downcase-dwim   | Downcase words in the region, if active; if not, downcase word at point.     |
 | M-u        | upcase-dwim     | Upcase words in the region, if active; if not, upcase word at point.         |
 | M-c        | capitalize-dwim | Capitalize words in the region, if active; if not, capitalize word at point. |
-#+TBLFM: $2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation (key-binding (kbd $1))))))
+#+tblfm: $2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation (key-binding (kbd $1))))))
 
 ** Insert Date
 :PROPERTIES:
@@ -4641,23 +4641,23 @@ $2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation
 You put this-- as I stated above-- under the table:
 
 #+begin_example ascii
-#+CAPTION: The function name and description where automatically generated;
-#+CAPTION: see [[#h:80d39c8d-709d-4a27-9008-89cfed7d87e7][how]].
+#+caption: The function name and description where automatically generated;
+#+caption: see [[#h:80d39c8d-709d-4a27-9008-89cfed7d87e7][how]].
 | Keybinding | Function Name | Description |
 |------------+---------------+-------------|
 | C-M-q      |               |             |
-#+TBLFM: $2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation (key-binding (kbd $1))))))
+#+tblfm: $2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation (key-binding (kbd $1))))))
 #+end_example
 
 And then execute the formula via =C-c C-c= while the point is above the formula:
 
 #+begin_example ascii
-#+CAPTION: The function name and description where automatically generated;
-#+CAPTION: see [[#h:80d39c8d-709d-4a27-9008-89cfed7d87e7][how]].
+#+caption: The function name and description where automatically generated;
+#+caption: see [[#h:80d39c8d-709d-4a27-9008-89cfed7d87e7][how]].
 | Keybinding | Function Name        | Description                      |
 |------------+----------------------+----------------------------------|
 | C-M-q      | index/auto-fill-mode | Wrapper around ‘auto-fill-mode’. |
-#+TBLFM: $2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation (key-binding (kbd $1))))))
+#+tblfm: $2='(key-binding (kbd $1))::$3='(ignore-errors (car (s-split "\n" (documentation (key-binding (kbd $1))))))
 #+end_example
 
 This is very easy and I highly recommend to look up the [[https://orgmode.org/manual/Tables.html#Tables][table
