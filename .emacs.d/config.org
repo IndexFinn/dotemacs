@@ -3953,8 +3953,11 @@ This function is auto generated via `index/exwm--raise-or-spawn'."
          ("s-s" . index/exwm-scratchpad)
          ("s-<f11>" . exwm-reset)
          ("<XF86AudioLowerVolume>" . index/exwm-volume-down)
+         ("<kp-1>" . index/exwm-volume-down)
          ("<XF86AudioRaiseVolume>" . index/exwm-volume-up)
-         ("<XF86AudioMute>" . index/exwm-volume-mute)))
+         ("<kp-2>" . index/exwm-volume-up)
+         ("<XF86AudioMute>" . index/exwm-volume-mute)
+         ("<kp-3>" . index/exwm-volume-mute)))
 
 (leaf exwm-outer-gaps
   :straight (exwm-outer-gaps :host github :repo "lucasgruss/exwm-outer-gaps")
