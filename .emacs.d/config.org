@@ -4573,10 +4573,6 @@ If called with a prefix indent, otherwise don't indent."
   (define-key isearch-mode-map (kbd "M-SPC") #'god-mode-isearch-activate)
   (define-key god-mode-isearch-map (kbd "M-SPC") #'god-mode-isearch-disable)
 
-  (global-set-key (kbd "C-x C-1") #'delete-other-windows)
-  (global-set-key (kbd "C-x C-2") #'split-window-below)
-  (global-set-key (kbd "C-x C-3") #'split-window-right)
-  (global-set-key (kbd "C-x C-0") #'delete-window)
   (define-key god-local-mode-map (kbd ".") #'repeat)
 
   (add-to-list 'god-exempt-major-modes 'elfeed-search-mode)
