@@ -969,11 +969,13 @@ To access this file with a keybinding; easy opening.
   (defun index/find-config-file ()
     "Goto `config.org' inside emacs' user directory."
     (interactive)
-    (find-file
-     (expand-file-name
-      "config.org"
-      user-emacs-directory)))
+    (let ((vc-follow-symlinks t))
+      (find-file
+       (expand-file-name
+        "config.org"
+        user-emacs-directory))))
   :bind (("C-c e" . index/find-config-file)))
+
 #+end_src
 
 ** Edebug
