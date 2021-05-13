@@ -2716,8 +2716,6 @@ text after the second one."
             "? "))
        (getenv ,(upcase (symbol-name var)))))
 
-  (index/insert-GPLv3--variable home)
-
   (defun index/insert-GPLv3 (&optional arg)
     "Insert the GPLv3 as a comment.
 This requires the NAME, SURNAME, and MAIL environmental variable
