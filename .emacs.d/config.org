@@ -3947,6 +3947,9 @@ This adds removing the mode line locally."
   (add-to-list 'default-frame-alist '(alpha . 92))
 
   (add-to-list 'exwm-input-global-keys `(,(kbd "s-<f11>") . exwm-reset))
+  (add-to-list 'exwm-input-global-keys `(,(kbd "<k-1>") . index/exwm-volume-up))
+  (add-to-list 'exwm-input-global-keys `(,(kbd "<k-2>") . index/exwm-volume-down))
+  (add-to-list 'exwm-input-global-keys `(,(kbd "<k-3>") . index/exwm-volume-mute))
 
   :hook ((exwm-init-hook . index/exwm-init-functions)
          (exwm-update-class-hook . tributi/exwm-update-class))
