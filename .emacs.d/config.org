@@ -588,15 +588,13 @@ better in my opinion.
 (leaf emacs
   :config
   (set-face-attribute 'default nil
-                      :family "Iosevka"
+                      :family "Terminus"
                       :height 120
-                      :weight 'normal
-                      :width 'expanded)
+                      :weight 'normal)
   (set-face-attribute 'fixed-pitch nil
-                      :family "Iosevka"
+                      :family "Terminus"
                       :height 120
-                      :weight 'normal
-                      :width 'expanded)
+                      :weight 'normal)
   (set-face-attribute 'variable-pitch nil
                       :family "Roboto"
                       :height 120
