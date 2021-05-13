@@ -3823,6 +3823,7 @@ This adds removing the mode line locally."
            (fn (intern (concat "+index/exwm-raise-or-spawn-" command))))
       `(prog1 t
          (defvar ,fn "")
+
          (defun ,buf-name-fn ()
            (sleep-for 0.1)
            (setq ,fn
