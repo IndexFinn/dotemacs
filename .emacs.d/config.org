@@ -998,10 +998,12 @@ you call this function it will enter =edebug-mode=.
 
 To stop edebugging, just re-evaluate the lisp s-expression.
 
-** View Mode
+** COMMENT DEPRECATED View Mode
 :PROPERTIES:
 :CUSTOM_ID: h:17561d81-8a49-4510-b2d0-a715055eb628
 :END:
+
+*As of 2021-05-13, this section is deprecated; useless with god-mode.*
 
 If the buffer is read-only, activate some extra keybindings that make
 life easy:
@@ -3028,9 +3030,7 @@ This will add a '*' tag on the current entry."
   :hook ((elfeed-search-mode-hook . index/elfeed-load-feeds)
          (elfeed-new-entry-hook . index/elfeed-new-entry-notification)
          (elfeed-show-mode-hook . olivetti-mode)
-         (elfeed-new-entry-hook . index/elfeed-format-content)
-         ;; to disable view-mode
-         (elfeed-search-mode-hook . view-mode))
+         (elfeed-new-entry-hook . index/elfeed-format-content))
 
   :bind (("C-c f" . elfeed)
          (elfeed-show-mode-map
