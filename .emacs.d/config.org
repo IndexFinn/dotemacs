@@ -3803,44 +3803,49 @@ This adds removing the mode line locally."
         (exwm-floating--unset-floating exwm--id)
         (kill-local-variable 'mode-line-format))))
 
-  ;; TODO: Sometimes it works and sometimes it doesn't
-  (defmacro index/exwm--raise-or-spawn (command keybinding)
-    (let* ((name-str (concat "index/exwm-spawn-or-raise--" command))
-           (name (intern name-str)))
-      `(prog1 t
-         (defun ,name ()
-           "This function has three dwim operations:
+  ;; `index/last-created-exwm-buffer' holds the last created EXWM-Window.
+  (prog1 t
+    (defvar index/last-created-exwm-buffer nil)
+    (defun index/exwm-finish-hook-last-buffer ()
+      (setq index/last-created-exwm-buffer (current-buffer)))
+    (add-hook 'exwm-manage-finish-hook #'index/exwm-finish-hook-last-buffer))
+
+  (defmacro index/exwm-raise-or-spawn (command keybinding)
+    "This macro has three dwim operations:
 1. If window of command does not exist, spawn command.
 2. If window of command exist, switch to it.
-3. If current buffer is window, switch to last buffer.
+3. If current buffer is window, switch to last buffer. "
+    (let* ((buf-name-fn (intern
+                         (concat
+                          "+index/exwm-raise-or-spawn-"
+                          command
+                          "-update-buffer-name")))
+           (fn (intern (concat "+index/exwm-raise-or-spawn-" command))))
+      `(prog1 t
+         (defvar ,fn "")
+         (defun ,buf-name-fn ()
+           (sleep-for 0.1)
+           (setq ,fn
+                 (buffer-name index/last-created-exwm-buffer))
+           (remove-hook
+            'exwm-manage-finish-hook
+            #',buf-name-fn))
 
-This function is auto generated via `index/exwm--raise-or-spawn'."
+         (defun ,fn ()
            (interactive)
-           (let ((ret (ignore-errors
-                        (cdr (assoc (car (last
-                                          (s-split
-                                           "\n"
-                                           (shell-command-to-string
-                                            ;; TODO : change pgrep since it is rather slow
-                                            (concat "pgrep " ,command))
-                                           t)))
-                                    (--map (progn
-                                             (setq it (s-split "[ ]+" it))
-                                             (cons (nth 2 it)
-                                                   (car (last
-                                                         (s-split "\\." (nth 3 it))))))
-                                           (s-split
-                                            "\n"
-                                            (shell-command-to-string
-                                             "wmctrl -lpx")
-                                            t)))))))
-             (if ret
-                 (if (string= (buffer-name (current-buffer)) ret)
-                     (switch-to-buffer (other-buffer (current-buffer) t))
-                   (switch-to-buffer (get-buffer ret)))
-               (index/call-process ,command))))
-
-         (global-set-key (kbd ,keybinding) #',name))))
+           (cond
+            ((string=
+              (buffer-name (current-buffer))
+              ,fn)
+             (switch-to-buffer (other-buffer (current-buffer) t)))
+            ((get-buffer ,fn)
+             (switch-to-buffer ,fn))
+            (:else
+             (index/call-process ,command)
+             (add-hook
+              'exwm-manage-finish-hook
+              #',buf-name-fn))))
+         (global-set-key (kbd ,keybinding) #',fn))))
 
   (defun index/ewxm-clear-gpg-password ()
     "Clear the GPG password and prompt for entering."
@@ -3928,14 +3933,14 @@ This function is auto generated via `index/exwm--raise-or-spawn'."
       (index/call-process "bwp")
       (index/call-process "xsetroot -cursor_name left_ptr")
 
-      (index/exwm--raise-or-spawn "qutebrowser" "s-g")
-      (index/exwm--raise-or-spawn "arandr" "s-a")
-      ;; (index/exwm--raise-or-spawn "pulseeffects" "s-p")
-      (index/exwm--raise-or-spawn "nyxt" "s-n")
-      (index/exwm--raise-or-spawn "brave" "s-p")
-
       (index/exwm-modifier-passthrough "H")
       (index/exwm-modifier-passthrough "s")))
+
+  (index/exwm-raise-or-spawn "qutebrowser" "s-g")
+  (index/exwm-raise-or-spawn "arandr" "s-a")
+  (index/exwm-raise-or-spawn "nyxt" "s-n")
+  (index/exwm-raise-or-spawn "brave" "s-p")
+  (index/exwm-raise-or-spawn "aseprite" "s-A")
 
   (set-frame-parameter (selected-frame) 'alpha 92)
   (add-to-list 'default-frame-alist '(alpha . 92))
