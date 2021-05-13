@@ -3840,6 +3840,8 @@ This adds removing the mode line locally."
              (switch-to-buffer (other-buffer (current-buffer) t)))
             ((get-buffer ,fn)
              (switch-to-buffer ,fn))
+            ((member ',buf-name-fn exwm-manage-finish-hook)
+             (message (concat ,command ": currently launching...")))
             (:else
              (index/call-process ,command)
              (add-hook
